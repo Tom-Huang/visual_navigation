@@ -45,11 +45,13 @@ xenial-compile:
   <<: *prepare_docker_definition
   <<: *compile_and_test_definition
   image: nikolausdemmel/visnav_image:16.04
+  only: [master, upstream]
 
 # build on macos
 elcapitan-compile:
   <<: *compile_and_test_definition
   tags: [macos, "10.11"]
+  only: [master, upstream]
 
 # check if clang-format would make any changes
 clang-format:
