@@ -59,7 +59,8 @@ SET(CMAKE_CXX_FLAGS " -ftemplate-backtrace-limit=0 -Wall ${EXTRA_WARNING_FLAGS} 
 
 
 set(EIGEN_INCLUDE_DIR_HINTS ${EIGEN_ROOT})
-find_package(Eigen3 3.3.7 REQUIRED)
+find_package(Eigen3 3.3.7 EXACT REQUIRED MODULE)
+set(EIGEN_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR})  # for ceres / opengv
 include_directories(${EIGEN3_INCLUDE_DIR})
 message(STATUS "Found Eigen headers in: ${EIGEN3_INCLUDE_DIR}")
 
@@ -68,15 +69,15 @@ include_directories(thirdparty/cereal/include)
 include_directories(thirdparty/CLI11/include)
 include_directories(include)
 
-find_package(Ceres 1.14 REQUIRED HINTS "${CERES_ROOT}")
+find_package(Ceres 1.14 REQUIRED CONFIG HINTS "${CERES_ROOT}" NO_DEFAULT_PATH)
 include_directories(${CERES_INCLUDE_DIRS})
 
 set(Pangolin_DIR ${PANGOLIN_ROOT})
-find_package(Pangolin REQUIRED)
+find_package(Pangolin REQUIRED CONFIG NO_DEFAULT_PATH)
 include_directories(${Pangolin_INCLUDE_DIR})
 message(STATUS "Found Pangolin headers in: ${Pangolin_INCLUDE_DIR}")
 
-find_package(opengv REQUIRED HINTS ${OPENGV_ROOT})
+find_package(opengv REQUIRED CONFIG HINTS ${OPENGV_ROOT} NO_DEFAULT_PATH)
 message(STATUS "Found OpenGV headers in: ${opengv_DIR}")
 
 find_package(TBB REQUIRED)
