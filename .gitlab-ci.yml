@@ -28,8 +28,8 @@ variables:
     - if [ ${CI_COMMIT_REF_NAME} == master || ${CI_COMMIT_REF_NAME} == upstream ]; then export WARNING_FLAGS="-Wno-unused-variable -Wno-return-type"; fi
     - cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_CXX_FLAGS="${WARNING_FLAGS}"
     - make -j2
-    - ../test/test_ex2.sh
-    - ctest
+    # run tests, and if any fail, run again verbose
+    - ctest || (ctest -V && false)
 
 # build on 18.04
 bionic-compile:

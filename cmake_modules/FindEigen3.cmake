@@ -15,6 +15,8 @@
 # Copyright (c) 2009 Benoit Jacob <jacob.benoit.1@gmail.com>
 # Redistribution and use is allowed according to the terms of the 2-clause BSD license.
 
+# Changes 2019 Nikolaus Demmel: pass NO_DEFAULT_PATH --> only works when passing HINTS
+
 if(NOT Eigen3_FIND_VERSION)
   if(NOT Eigen3_FIND_VERSION_MAJOR)
     set(Eigen3_FIND_VERSION_MAJOR 2)
@@ -70,6 +72,7 @@ else (EIGEN3_INCLUDE_DIR)
       ${KDE4_INCLUDE_DIR}
       ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
       PATH_SUFFIXES eigen3 eigen
+      NO_DEFAULT_PATH
     )
 
   if(EIGEN3_INCLUDE_DIR)
