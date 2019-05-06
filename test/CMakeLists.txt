@@ -32,7 +32,7 @@ target_link_libraries(test_ex5 gtest gtest_main ceres opengv ${TBB_LIBRARIES})
 
 
 gtest_discover_tests(test_ex0 DISCOVERY_TIMEOUT 60)
-#gtest_discover_tests(test_ex1 DISCOVERY_TIMEOUT 60)
+gtest_discover_tests(test_ex1 DISCOVERY_TIMEOUT 60)
 #gtest_discover_tests(test_ex2 DISCOVERY_TIMEOUT 60)
 #gtest_discover_tests(test_ex3 DISCOVERY_TIMEOUT 60)
 #gtest_discover_tests(test_ex4 DISCOVERY_TIMEOUT 60)
