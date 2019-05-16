@@ -318,7 +318,11 @@ void compute_projections() {
 
       // TODO SHEET 2: project point
       Eigen::Vector2d p_2d;
-
+      Eigen::Vector3d cam_to_point;
+      cam_to_point = T_i_c.inverse() * T_w_i.inverse() * p_3d;
+      // kv.first.first stands for frame number
+      // kv.first.second stands for camera number
+      p_2d = calib_cam.intrinsics[kv.first.second]->project(cam_to_point);
       ccd.corners.push_back(p_2d);
     }
 
@@ -331,6 +335,13 @@ void optimize() {
   ceres::Problem problem;
 
   // TODO SHEET 2: setup optimization problem
+  struct {
+    template <typename T>
+    ;
+    bool operator()(const T* const x, T* residual) { residual[0] = }
+  }
+  /*problem.AddResidualBlock(
+new AutoDiffCostFunction<F1, 1, 1, 1>(new F1), NULL, &x1, &x2);*/
 
   ceres::Solver::Options options;
   options.gradient_tolerance = 0.01 * Sophus::Constants<double>::epsilon();
