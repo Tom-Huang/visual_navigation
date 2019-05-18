@@ -62,7 +62,7 @@ struct ReprojectionCostFunctor {
         AbstractCamera<T>::from_data(cam_model, sIntr);
 
     // TODO SHEET 2: implement the rest of the functor
-
+    residuals = cam->project(T_i_c.inverse() * T_w_i.inverse() * p_3d) - p_2d;
     return true;
   }
 
@@ -89,6 +89,7 @@ struct BundleAdjustmentReprojectionCostFunctor {
 
     // TODO SHEET 4: Compute reprojection error
 
+    residuals = cam->project(T_w_c.inverse() * p_3d_w) - p_2d;
     return true;
   }
 

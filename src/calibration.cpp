@@ -84,8 +84,8 @@ std::string cam_model = "ds";
 
 int main(int argc, char** argv) {
   const int UI_WIDTH = 200;
-  const int NUM_CAMS = 2;
 
+  const int NUM_CAMS = 2;
   bool show_gui = true;
 
   CLI::App app{"App description"};
@@ -335,13 +335,50 @@ void optimize() {
   ceres::Problem problem;
 
   // TODO SHEET 2: setup optimization problem
-  struct {
-    template <typename T>
-    ;
-    bool operator()(const T* const x, T* residual) { residual[0] = }
+  // add ParameterBlock
+  // problem.AddParameterBlock(calib_cam.intrinsics[0]->data(), 8);
+  // problem.AddParameterBlock(calib_cam.intrinsics[1]->data(), 8);
+  //  problem.AddParameterBlock(calib_cam.T_i_c[0].data(),
+  //                            Sophus::SE3d::num_parameters,
+  //                            new Sophus::test::LocalParameterizationSE3);
+
+  for (const auto& kv : calib_corners) {
+    for (size_t i = 0; i < calib_corners[kv.first].corner_ids.size(); i++) {
+      // Transformation from body (IMU) frame to world frame
+      Sophus::SE3d& T_w_i = vec_T_w_i[kv.first.first];
+      // Transformation from camera to body (IMU) frame
+      Sophus::SE3d& T_i_c = calib_cam.T_i_c[kv.first.second];
+      // 3D coordinates of the aprilgrid corner in the world frame
+      Eigen::Vector3d& p_3d =
+          aprilgrid
+              .aprilgrid_corner_pos_3d[calib_corners[kv.first].corner_ids[i]];
+
+      // TODO SHEET 2: project point
+      // allocate functor space
+      ReprojectionCostFunctor* baf = new ReprojectionCostFunctor(
+          calib_corners[kv.first].corners[i], p_3d, cam_model);
+      // allocate CostFunction space
+      ceres::CostFunction* cost_function =
+          new ceres::AutoDiffCostFunction<ReprojectionCostFunctor, 2,
+                                          Sophus::SE3d::num_parameters,
+                                          Sophus::SE3d::num_parameters, 8>(baf);
+
+      problem.AddResidualBlock(cost_function, NULL,
+                               vec_T_w_i[kv.first.first].data(),
+                               calib_cam.T_i_c[kv.first.second].data(),
+                               calib_cam.intrinsics[kv.first.second]->data());
+      // add ParameterBslock
+    }
+    if (kv.first.second == 0) {
+      problem.AddParameterBlock(vec_T_w_i[kv.first.first].data(),
+                                Sophus::SE3d::num_parameters,
+                                new Sophus::test::LocalParameterizationSE3);
+    }
   }
-  /*problem.AddResidualBlock(
-new AutoDiffCostFunction<F1, 1, 1, 1>(new F1), NULL, &x1, &x2);*/
+  problem.SetParameterBlockConstant(calib_cam.T_i_c[0].data());
+  problem.AddParameterBlock(calib_cam.T_i_c[1].data(),
+                            Sophus::SE3d::num_parameters,
+                            new Sophus::test::LocalParameterizationSE3);
 
   ceres::Solver::Options options;
   options.gradient_tolerance = 0.01 * Sophus::Constants<double>::epsilon();
