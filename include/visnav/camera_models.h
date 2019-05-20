@@ -86,6 +86,8 @@ class PinholeCamera : public AbstractCamera<Scalar> {
     Vec2 res;
 
     // TODO SHEET 2: implement camera model
+    res[0] = fx * x / z + cx;
+    res[1] = fy * y / z + cy;
 
     return res;
   }
@@ -99,6 +101,10 @@ class PinholeCamera : public AbstractCamera<Scalar> {
     Vec3 res;
 
     // TODO SHEET 2: implement camera model
+    Scalar mx = (p[0] - cx) / fx;
+    Scalar my = (p[1] - cy) / fy;
+    res << mx, my, Scalar(1);
+    res = res / res.norm();
 
     return res;
   }
@@ -154,6 +160,9 @@ class ExtendedUnifiedCamera : public AbstractCamera<Scalar> {
     Vec2 res;
 
     // TODO SHEET 2: implement camera model
+    Scalar d = sqrt(beta * (x * x + y * y) + z * z);
+    res[0] = fx * x / (alpha * d + (Scalar(1) - alpha) * z) + cx;
+    res[1] = fy * y / (alpha * d + (Scalar(1) - alpha) * z) + cy;
 
     return res;
   }
@@ -169,6 +178,15 @@ class ExtendedUnifiedCamera : public AbstractCamera<Scalar> {
     Vec3 res;
 
     // TODO SHEET 2: implement camera model
+    Scalar mx = (p[0] - cx) / fx;
+    Scalar my = (p[1] - cy) / fy;
+    Scalar r_2 = mx * mx + my * my;
+    Scalar mz = (Scalar(1) - beta * alpha * alpha * r_2) /
+                (alpha * sqrt(Scalar(1) -
+                              (Scalar(2) * alpha - Scalar(1)) * beta * r_2) +
+                 Scalar(1) - alpha);
+    res << mx, my, mz;
+    res = res / res.norm();
 
     return res;
   }
@@ -224,6 +242,11 @@ class DoubleSphereCamera : public AbstractCamera<Scalar> {
     Vec2 res;
 
     // TODO SHEET 2: implement camera model
+    Vec2 tmp(cx, cy);
+    Scalar d1 = sqrt(x * x + y * y + z * z);
+    Scalar d2 = sqrt(x * x + y * y + (xi * d1 + z) * (xi * d1 + z));
+    res << fx * x, fy * y;
+    res = res / (alpha * d2 + (Scalar(1) - alpha) * (xi * d1 + z)) + tmp;
 
     return res;
   }
@@ -239,6 +262,18 @@ class DoubleSphereCamera : public AbstractCamera<Scalar> {
     Vec3 res;
 
     // TODO SHEET 2: implement camera model
+    Scalar mx = (p[0] - cx) / fx;
+    Scalar my = (p[1] - cy) / fy;
+    Scalar r_2 = mx * mx + my * my;
+    Scalar mz =
+        (Scalar(1) - alpha * alpha * r_2) /
+        (alpha * sqrt(Scalar(1) - (Scalar(2) * alpha - Scalar(1)) * r_2) +
+         Scalar(1) - alpha);
+    Scalar deno = ((mz * xi + sqrt(mz * mz + (Scalar(1) - xi * xi) * r_2)) /
+                   (mz * mz + r_2));
+    res[0] = mx * deno + Scalar(0);
+    res[1] = my * deno + Scalar(0);
+    res[2] = mz * deno - xi;
 
     return res;
   }
@@ -298,6 +333,20 @@ class KannalaBrandt4Camera : public AbstractCamera<Scalar> {
     Vec2 res;
 
     // TODO SHEET 2: implement camera model
+    Scalar r = sqrt(x * x + y * y);
+    Scalar theta = atan(r / z);
+    Scalar d = theta + theta * theta * theta * k1 +
+               theta * theta * theta * theta * theta * k2 +
+               theta * theta * theta * theta * theta * theta * theta * k3 +
+               theta * theta * theta * theta * theta * theta * theta * theta *
+                   theta * k4;
+    if (r == Scalar(0)) {
+      res[0] = cx;
+      res[1] = cy;
+    } else {
+      res[0] = fx * x * d / r + cx;
+      res[1] = fy * y * d / r + cy;
+    }
 
     return res;
   }
@@ -311,6 +360,49 @@ class KannalaBrandt4Camera : public AbstractCamera<Scalar> {
     Vec3 res;
 
     // TODO SHEET 2: implement camera model
+    const Scalar& k1 = param[4];
+    const Scalar& k2 = param[5];
+    const Scalar& k3 = param[6];
+    const Scalar& k4 = param[7];
+    Scalar mx = (p[0] - cx) / fx;
+    Scalar my = (p[1] - cy) / fy;
+    Scalar r = sqrt(mx * mx + my * my);
+    Scalar d;
+    Scalar dd;
+    Scalar theta = Scalar(0);
+
+    int iter_num = 5;
+
+    for (int i = 0; i < iter_num; i++) {
+      d = theta + theta * theta * theta * k1 +
+          theta * theta * theta * theta * theta * k2 +
+          theta * theta * theta * theta * theta * theta * theta * k3 +
+          theta * theta * theta * theta * theta * theta * theta * theta *
+              theta * k4 -
+          r;
+      dd = Scalar(1) + Scalar(3) * theta * theta * k1 +
+           Scalar(5) * theta * theta * theta * theta * k2 +
+           Scalar(7) * theta * theta * theta * theta * theta * theta * k3 +
+           Scalar(9) * theta * theta * theta * theta * theta * theta * theta *
+               theta * k4;
+      if (dd == Scalar(0) && d != Scalar(0)) {
+        std::cout << "No solution found!" << std::endl;
+        return Vec3(Scalar(0), Scalar(0), Scalar(0));
+      } else if (dd == Scalar(0) && d == Scalar(0)) {
+        break;
+      } else {
+        theta = theta - d / dd;
+      }
+    }
+    if (r == Scalar(0)) {
+      res[0] = Scalar(0);
+      res[1] = Scalar(0);
+      res[2] = Scalar(1);
+    } else {
+      res[0] = sin(theta) * mx / r;
+      res[1] = sin(theta) * my / r;
+      res[2] = cos(theta);
+    }
 
     return res;
   }
