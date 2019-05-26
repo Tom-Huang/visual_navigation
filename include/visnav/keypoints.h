@@ -162,6 +162,21 @@ void computeAngles(const pangolin::ManagedImage<uint8_t>& img_raw,
 
     if (rotate_features) {
       // TODO SHEET 3: compute angle
+      double m01 = 0;
+      double m10 = 0;
+      for (int x = -15; x <= 15; ++x) {
+        for (int y = -15; y <= 15; ++y) {
+          bool left = (cx - x >= 0);
+          bool right = (cx + x < img_raw.w);
+          bool up = (cy - y >= 0);
+          bool down = (cy + y < img_raw.h);
+          if ((x * x + y * y <= 225) && left && right && up && down) {
+            m01 += (img_raw(x + cx, y + cy) * y);
+            m10 += (img_raw(x + cx, y + cy) * x);
+          }
+        }
+      }
+      angle = atan2(m01, m10);
     }
 
     kd.corner_angles[i] = angle;
@@ -182,6 +197,20 @@ void computeDescriptors(const pangolin::ManagedImage<uint8_t>& img_raw,
     int cy = p[1];
 
     // TODO SHEET 3: compute descriptor
+    for (int j = 0; j < 256; ++j) {
+      double p_a_prime_x = round((pattern_31_x_a[j]) * cos(angle) +
+                                 (pattern_31_y_a[j]) * (-sin(angle)) + cx);
+      double p_a_prime_y = round((pattern_31_x_a[j]) * sin(angle) +
+                                 (pattern_31_y_a[j]) * (cos(angle)) + cy);
+      double p_b_prime_x = round((pattern_31_x_b[j]) * cos(angle) +
+                                 (pattern_31_y_b[j]) * (-sin(angle)) + cx);
+      double p_b_prime_y = round((pattern_31_x_b[j]) * sin(angle) +
+                                 (pattern_31_y_b[j]) * (cos(angle)) + cy);
+      if (img_raw(p_a_prime_x, p_a_prime_y) < img_raw(p_b_prime_x, p_b_prime_y))
+        descriptor[j] = 1;
+      else
+        descriptor[j] = 0;
+    }
 
     kd.corner_descriptors[i] = descriptor;
   }
@@ -231,6 +260,17 @@ void matchDescriptors(const std::vector<std::bitset<256>>& corner_descriptors_1,
   matches.clear();
 
   // TODO SHEET 3: match features
+  std::map<int, int> map_1_to_2;
+  std::map<int, int> map_2_to_1;
+  matchFastHelper(corner_descriptors_1, corner_descriptors_2, map_1_to_2,
+                  threshold, dist_2_best);
+  matchFastHelper(corner_descriptors_2, corner_descriptors_1, map_2_to_1,
+                  threshold, dist_2_best);
+  for (auto const& p : map_1_to_2) {
+    if (p.first == map_2_to_1[p.second]) {
+      matches.push_back(std::make_pair(p.first, p.second));
+    }
+  }
 }
 
 }  // namespace visnav
