@@ -150,8 +150,8 @@ void findInliersRansac(const KeypointsData& kd1, const KeypointsData& kd2,
 
   // calculate new inliers with new transformation
   std::vector<int> new_inliers;
-  relposeproblem_ptr->selectWithinDistance(nonlinear_transformation, 1e-3,
-                                           new_inliers);
+  relposeproblem_ptr->selectWithinDistance(nonlinear_transformation,
+                                           ransac_thresh, new_inliers);
 
   // create T_0_1 to hold the transformation matrix
   Sophus::SE3d T_0_1(
