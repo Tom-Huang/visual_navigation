@@ -90,31 +90,28 @@ void findInliersRansac(const KeypointsData& kd1, const KeypointsData& kd2,
   // TODO SHEET 3: run RANSAC with using opengv's CentralRelativePose and store
   // in md.inliers. If the number if inliers is smaller than ransac_min_inliers,
   // leave md.inliers empty.
-  std::vector<Eigen::Vector3d,
-              Eigen::aligned_allocator<opengv::bearingVector_t>>
-      KeyPoint3d_1;
-  std::vector<Eigen::Vector3d,
-              Eigen::aligned_allocator<opengv::bearingVector_t>>
-      KeyPoint3d_2;
+
+  // create bearingVectors to store all the matched 3D points
+  opengv::bearingVectors_t kp3d1;
+  opengv::bearingVectors_t kp3d2;
   for (int j = 0; j < md.matches.size(); ++j) {
-    const Eigen::Vector2d p0_2d = kd1.corners[md.matches[j].first];
-    const Eigen::Vector2d p1_2d = kd2.corners[md.matches[j].second];
+    Eigen::Vector2d p0_2d = kd1.corners[md.matches[j].first];
+    Eigen::Vector2d p1_2d = kd2.corners[md.matches[j].second];
     Eigen::Vector3d p0_3d = cam1->unproject(p0_2d).normalized();
     Eigen::Vector3d p1_3d = cam2->unproject(p1_2d).normalized();
-    KeyPoint3d_1.push_back(p0_3d);
-    KeyPoint3d_2.push_back(p1_3d);
+    kp3d1.push_back(p0_3d);
+    kp3d2.push_back(p1_3d);
   }
-  const std::vector<Eigen::Vector3d,
-                    Eigen::aligned_allocator<opengv::bearingVector_t>>
-      kp3d1 = KeyPoint3d_1;
-  const std::vector<Eigen::Vector3d,
-                    Eigen::aligned_allocator<opengv::bearingVector_t>>
-      kp3d2 = KeyPoint3d_2;
 
+  // create adapter
   opengv::relative_pose::CentralRelativeAdapter adapter(kp3d1, kp3d2);
+
+  // create RANSAC
   opengv::sac::Ransac<
       opengv::sac_problems::relative_pose::CentralRelativePoseSacProblem>
       ransac;
+
+  // create relative pose problem which uses NISTER five points algorithm
   std::shared_ptr<
       opengv::sac_problems::relative_pose::CentralRelativePoseSacProblem>
       relposeproblem_ptr(
@@ -122,26 +119,54 @@ void findInliersRansac(const KeypointsData& kd1, const KeypointsData& kd2,
               CentralRelativePoseSacProblem(
                   adapter, opengv::sac_problems::relative_pose::
                                CentralRelativePoseSacProblem::NISTER));
+
+  // initialize some parameters in ransac object
   ransac.sac_model_ = relposeproblem_ptr;
   ransac.threshold_ = ransac_thresh;
-  ransac.max_iterations_ = 200;
+
+  // compute inliers and transformation with ransac
   ransac.computeModel();
-  opengv::transformation_t best_transformation = ransac.model_coefficients_;
-  Eigen::Matrix4d b_tf_4_4;
-  b_tf_4_4.setZero();
-  b_tf_4_4.block<3, 4>(0, 0) = best_transformation;
-  b_tf_4_4(3, 3) = 1;
-  std::cout << b_tf_4_4 << std::endl;
-  const Sophus::SE3d T_0_1(b_tf_4_4);
-  md.T_i_j = T_0_1;
-  std::cout << "Matches size: " << md.matches.size()
-            << ", inliers size: " << ransac.inliers_.size() << std::endl;
-  if (ransac.inliers_.size() < ransac_min_inliers) {
-    return;
-  } else {
-    for (int i = 0; i < ransac.inliers_.size(); i++) {
-      md.inliers.push_back(md.matches[ransac.inliers_[i]]);
-    }
+
+  // store all inliers acquired from ransac
+  opengv::bearingVectors_t inliers_1;
+  opengv::bearingVectors_t inliers_2;
+  for (int j = 0; j < ransac.inliers_.size(); ++j) {
+    int inliers_ind = ransac.inliers_[j];
+    inliers_1.push_back(kp3d1[inliers_ind]);
+    inliers_2.push_back(kp3d2[inliers_ind]);
   }
+
+  // create a new adapter to store inliers from ransac
+  opengv::relative_pose::CentralRelativeAdapter new_adapter(inliers_1,
+                                                            inliers_2);
+
+  // initialize rotation matrix and translation vector acquired from ransac
+  new_adapter.setR12(ransac.model_coefficients_.block<3, 3>(0, 0));
+  new_adapter.sett12(ransac.model_coefficients_.col(3));
+
+  // use nonlinear optimization to refine transformation matrix
+  opengv::transformation_t nonlinear_transformation =
+      opengv::relative_pose::optimize_nonlinear(new_adapter);
+
+  // calculate new inliers with new transformation
+  std::vector<int> new_inliers;
+  relposeproblem_ptr->selectWithinDistance(nonlinear_transformation, 1e-3,
+                                           new_inliers);
+
+  // create T_0_1 to hold the transformation matrix
+  Sophus::SE3d T_0_1(
+      nonlinear_transformation.block(0, 0, 3, 3),   // rotation matrix
+      nonlinear_transformation.block(0, 3, 3, 1));  // translation vector
+
+  // store optimized transformation in kd
+  md.T_i_j = T_0_1;
+
+  for (int i = 0; i < new_inliers.size(); i++) {
+    md.inliers.push_back(std::make_pair(md.matches[new_inliers[i]].first,
+                                        md.matches[new_inliers[i]].second));
+  }
+  std::cout << "Matches size: " << md.matches.size()
+            << ", ransac inliers size: " << ransac.inliers_.size()
+            << ", final inliers size: " << md.inliers.size() << std::endl;
 }
 }  // namespace visnav
