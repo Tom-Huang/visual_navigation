@@ -183,6 +183,8 @@ bool GetTracksInImages(const std::set<TimeCamId>& image_ids,
     size_t observed_image_count = 0;
     for (const auto& imageId : image_ids) {
       if (kv_track.second.count(imageId) > 0) {
+        // kv_track.second is a FeatureTrack object(a map from TimeCamId to
+        // FeatureId)
         ++observed_image_count;
       } else {
         break;
