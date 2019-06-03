@@ -61,6 +61,14 @@ void project_landmarks(
   // locations of the cameras. Put 2d coordinates of the projected points into
   // projected_points and the corresponding id of the landmark into
   // projected_track_ids.
+
+  for (const auto landmark : landmarks) {
+    Landmark lm = landmark.second;
+    Eigen::Vector3d p_3d_c = current_pose.inverse() * lm.p;
+    if (p_3d_c[2] < cam_z_threshold) continue;
+    projected_track_ids.push_back(landmark.first);
+    projected_points.push_back(cam->project(p_3d_c));
+  }
 }
 
 void find_matches_landmarks(
@@ -81,6 +89,43 @@ void find_matches_landmarks(
   // the descriptor of the current point and descriptors of all observations of
   // the landmarks. The feature_match_max_dist and feature_match_test_next_best
   // should be used to filter outliers the same way as in exercise 3.
+  for (int i = 0; i < kdl.corner_descriptors.size(); i++) {
+    double best_landmark_dist = 1000;
+    double second_best_dist = 1000;
+    int best_ind = -1;
+    TrackId track_id = projected_track_ids[i];
+
+    for (int j = 0; j < projected_points.size(); j++) {
+      TrackId track_id_other_obs = projected_track_ids[j];
+      double eucli_dist = (kdl.corners[i] - projected_points[j]).norm();
+
+      if (eucli_dist > match_max_dist_2d) continue;
+
+      double best_dist = 1000;
+
+      for (const auto feat : landmarks.at(track_id_other_obs).obs) {
+        TimeCamId tcid = feat.first;
+        FeatureId feat_id = feat.second;
+        std::bitset<256> other_obs_descriptor =
+            feature_corners.at(tcid).corner_descriptors[feat_id];
+        double dist =
+            (kdl.corner_descriptors[i] ^ other_obs_descriptor).count();
+
+        if (dist < best_dist) {
+          second_best_dist = best_dist;
+          best_dist = dist;
+          best_ind = feat_id;
+        } else if (dist < second_best_dist) {
+          second_best_dist = dist;
+        }
+      }
+      if (best_dist < feature_match_max_dist &&
+          best_dist * feature_match_test_next_best <= second_best_dist) {
+        best_landmark_dist = best_dist;
+      }
+    }
+    md.matches.push_back(std::make_pair(i, ));
+  }
 }
 
 void localize_camera(const std::shared_ptr<AbstractCamera<double>>& cam,
