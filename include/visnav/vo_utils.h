@@ -81,6 +81,42 @@ void find_matches_landmarks(
   // the descriptor of the current point and descriptors of all observations of
   // the landmarks. The feature_match_max_dist and feature_match_test_next_best
   // should be used to filter outliers the same way as in exercise 3.
+
+  for (int i = 0; i < kdl.corners.size(); i++) {
+    std::bitset<256> kp_des = kdl.corner_descriptors[i];
+    Eigen::Vector2d kp_2d = kdl.corners[i];
+    int best_dist_for_kpl = 500;
+    FeatureId best_featid_for_kpl = -1;
+    for (int j = 0; j < projected_points.size(); j++) {
+      Eigen::Vector2d pp_2d = projected_points[j];
+      TrackId ptrack_id = projected_track_ids[j];
+      int best_dist_in_obs = 500;
+      int second_best_dist_in_obs = 500;
+      if ((pp_2d - kp_2d).norm() < match_max_dist_2d) {
+        for (const auto tcid_featid_pair : landmarks.at(ptrack_id).obs) {
+          TimeCamId tcid = tcid_featid_pair.first;
+          FeatureId featid = tcid_featid_pair.second;
+          std::bitset<256> obs_des =
+              feature_corners.at(tcid).corner_descriptors[featid];
+
+          int dist = (obs_des ^ kp_des).count();
+          if (dist <= best_dist_in_obs) {
+            second_best_dist_in_obs = best_dist_in_obs;
+            best_dist_in_obs = dist;
+          } else if (dist < second_best_dist_in_obs) {
+            second_best_dist_in_obs = dist;
+          }
+        }
+      }
+      if (best_dist_in_obs < best_dist_for_kpl &&
+          best_dist_in_obs * feature_match_test_next_best <
+              second_best_dist_in_obs) {
+        best_dist_for_kpl = best_dist_in_obs;
+        best_featid_for_kpl = j;
+      }
+    }
+    md.matches.push_back(std::make_pair(i, best_featid_for_kpl));
+  }
 }
 
 void localize_camera(const std::shared_ptr<AbstractCamera<double>>& cam,
