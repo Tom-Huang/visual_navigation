@@ -61,6 +61,14 @@ void project_landmarks(
   // locations of the cameras. Put 2d coordinates of the projected points into
   // projected_points and the corresponding id of the landmark into
   // projected_track_ids.
+
+  for (const auto landmark : landmarks) {
+    Landmark lm = landmark.second;
+    Eigen::Vector3d p_3d_c = current_pose.inverse() * lm.p;
+    if (p_3d_c[2] < cam_z_threshold) continue;
+    projected_track_ids.push_back(landmark.first);
+    projected_points.push_back(cam->project(p_3d_c));
+  }
 }
 
 void find_matches_landmarks(
