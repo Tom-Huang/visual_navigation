@@ -229,6 +229,34 @@ void add_points_to_landmarks_obs_right(const MatchData& md_stereo,
   }
 }
 
+// TODO PROJECT: check the number of keypoints in each grid and fulfill
+// the variable kpnum of each cell.
+// TODO: double check whether there is an overlapping of the grid!!!!!!!
+void check_num_points_in_cells(const KeypointsData& kdlt1, std::vector<Cell>& cells){
+  for (auto & kp : kdlt1.corners){
+    for (auto & cell : cells){
+      if (kp[0]>=cell.topleft.first && kp[1]>=cell.topleft.second&&kp[0]<cell.bottomright.first&&kp[1]<cell.bottomright.second){
+        cell.kpnum++;
+      }
+    }
+  }
+}
+
+// TODO PROJECT: calculate the number of empty cells. empty cells indexes saved
+// in empty_indexes, and returns the number of empty cells.  
+int sparsity(std::vector<Cell>& cells, std::vector<int> & empty_indexes){
+  int num_of_empty_cells = 0;
+  for (int i =0; i<cells.size();i++){
+    if (cells[i].kpnum==0){
+      num_of_empty_cells = num_of_empty_cells+1;
+      empty_indexes.push_back(i);
+    }
+  }
+  return num_of_empty_cells;
+}
+
+
+
 void localize_camera(const std::shared_ptr<AbstractCamera<double>>& cam,
                      const KeypointsData& kdl, const Landmarks& landmarks,
                      const double reprojection_error_pnp_inlier_threshold_pixel,

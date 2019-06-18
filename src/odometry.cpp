@@ -809,11 +809,91 @@ bool next_step() {
 
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
     pangolin::ManagedImage<uint8_t> imgr = pangolin::LoadImage(images[tcidr]);
+    
 
+    //first frame:
+    //1. detect keypoints
+    //2. optical flow for right camera
+    //3. triangulate / initialize landmrks
+
+
+
+    //replace this part with 
+    //1. calculate kdl from last image using optical flow
+    //2. check number of calculated points, if under a threshold, add new landmarks
+    //3. check grid sparsity, if too sparse. add new landmarks
+    //OpticalFlowBetweenFrame_opencv_version(currentframe, image of currentframge-1, feature_corners, kdl of currentframe-1, image of current frame, landmarks, md, ){
+      //calculate kdl from last image using optical flow
+    //  match data keypoint feature id ->trackid pair saved in md.matches
+      
+    //}//vo_utils.h, HUANG_DONE
+    OpticalFlowBetweenFrame_opencv_version(
+    FrameId current_frame, const pangolin::ManagedImage<uint8_t>& imglt0,
+    const pangolin::ManagedImage<uint8_t>& imglt1, const KeypointsData& kdlt0,
+    KeypointsData& kdlt1, const Landmarks& landmarks,
+    MatchData& md_feat2track);
+
+
+
+    // add these points to observation of landmarks  left camera
+    //add_points_to_landmarks_obs_left(md.matches, landmarks, kdl, current_frame, ){
+      
+    //  md.matches = [featureid, trackid];
+    //}//HUANG_DONE
+    add_points_to_landmark_obs_left(const MatchData& md_feat2track,
+                                     const KeypointsData& kdl,
+                                     Landmarks& landmarks,
+                                     FrameId current_frame);
+
+    //make_cells(image_width, image_length, num_of_colums/rows, std::vector<cell> cells){
+    //  get cells with position value but without number of points value.
+
+    //} //common_type.h HUANG_DONE
+    makeCells(int h, int w, int rnum, int cnum, std::vector<Cell>& cells);
+
+
+    check_num_points_in_cells(kdlt1, cells); //-> num_of_points; std::vector<Cell> cells
+    //{
+      //TODO: kdl is in what corrdinate?
+    //} TAN_DONE
+
+    std::vector<int> empty_indexes;
+
+    int num_of_empty_cells = sparsity(cells, empty_indexes); 
+    int threshold = 100; // threshold for minimum num of points
+    int threshold2 = 56; //  threshold for maximum num of empty cells
+
+    if(kdlt1.corners.size()<threshold || num_of_empty_cells>threshold2){
+     
+      //add new landmarks;
+      int i=0;//to calculate the number of newly added keypoints
+      for(int j=0;j<empty_indexes.size(); j++){//every empty cell in cells
+        // now the current empty cell is cells[empty_indexes[j]]
+        detectKeypoints(imgl according to empty cell bound, output= keypoints, kdl);
+        kdl original_keypoints.pushback(keypoints);//use kdl
+        i++;
+      }
+    }
+    
+    // optical flow to right camera using new keypoints set and add them to existing kdr
+    // add observation of right camera
+
+    add_points_to_landmarks_obs_right(md_stereo.match, md.match, landmarks, kdr, current_frame); //HUANG
+
+
+    // (if take key point):  triangulation using the last i points.(fullfil the pos of landmark)
+
+    // add kdr and kdl to feature_corners
+
+
+
+
+    /* 
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
                                   rotate_features);
+    */
 
     md_stereo.T_i_j = T_0_1;
 
@@ -887,6 +967,37 @@ bool next_step() {
     KeypointsData kdl;
 
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
+
+ 
+    //1. calculate kdl from last image using optical flow
+    
+    
+    OpticalFlowBetweenFrame_opencv_version(image of currentframge-1, kdl of currentframe-1, image of current frame,   ){
+      //calculate kdl from last image using optical flow
+      match data keypoints->trackid pair saved in md.matches
+    }
+    
+    // add these points to observation of landmarks
+
+    // 2. calculate num of points, and sparsity
+    check_num_points() -> num of points; std::vector<Cell> cells
+    sparsity(cells); -> num_of_empty_cells
+    
+    //3. check number of calculated points, if under a threshold OR check grid sparsity, if too sparse.  let next be key frame.   do not add new landmarks
+    if(num_of_points<threshold || num_of_empty_cells>threshold2){
+      // set flag of key framge to be true;
+
+      // do not add new landmarks now ;
+      /* int i=0;//to calculate the number of newly added keypoints
+      for(every empty cell in cells){
+        detectKeypoints(imgl according to empty cell bound, output= keypoints);
+        original_keypoints.pushback(keypoints);
+        i++;
+      }*/
+    }
+    
+    // optical flow to right camera using new keypoints set and add them to existing kdr
+
 
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
