@@ -138,10 +138,12 @@ void find_matches_landmarks(
 }
 
 // TODO PROJECT: use optical flow to calculate feature points in next left frame
+// based on feature points in the last left frame
 void OpticalFlowBetweenFrame_opencv_version(
-    int current_frame, const pangolin::ManagedImage<uint8_t>& imglt0,
+    FrameId current_frame, const pangolin::ManagedImage<uint8_t>& imglt0,
     const pangolin::ManagedImage<uint8_t>& imglt1, const KeypointsData& kdlt0,
-    KeypointsData& kdlt1, const Landmarks& landmarks, MatchData& md) {
+    KeypointsData& kdlt1, const Landmarks& landmarks,
+    MatchData& md_feat2track) {
   cv::Mat imglt0_cv(imglt0.h, imglt0.w, CV_8U, imglt0.ptr);
   cv::Mat imglt1_cv(imglt1.h, imglt1.w, CV_8U, imglt1.ptr);
 
@@ -165,7 +167,64 @@ void OpticalFlowBetweenFrame_opencv_version(
     if (status[i]) {
       Eigen::Vector2d p_2d = points1[i];
       kdlt1.corners.push_back(p_2d);
-      md
+      TrackId trackid = kdlt0.trackids[i];
+      kdlt1.trackids.push_back(trackid);
+      md_feat2track.matches.push_back(std::make_pair(j, trackid));
+      j++;
+    }
+  }
+}
+
+// TODO PROJECT: make grid in the image and store the top left corner and bottom
+// right corner of each cell in a Cell object. The rnum and cnum should be
+// devidable by h and w respectively.
+void makeCells(int h, int w, int rnum, int cnum, std::vector<Cell>& cells) {
+  int cellh = h / rnum;
+  int cellw = w / cnum;
+  for (int i = 0; i < rnum; i++) {
+    for (int j = 0; j < cnum; j++) {
+      int rmin = i * cellh;
+      int rmax = (i + 1) * cellh;
+      int cmin = j * cellw;
+      int cmax = (j + 1) * cellw;
+      Cell cell;
+      cell.topleft = std::make_pair(rmin, cmin);
+      cell.bottomright = std::make_pair(rmax, cmax);
+      cell.kpnum = 0;
+      cells.push_back(cell);
+    }
+  }
+}
+
+// TODO PROJECT: add keypoints in left image to existing landmarks' observations
+void add_points_to_landmark_obs_left(const MatchData& md_feat2track,
+                                     const KeypointsData& kdl,
+                                     Landmarks& landmarks,
+                                     FrameId current_frame) {
+  TimeCamId tcid = std::make_pair(current_frame, 0);
+  for (const auto feat_track_pair : md_feat2track.matches) {
+    FeatureId featid = feat_track_pair.first;
+    TrackId trackid = feat_track_pair.second;
+    landmarks.at(trackid).obs.emplace(tcid, featid);
+  }
+}
+
+// TODO PROJECT: add keypoints in right image to existing landmarks's
+// observations
+void add_points_to_landmarks_obs_right(const MatchData& md_stereo,
+                                       const MatchData& md_feat2track,
+                                       Landmarks& landmarks,
+                                       FrameId current_frame) {
+  TimeCamId tcid = std::make_pair(current_frame, 1);
+  for (const auto left_right_feat_pair : md_stereo.matches) {
+    FeatureId featidl = left_right_feat_pair.first;
+    FeatureId featidr = left_right_feat_pair.second;
+    for (const auto featl_track_pair : md_feat2track.matches) {
+      if (featidl == featl_track_pair.first) {
+        TrackId trackid = featl_track_pair.second;
+        landmarks.at(trackid).obs.emplace(tcid, featidr);
+        break;
+      }
     }
   }
 }

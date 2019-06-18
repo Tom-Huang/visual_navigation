@@ -238,4 +238,13 @@ using ImageProjections = std::map<TimeCamId, ImageProjection>;
 using TrackProjections =
     std::unordered_map<TrackId, std::map<TimeCamId, ProjectedLandmarkConstPtr>>;
 
-}  // namespace visnav
+// TODO PROJECT: Cell structure which stores the top left and bottom right
+// corners of the cell inside an image. It also stores the number of key points
+// inside the cell
+struct Cell {
+  std::pair<int, int> topleft;
+  std::pair<int, int> bottomright;
+  int kpnum;
+};
+
+};  // namespace visnav
