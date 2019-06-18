@@ -59,6 +59,10 @@ std::ostream& operator<<(std::ostream& os, const TimeCamId& tcid) {
   return os;
 }
 
+/// Ids for feature tracks; also used for landmarks created from (some of) the
+/// tracks;
+using TrackId = int64_t;
+
 /// ids for 2D features detected in images
 using FeatureId = int;
 
@@ -73,6 +77,9 @@ struct KeypointsData {
   /// collection of feature descriptors with same index as `corners` (indexed by
   /// FeatureId)
   std::vector<std::bitset<256>> corner_descriptors;
+
+  // TODO PROJECT: implement trackids inside keypointsData
+  std::vector<TrackId> trackids;
 };
 
 /// feature corners is a collection of { imageId => KeypointsData }
@@ -106,10 +113,6 @@ using ImageFeaturePair = std::pair<TimeCamId, FeatureId>;
 /// I.e. a collection of all images that observed this feature and the
 /// corresponding feature index in that image.
 using FeatureTrack = std::map<TimeCamId, FeatureId>;
-
-/// Ids for feature tracks; also used for landmarks created from (some of) the
-/// tracks;
-using TrackId = int64_t;
 
 /// FeatureTracks is a collection {TrackId => FeatureTrack}
 using FeatureTracks = std::unordered_map<TrackId, FeatureTrack>;

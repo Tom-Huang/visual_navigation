@@ -36,11 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <set>
 
 #include <Eigen/Dense>
+#include <sophus/se2.hpp>
 #include <sophus/se3.hpp>
 
 #include <pangolin/image/managed_image.h>
 
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 #include <visnav/common_types.h>
 
@@ -273,4 +275,213 @@ void matchDescriptors(const std::vector<std::bitset<256>>& corner_descriptors_1,
   }
 }
 
+// TODO PROJECT: compute patch region for optical flow(inside the radius range)
+void computePatch(const cv::Mat const& img, const Eigen::Vector2i& patch_center,
+                  const int optf_patch_radius,
+                  std::vector<Eigen::Vector2i>& patch_region) {
+  for (int r = patch_center[0] - optf_patch_radius;
+       r < patch_center[0] + optf_patch_radius; r++) {
+    for (int c = patch_center[1] - optf_patch_radius;
+         c < patch_center[1] + optf_patch_radius; c++) {
+      if (!(r < 0 || c < 0 || r >= img.size().height ||
+            c >= img.size().width)) {
+        if (r * r + c * c <= optf_patch_radius) {
+          patch_region.push_back(Eigen::Vector2i(r, c));
+        }
+      }
+    }
+  }
+}
+
+// TODO PROJECT: compute patch region of target image after T transform
+void transformPatch(const cv::Mat& img, const Eigen::Matrix2d& rot,
+                    const Eigen::Vector2d& trans,
+                    const std::vector<Eigen::Vector2i>& patch_region0,
+                    std::vector<Eigen::Vector2i> patch_region1,
+                    std::vector<std::pair<int, int>> corresponding_pixel_inds) {
+  int i0 = 0;
+  int i1 = 0;
+  for (const auto p_2d0 : patch_region0) {
+    Eigen::Vector2i p_2d1;
+    p_2d1(0) = round(rot(0, 0) * p_2d0(0) + rot(0, 1) * p_2d0(1) + trans(0));
+    p_2d1(1) = round(rot(1, 0) * p_2d0(0) + rot(1, 1) * p_2d0(1) + trans(1));
+    if (!(p_2d1(0) < 0 || p_2d1(1) < 0 || p_2d1(0) >= img.size().height ||
+          p_2d1(1) >= img.size().width)) {
+      patch_region1.push_back(p_2d1);
+      corresponding_pixel_inds.push_back(std::make_pair(i0, i1));
+      i1++;
+    }
+    i0++;
+  }
+}
+
+// TODO PROJECT: compute patch mean
+double computePatchMean(const cv::Mat& img,
+                        const std::vector<Eigen::Vector2i> patch_region) {
+  double mean = 0;
+  for (const auto p_2d : patch_region) {
+    mean += img.at<uchar>(p_2d(0), p_2d(1));
+  }
+  mean = mean / double(patch_region.size());
+  return mean;
+}
+
+// TODO PROJECT: construct a cost functor for optimal flow
+struct OpticalFlowCostFunctor {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  OpticalFlowCostFunctor(const cv::Mat img0, const cv::Mat img1,
+                         Eigen::Vector2i p_2d0, double img0m, double img1m)
+      : img0(img0), img1(img1), p_2d0(p_2d0), img0m(img0m), img1m(img1m) {}
+
+  template <class T>
+  bool operator()(T const* const sT_0_1, T* sResidual) const {
+    Eigen::Map<Sophus::SE2<T> const> const T_0_1(sT_0_1);
+
+    Eigen::Matrix2d rot = T_0_1.roatationMatrix();
+    Eigen::Vector2d trans = T_0_1.translation();
+
+    Eigen::Vector2i est_p_2d1;
+
+    std::vector<Eigen::Vector2i> patch_region1;
+    std::vector<Eigen::Vector2i> patch_region0;
+
+    Eigen::Map<T, 1> residual(sResidual);
+
+    est_p_2d1(0) =
+        round(rot(0, 0) * p_2d0(0) + rot(0, 1) * p_2d0(1) + trans(0));
+    est_p_2d1(1) =
+        round(rot(1, 0) * p_2d0(0) + rot(1, 1) * p_2d0(1) + trans(1));
+
+    residual[0] = T(img1.at<uchar>(est_p_2d1[0], est_p_2d1[1])) / T(img1m) -
+                  T(img0.at<uchar>(p_2d0[0], p_2d0[1])) / T(img0m);
+  }
+
+ private:
+  cv::Mat img0;
+  cv::Mat img1;
+  Eigen::Vector2i p_2d0;
+  double img0m;
+  double img1m;
+};
+
+// TODO PROJECT: use optical flow for features matching
+/**
+void matchOpticalFlow(const pangolin::ManagedImage<uint8_t>& imgl,
+                      const pangolin::ManagedImage<uint8_t>& imgr,
+                      KeypointsData& kdl, KeypointsData& kdr,
+                      std::vector<std::pair<int, int>>& matches,
+                      double test_dist_2_best, double threshold,
+                      int optf_patch_radius) {
+  cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+  cv::Mat imgr_cv(imgr.h, imgr.w, CV_8U, imgr.ptr);
+  for (int i = 0; i < kdl.corners.size(); i++) {
+    ceres::Problem problem;
+    Sophus::SE2d T_0_1;
+    std::vector<Eigen::Vector2i> patch_region0;
+    std::vector<Eigen::Vector2i> patch_region1;
+    std::vector<std::pair<int, int>> corresponding_pixel_inds;
+    Eigen::Vector2i patch_center0 = kdl.corners[i];
+    Eigen::Vector2i patch_center1;
+    double img0m;
+    double img1m;
+
+    Eigen::Matrix2d rot = T_0_1.rotationMatrix();
+    Eigen::Vector2d trans = T_0_1.translation();
+
+    //    patch_center1(0) = round(rot(0, 0) * patch_center0(0) +
+    //                             rot(0, 1) * patch_center0(1) + trans(0));
+    //    patch_center1(1) = round(rot(1, 0) * patch_center0(0) +
+    //                             rot(1, 1) * patch_center0(1) + trans(1));
+
+    computePatch(imgl_cv, patch_center0, optf_patch_radius, patch_region0);
+    transformPatch(imgr_cv, rot, trans, patch_region0, patch_region1,
+                   corresponding_pixel_inds);
+    computePatchMean(imgl_cv, patch_region0);
+    computePatchMean(imgr_cv, patch_region1);
+
+    // problem.AddParameterBlock(T_0_1.data(), Sophus::SE2d::num_parameters, new
+    // Sophus::test::LocalParameterizationSE2);
+
+    for (const auto ind_pair : corresponding_pixel_inds) {
+      Eigen::Vector2i p_2d0 = patch_region0[ind_pair.first];
+      Eigen::Vector2i p_2d1 = patch_region1[ind_pair.second];
+
+      OpticalFlowCostFunctor* optf_cf =
+          new OpticalFlowCostFunctor(imgl_cv, imgr_cv, p_2d0, img0m, img1m);
+
+      ceres::CostFunction* optf_cost_function = new ceres::AutoDiffCostFunction<
+          OpticalFlowCostFunctor, Sophus::SE2d::num_parameters, 1>(optf_cf);
+
+      problem.AddResidualBlock(optf_cost_function, NULL, T_0_1.data());
+    }
+
+    // Solve
+    ceres::Solver::Options ceres_options;
+    ceres_options.max_num_iterations = 20;
+    ceres_options.linear_solver_type = ceres::SPARSE_SCHUR;
+    ceres::Solver::Summary summary;
+    Solve(ceres_options, &problem, &summary);
+
+    // Compute target patch_center
+    rot = T_0_1.rotationMatrix();
+    trans = T_0_1.translation();
+
+    patch_center1(0) = round(rot(0, 0) * patch_center0(0) +
+                             rot(0, 1) * patch_center0(1) + trans(0));
+    patch_center1(1) = round(rot(1, 0) * patch_center0(0) +
+                             rot(1, 1) * patch_center0(1) + trans(1));
+
+    double best_dist = 10000;
+    double second_best_dist = 10000;
+    int best_ind = -1;
+
+    for (int j = 0; j < kdr.corners.size(); j++) {
+      Eigen::Vector2i kp_2d1 = kdr.corners[j];
+      double dist = (kp_2d1 - patch_center1).norm();
+      if (dist < best_dist) {
+        second_best_dist = best_dist;
+        best_dist = dist;
+        best_ind = j;
+      } else if (dist < second_best_dist) {
+        second_best_dist = dist;
+      }
+    }
+    if (best_dist < threshold &&
+        best_dist * test_dist_2_best < second_best_dist) {
+      matches.push_back(std::make_pair(i, best_ind));
+    }
+  }
+}
+
+// TODO PROJECT: use optical flow in opencv to replace features matching
+void matchStereoOpticalFlow_opencv_version(
+    const pangolin::ManagedImage<uint8_t>& imgl,
+    const pangolin::ManagedImage<uint8_t>& imgr, KeypointsData& kdl,
+    KeypointsData& kdr, std::vector<std::pair<int, int>>& stereo_matches) {
+  cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+  cv::Mat imgr_cv(imgr.h, imgr.w, CV_8U, imgr.ptr);
+  std::vector<Eigen::Vector2f> pointsl;
+  std::vector<Eigen::Vector2f> pointsr;
+  std::vector<unsigned char> status;
+  std::vector<float> error;
+  cv::Size winSize(31, 31);
+  for (const auto p_2dl : kdl.corners) {
+    Eigen::Vector2f p_2d = p_2dl;
+    pointsl.push_back(p_2d);
+  }
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, error,
+                           winSize, 4);
+
+  kdr.corners.clear();
+  int j = 0;
+  for (int i = 0; i < pointsr.size(); i++) {
+    if (status[i]) {
+      Eigen::Vector2d p_2d = pointsr[i];
+      kdr.corners.push_back(p_2d);
+      stereo_matches.push_back(std::make_pair(i, j));
+      j++;
+    }
+  }
+}
+**/
 }  // namespace visnav

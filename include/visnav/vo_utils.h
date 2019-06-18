@@ -45,6 +45,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <opengv/sac_problems/absolute_pose/AbsolutePoseSacProblem.hpp>
 #include <opengv/triangulation/methods.hpp>
 
+// TODO PROJECT: include pangolin and opencv
+#include <pangolin/image/managed_image.h>
+#include <opencv2/opencv.hpp>
+
 namespace visnav {
 
 void project_landmarks(
@@ -130,6 +134,39 @@ void find_matches_landmarks(
         best_dist_for_kpl * feature_match_test_next_best <
             second_best_dist_for_kpl)
       md.matches.push_back(std::make_pair(i, best_trackid_for_kpl));
+  }
+}
+
+// TODO PROJECT: use optical flow to calculate feature points in next left frame
+void OpticalFlowBetweenFrame_opencv_version(
+    int current_frame, const pangolin::ManagedImage<uint8_t>& imglt0,
+    const pangolin::ManagedImage<uint8_t>& imglt1, const KeypointsData& kdlt0,
+    KeypointsData& kdlt1, const Landmarks& landmarks, MatchData& md) {
+  cv::Mat imglt0_cv(imglt0.h, imglt0.w, CV_8U, imglt0.ptr);
+  cv::Mat imglt1_cv(imglt1.h, imglt1.w, CV_8U, imglt1.ptr);
+
+  std::vector<Eigen::Vector2f> points0;
+  std::vector<Eigen::Vector2f> points1;
+
+  std::vector<unsigned char> status;
+  std::vector<float> errors;
+  cv::Size winSize(31, 31);
+
+  // convert double vector to float vector in eigen
+  for (const auto p_2dl : kdlt0.corners) {
+    Eigen::Vector2f p_2d = p_2dl;
+    points0.push_back(p_2d);
+  }
+  cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
+                           errors, winSize, 4);
+  kdlt1.corners.clear();
+  int j = 0;
+  for (int i = 0; i < points1.size(); i++) {
+    if (status[i]) {
+      Eigen::Vector2d p_2d = points1[i];
+      kdlt1.corners.push_back(p_2d);
+      md
+    }
   }
 }
 
