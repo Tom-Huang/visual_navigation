@@ -810,13 +810,11 @@ bool next_step() {
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
     pangolin::ManagedImage<uint8_t> imgr = pangolin::LoadImage(images[tcidr]);
     
-
+    //************************************CHANGE_START******************************************
     //first frame:
     //1. detect keypoints
     //2. optical flow for right camera
     //3. triangulate / initialize landmrks
-
-
 
     //replace this part with 
     //1. calculate kdl from last image using optical flow
@@ -827,32 +825,41 @@ bool next_step() {
     //  match data keypoint feature id ->trackid pair saved in md.matches
       
     //}//vo_utils.h, HUANG_DONE
+    //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
+
+    TimeCamId tcidl_last(current_frame-1, 0);//left image in the last frame
+    pangolin::ManagedImage<uint8_t> imgl_last = pangolin::LoadImage(images[tcidl_last]);
+    KeypointsData kdl_last = feature_corners.at(tcidl_last);
+
+    MatchData md_feat2track_left;
+
     OpticalFlowBetweenFrame_opencv_version(
-    FrameId current_frame, const pangolin::ManagedImage<uint8_t>& imglt0,
-    const pangolin::ManagedImage<uint8_t>& imglt1, const KeypointsData& kdlt0,
-    KeypointsData& kdlt1, const Landmarks& landmarks,
-    MatchData& md_feat2track);
-
-
+    current_frame, imgl_last,
+    imgl, kdl_last, kdl, landmarks,
+    md_feat2track_left);//kdl is filled in this function.
+    //md_feat2track_left.matches stores the current frame's feat2track match, 
+    //注意此处的featureid对每张不同的图都是从0开始的
 
     // add these points to observation of landmarks  left camera
-    //add_points_to_landmarks_obs_left(md.matches, landmarks, kdl, current_frame, ){
+    // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl, current_frame, ){
       
     //  md.matches = [featureid, trackid];
     //}//HUANG_DONE
-    add_points_to_landmark_obs_left(const MatchData& md_feat2track,
-                                     const KeypointsData& kdl,
-                                     Landmarks& landmarks,
-                                     FrameId current_frame);
+    add_points_to_landmark_obs_left(md_feat2track_left,kdl,landmarks,current_frame);
+    //TODO: kdl这个变量在函数中没有用
 
     //make_cells(image_width, image_length, num_of_colums/rows, std::vector<cell> cells){
     //  get cells with position value but without number of points value.
 
     //} //common_type.h HUANG_DONE
-    makeCells(int h, int w, int rnum, int cnum, std::vector<Cell>& cells);
+    std::vector<Cell> cells;
+    int h, w, rnum, cnum ;///TODO: give them a number!!
+    int cellh = h / rnum; //they are for later use, not for makecells
+    int cellw = w / cnum;
+    makeCells(h, w, rnum, cnum, cells);
 
 
-    check_num_points_in_cells(kdlt1, cells); //-> num_of_points; std::vector<Cell> cells
+    check_num_points_in_cells(kdl, cells); //-> num_of_points; std::vector<Cell> cells
     //{
       //TODO: kdl is in what corrdinate?
     //} TAN_DONE
@@ -862,31 +869,42 @@ bool next_step() {
     int num_of_empty_cells = sparsity(cells, empty_indexes); 
     int threshold = 100; // threshold for minimum num of points
     int threshold2 = 56; //  threshold for maximum num of empty cells
+    int num_newly_added_keypoints = 0;
 
-    if(kdlt1.corners.size()<threshold || num_of_empty_cells>threshold2){
-     
+    if(kdl.corners.size()<threshold || num_of_empty_cells>threshold2){
       //add new landmarks;
-      int i=0;//to calculate the number of newly added keypoints
-      for(int j=0;j<empty_indexes.size(); j++){//every empty cell in cells
-        // now the current empty cell is cells[empty_indexes[j]]
-        detectKeypoints(imgl according to empty cell bound, output= keypoints, kdl);
-        kdl original_keypoints.pushback(keypoints);//use kdl
-        i++;
-      }
+      add_new_keypoints_from_empty_cells(empty_indexes, num_newly_added_keypoints, imgl, kdl, cells, cellw, cellh);
+      //the number of newly added keypoints in left frame is saved in num_newly_added_keypoints
     }
     
-    // optical flow to right camera using new keypoints set and add them to existing kdr
+    
     // add observation of right camera
 
-    add_points_to_landmarks_obs_right(md_stereo.match, md.match, landmarks, kdr, current_frame); //HUANG
+    MatchData md_feat2track_right;
+    // optical flow to calc keypoints in right camera using new keypoints set of left.
+    OpticalFlowToRightFrame_opencv_version(current_frame, imgl, imgr, 
+    kdl, kdr, landmarks, md_feat2track_right, md_stereo); // fill kdr according to kdl, fill md_stereo
+    
+    // and add them to existing kdr
+    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_right, landmarks, current_frame); //HUANG
 
 
     // (if take key point):  triangulation using the last i points.(fullfil the pos of landmark)
+    KeypointsData kdl_new_part, kdr_new_part;
+
+    for (auto match: md_stereo.matches){
+      kdl_new_part.corners.push_back(kdl.corners[match.first]);
+      kdr_new_part.corners.push_back(kdr.corners[match.second]);
+    }
+
+    //Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
+    add_new_landmarks(tcidl, tcidr, kdl_new_part, kdr_new_part, T_w_c, calib_cam, 
+    inliers, md_stereo, md_feat2track_left, landmarks, next_landmark_id) ;
+
 
     // add kdr and kdl to feature_corners
-
-
-
+    feature_corners.insert(std::make_pair(tcidl, kdl));
+    feature_corners.insert(std::make_pair(tcidr, kdr));
 
     /* 
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
@@ -894,7 +912,7 @@ bool next_step() {
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
                                   rotate_features);
     */
-
+    //***********************************CHANGE_END***********************************
     md_stereo.T_i_j = T_0_1;
 
     Eigen::Matrix3d E;
@@ -968,7 +986,7 @@ bool next_step() {
 
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
 
- 
+    //****************************************ELSE——CHANGE——START*******************************
     //1. calculate kdl from last image using optical flow
     
     
@@ -997,7 +1015,7 @@ bool next_step() {
     }
     
     // optical flow to right camera using new keypoints set and add them to existing kdr
-
+    //************************************ELSE-CHANGE-END*******************************
 
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);

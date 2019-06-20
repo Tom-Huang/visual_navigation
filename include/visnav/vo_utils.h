@@ -162,7 +162,7 @@ void OpticalFlowBetweenFrame_opencv_version(
   cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
                            errors, winSize, 4);
   kdlt1.corners.clear();
-  int j = 0;
+  /* int j = 0;
   for (int i = 0; i < points1.size(); i++) {
     if (status[i]) {
       Eigen::Vector2d p_2d = points1[i];
@@ -172,8 +172,59 @@ void OpticalFlowBetweenFrame_opencv_version(
       md_feat2track.matches.push_back(std::make_pair(j, trackid));
       j++;
     }
+  }*/
+  for (int i=0; i<points0.size();i++){//ever input point in left cam
+    for(int j=0;j<points1.size();j++){ // every output point in right cam
+      if(status[i]){
+        Eigen::Vector2d p_2d = points1[j];
+        kdlt1.corners.push_back(p_2d);
+        TrackId trackid = kdlt0.trackids[i];//trackid according to left
+        kdlt1.trackids.push_back(trackid);
+        md_feat2track.matches.push_back(std::make_pair(j, trackid));
+      }
+    }
   }
 }
+
+// TODO PROJECT: optical flow to right framge, difference is md_stereo is stored.
+void OpticalFlowToRightFrame_opencv_version(
+    FrameId current_frame, const pangolin::ManagedImage<uint8_t>& imgl,
+    const pangolin::ManagedImage<uint8_t>& imgr, const KeypointsData& kdl,
+    KeypointsData& kdr, const Landmarks& landmarks,
+    MatchData& md_feat2track_right, MatchData& md_stereo) {
+  cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+  cv::Mat imgr_cv(imgr.h, imgr.w, CV_8U, imgr.ptr);
+
+  std::vector<Eigen::Vector2f> pointsl;
+  std::vector<Eigen::Vector2f> pointsr;
+
+  std::vector<unsigned char> status;
+  std::vector<float> errors;
+  cv::Size winSize(31, 31);
+
+  // convert double vector to float vector in eigen
+  for (const auto p_2dl : kdl.corners) {
+    Eigen::Vector2f p_2d = p_2dl;
+    pointsl.push_back(p_2d);
+  }
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
+                           errors, winSize, 4);
+  kdr.corners.clear();
+
+  for (int i=0; i<pointsl.size();i++){//ever input point in left cam
+    for(int j=0;j<pointsr.size();j++){ // every output point in right cam
+      if(status[i]){
+        Eigen::Vector2d p_2d = pointsr[j];
+        kdr.corners.push_back(p_2d);
+        TrackId trackid = kdl.trackids[i];//trackid according to left
+        kdr.trackids.push_back(trackid);
+        md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
+        md_stereo.matches.push_back(std::make_pair(i, j));
+      }
+    }
+  }
+}
+
 
 // TODO PROJECT: make grid in the image and store the top left corner and bottom
 // right corner of each cell in a Cell object. The rnum and cnum should be
@@ -219,13 +270,22 @@ void add_points_to_landmarks_obs_right(const MatchData& md_stereo,
   for (const auto left_right_feat_pair : md_stereo.matches) {
     FeatureId featidl = left_right_feat_pair.first;
     FeatureId featidr = left_right_feat_pair.second;
-    for (const auto featl_track_pair : md_feat2track.matches) {
+  /*for (const auto featl_track_pair : md_feat2track.matches) {
       if (featidl == featl_track_pair.first) {
         TrackId trackid = featl_track_pair.second;
         landmarks.at(trackid).obs.emplace(tcid, featidr);
         break;
       }
+    }*/
+    for (const auto featr_track_pair : md_feat2track.matches) {
+      if (featidl == featr_track_pair.first) {
+        TrackId trackid = featr_track_pair.second;
+        landmarks.at(trackid).obs.emplace(tcid, featidr);
+        break;
+      }
     }
+
+
   }
 }
 
@@ -254,6 +314,25 @@ int sparsity(std::vector<Cell>& cells, std::vector<int> & empty_indexes){
   }
   return num_of_empty_cells;
 }
+
+// TODO PROJECT: add new key points from empty cells.
+void add_new_keypoints_from_empty_cells(std::vector<int> empty_indexes, int& num_newly_added_keypoints, 
+pangolin::ManagedImage<uint8_t>& imgl, KeypointsData& kdl, const std::vector<Cell> cells, int cellw, int cellh) {
+      for(int j=0;j<empty_indexes.size(); j++){//every empty cell in cells
+        // now the current empty cell is cells[empty_indexes[j]]
+        pangolin::ManagedImage<uint8_t> subimage;
+        subimage.CopyFrom(imgl.SubImage(cells[j].topleft.second, cells[j].topleft.first, cellw, cellh));
+
+        KeypointsData kd_new;
+        detectKeypoints(subimage, kd_new, -1);// -1 means no limit on maximum num of detected features.
+        // add newly detected keypoints
+        kdl.corners.insert(kdl.corners.end(),kd_new.corners.begin(),kd_new.corners.end());
+        num_newly_added_keypoints++;
+      }
+}
+
+
+
 
 
 
