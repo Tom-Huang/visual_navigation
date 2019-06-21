@@ -212,8 +212,8 @@ void OpticalFlowToRightFrame_opencv_version(
     Eigen::Vector2f p_2d = p_2dl.cast<float>();
     pointsl.push_back(p_2d);
   }
-  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors,
-                           winSize, 4);
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
+                           errors);  // winSize, 4
   kdr.corners.clear();
 
   for (int i = 0; i < pointsl.size(); i++) {  // ever input point in left cam

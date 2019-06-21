@@ -86,7 +86,7 @@ message(STATUS "Found TBB headers in: ${TBB_INCLUDE_DIR}")
 
 
 # NOTE: not specifying version, since 2, 3 or 4 is fine
-find_package(OpenCV REQUIRED COMPONENTS core features2d)
+find_package(OpenCV REQUIRED) # COMPONENTS core features2d video)
 message(STATUS "Found OpenCV ${OpenCV_VERSION} headers in: ${OpenCV_INCLUDE_DIRS}")
 add_library(OpenCV INTERFACE IMPORTED)
 set_property(TARGET OpenCV PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OpenCV_INCLUDE_DIRS})
@@ -97,14 +97,14 @@ endif()
 
 
 
-add_executable(test_ceres_se3 src/test_ceres_se3.cpp)
-target_link_libraries(test_ceres_se3 ceres)
+#add_executable(test_ceres_se3 src/test_ceres_se3.cpp)
+#target_link_libraries(test_ceres_se3 ceres)
 
-add_executable(calibration src/calibration.cpp)
-target_link_libraries(calibration ceres ${Pangolin_LIBRARIES} ${TBB_LIBRARIES})
+#add_executable(calibration src/calibration.cpp)
+#target_link_libraries(calibration ceres ${Pangolin_LIBRARIES} ${TBB_LIBRARIES})
 
-add_executable(sfm src/sfm.cpp)
-target_link_libraries(sfm ceres ${Pangolin_LIBRARIES} ${TBB_LIBRARIES} ${OpenCV_LIBS} opengv)
+#add_executable(sfm src/sfm.cpp)
+#target_link_libraries(sfm ceres ${Pangolin_LIBRARIES} ${TBB_LIBRARIES} ${OpenCV_LIBS} opengv)
 
 add_executable(odometry src/odometry.cpp)
 target_link_libraries(odometry ceres ${Pangolin_LIBRARIES} ${TBB_LIBRARIES} ${OpenCV_LIBS} opengv)

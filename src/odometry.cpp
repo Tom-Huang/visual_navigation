@@ -829,17 +829,18 @@ bool next_step() {
     //}//vo_utils.h, HUANG_DONE
     //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
 
-    TimeCamId tcidl_last(current_frame - 1, 0);  // left image in the last frame
-    pangolin::ManagedImage<uint8_t> imgl_last =
-        pangolin::LoadImage(images[tcidl_last]);
-    KeypointsData kdl_last = feature_corners.at(tcidl_last);
-
     MatchData md_feat2track_left;
 
     if (current_frame == 0) {
       detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                     rotate_features);
     } else {
+      TimeCamId tcidl_last(current_frame - 1,
+                           0);  // left image in the last frame
+      pangolin::ManagedImage<uint8_t> imgl_last =
+          pangolin::LoadImage(images[tcidl_last]);
+      KeypointsData kdl_last = feature_corners.at(tcidl_last);
+
       OpticalFlowBetweenFrame_opencv_version(
           current_frame, imgl_last, imgl, kdl_last, kdl, landmarks,
           md_feat2track_left);  // kdl is filled in this function.
@@ -879,8 +880,8 @@ bool next_step() {
     std::vector<int> empty_indexes;
 
     int num_of_empty_cells = sparsity(cells, empty_indexes);
-    int threshold = 100;  // threshold for minimum num of points
-    int threshold2 = 56;  //  threshold for maximum num of empty cells
+    int threshold = 100;   // threshold for minimum num of points
+    int threshold2 = 200;  //  threshold for maximum num of empty cells
     int num_newly_added_keypoints = 0;
 
     if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) {
