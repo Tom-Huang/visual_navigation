@@ -809,104 +809,124 @@ bool next_step() {
 
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
     pangolin::ManagedImage<uint8_t> imgr = pangolin::LoadImage(images[tcidr]);
-    
-    //************************************CHANGE_START******************************************
-    //first frame:
-    //1. detect keypoints
-    //2. optical flow for right camera
-    //3. triangulate / initialize landmrks
 
-    //replace this part with 
-    //1. calculate kdl from last image using optical flow
-    //2. check number of calculated points, if under a threshold, add new landmarks
-    //3. check grid sparsity, if too sparse. add new landmarks
-    //OpticalFlowBetweenFrame_opencv_version(currentframe, image of currentframge-1, feature_corners, kdl of currentframe-1, image of current frame, landmarks, md, ){
-      //calculate kdl from last image using optical flow
+    //************************************CHANGE_START******************************************
+    // first frame:
+    // 1. detect keypoints
+    // 2. optical flow for right camera
+    // 3. triangulate / initialize landmrks
+
+    // replace this part with
+    // 1. calculate kdl from last image using optical flow
+    // 2. check number of calculated points, if under a threshold, add new
+    // landmarks
+    // 3. check grid sparsity, if too sparse. add new landmarks
+    // OpticalFlowBetweenFrame_opencv_version(currentframe, image of
+    // currentframge-1, feature_corners, kdl of currentframe-1, image of current
+    // frame, landmarks, md, ){ calculate kdl from last image using optical flow
     //  match data keypoint feature id ->trackid pair saved in md.matches
-      
+
     //}//vo_utils.h, HUANG_DONE
     //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
 
-    TimeCamId tcidl_last(current_frame-1, 0);//left image in the last frame
-    pangolin::ManagedImage<uint8_t> imgl_last = pangolin::LoadImage(images[tcidl_last]);
+    TimeCamId tcidl_last(current_frame - 1, 0);  // left image in the last frame
+    pangolin::ManagedImage<uint8_t> imgl_last =
+        pangolin::LoadImage(images[tcidl_last]);
     KeypointsData kdl_last = feature_corners.at(tcidl_last);
 
     MatchData md_feat2track_left;
 
-    OpticalFlowBetweenFrame_opencv_version(
-    current_frame, imgl_last,
-    imgl, kdl_last, kdl, landmarks,
-    md_feat2track_left);//kdl is filled in this function.
-    //md_feat2track_left.matches stores the current frame's feat2track match, 
-    //注意此处的featureid对每张不同的图都是从0开始的
+    if (current_frame == 0) {
+      detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
+                                    rotate_features);
+    } else {
+      OpticalFlowBetweenFrame_opencv_version(
+          current_frame, imgl_last, imgl, kdl_last, kdl, landmarks,
+          md_feat2track_left);  // kdl is filled in this function.
+                                // md_feat2track_left.matches stores the current
+                                // frame's feat2track match,
+                                //注意此处的featureid对每张不同的图都是从0开始的
+    }
 
     // add these points to observation of landmarks  left camera
-    // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl, current_frame, ){
-      
+    // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
+    // current_frame, ){
+
     //  md.matches = [featureid, trackid];
     //}//HUANG_DONE
-    add_points_to_landmark_obs_left(md_feat2track_left,kdl,landmarks,current_frame);
-    //TODO: kdl这个变量在函数中没有用
+    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
+                                    current_frame);
+    // TODO: kdl这个变量在函数中没有用
 
-    //make_cells(image_width, image_length, num_of_colums/rows, std::vector<cell> cells){
+    // make_cells(image_width, image_length, num_of_colums/rows,
+    // std::vector<cell> cells){
     //  get cells with position value but without number of points value.
 
     //} //common_type.h HUANG_DONE
     std::vector<Cell> cells;
-    int h, w, rnum, cnum ;///TODO: give them a number!!
-    int cellh = h / rnum; //they are for later use, not for makecells
+    int h = 752, w = 480, rnum = 16,
+        cnum = 16;         // TODO: give them a number!!
+    int cellh = h / rnum;  // they are for later use, not for makecells
     int cellw = w / cnum;
     makeCells(h, w, rnum, cnum, cells);
 
-
-    check_num_points_in_cells(kdl, cells); //-> num_of_points; std::vector<Cell> cells
+    check_num_points_in_cells(
+        kdl, cells);  //-> num_of_points; std::vector<Cell> cells
     //{
-      //TODO: kdl is in what corrdinate?
+    // TODO: kdl is in what corrdinate?
     //} TAN_DONE
 
     std::vector<int> empty_indexes;
 
-    int num_of_empty_cells = sparsity(cells, empty_indexes); 
-    int threshold = 100; // threshold for minimum num of points
-    int threshold2 = 56; //  threshold for maximum num of empty cells
+    int num_of_empty_cells = sparsity(cells, empty_indexes);
+    int threshold = 100;  // threshold for minimum num of points
+    int threshold2 = 56;  //  threshold for maximum num of empty cells
     int num_newly_added_keypoints = 0;
 
-    if(kdl.corners.size()<threshold || num_of_empty_cells>threshold2){
-      //add new landmarks;
-      add_new_keypoints_from_empty_cells(empty_indexes, num_newly_added_keypoints, imgl, kdl, cells, cellw, cellh);
-      //the number of newly added keypoints in left frame is saved in num_newly_added_keypoints
+    if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) {
+      // add new landmarks;
+      add_new_keypoints_from_empty_cells(empty_indexes,
+                                         num_newly_added_keypoints, imgl, kdl,
+                                         cells, cellw, cellh);
+      // the number of newly added keypoints in left frame is saved in
+      // num_newly_added_keypoints
     }
-    
-    
+
     // add observation of right camera
 
     MatchData md_feat2track_right;
-    // optical flow to calc keypoints in right camera using new keypoints set of left.
-    OpticalFlowToRightFrame_opencv_version(current_frame, imgl, imgr, 
-    kdl, kdr, landmarks, md_feat2track_right, md_stereo); // fill kdr according to kdl, fill md_stereo
-    
+    MatchData md_stereo_new;  // md_stereo contains all matches, md_stereo_new
+                              // contains only new matches
+    // optical flow to calc keypoints in right camera using new keypoints set of
+    // left.
+    OpticalFlowToRightFrame_opencv_version(
+        current_frame, imgl, imgr, kdl, kdr, landmarks, md_feat2track_right,
+        md_stereo, md_stereo_new,
+        num_newly_added_keypoints);  // fill kdr according to kdl, fill
+                                     // md_stereo
+
     // and add them to existing kdr
-    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_right, landmarks, current_frame); //HUANG
+    //    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_left,
+    //    landmarks,
+    //                                      current_frame);  // HUANG
 
+    add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
+                                     current_frame);
 
-    // (if take key point):  triangulation using the last i points.(fullfil the pos of landmark)
+    // (if take key point):  triangulation using the last i points.(fullfil the
+    // pos of landmark)
     KeypointsData kdl_new_part, kdr_new_part;
 
-    for (auto match: md_stereo.matches){
+    for (auto match : md_stereo_new.matches) {
       kdl_new_part.corners.push_back(kdl.corners[match.first]);
       kdr_new_part.corners.push_back(kdr.corners[match.second]);
     }
 
-    //Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
-    add_new_landmarks(tcidl, tcidr, kdl_new_part, kdr_new_part, T_w_c, calib_cam, 
-    inliers, md_stereo, md_feat2track_left, landmarks, next_landmark_id) ;
-
-
     // add kdr and kdl to feature_corners
-    feature_corners.insert(std::make_pair(tcidl, kdl));
-    feature_corners.insert(std::make_pair(tcidr, kdr));
+    //    feature_corners.insert(std::make_pair(tcidl, kdl));
+    //    feature_corners.insert(std::make_pair(tcidr, kdr));
 
-    /* 
+    /*
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
@@ -932,28 +952,35 @@ bool next_step() {
     feature_corners[tcidr] = kdr;
     feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
 
-    MatchData md;
+    //    MatchData md;
 
-    find_matches_landmarks(kdl, landmarks, feature_corners, projected_points,
-                           projected_track_ids, match_max_dist_2d,
-                           feature_match_max_dist, feature_match_test_next_best,
-                           md);
+    //    find_matches_landmarks(kdl, landmarks, feature_corners,
+    //    projected_points,
+    //                           projected_track_ids, match_max_dist_2d,
+    //                           feature_match_max_dist,
+    //                           feature_match_test_next_best, md);
 
-    std::cout << "KF Found " << md.matches.size() << " matches." << std::endl;
+    std::cout << "KF Found " << md_feat2track_left.matches.size() << " matches."
+              << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
     localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
-                    reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
-                    inliers);
+                    reprojection_error_pnp_inlier_threshold_pixel,
+                    md_feat2track_left, T_w_c, inliers);
 
     current_pose = T_w_c;
 
     cameras[tcidl].T_w_c = current_pose;
     cameras[tcidr].T_w_c = current_pose * T_0_1;
 
-    add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
-                      md_stereo, md, landmarks, next_landmark_id);
+    //    add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
+    //                      md_stereo, md, landmarks, next_landmark_id);
+
+    // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
+    triangulate_new_part(tcidl, tcidr, kdl_new_part, kdr_new_part, T_w_c,
+                         calib_cam, inliers, md_stereo_new, md_feat2track_left,
+                         landmarks, next_landmark_id);
 
     remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks, old_landmarks,
                          kf_frames);
@@ -987,59 +1014,100 @@ bool next_step() {
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
 
     //****************************************ELSE——CHANGE——START*******************************
-    //1. calculate kdl from last image using optical flow
-    
-    
-    OpticalFlowBetweenFrame_opencv_version(image of currentframge-1, kdl of currentframe-1, image of current frame,   ){
-      //calculate kdl from last image using optical flow
-      match data keypoints->trackid pair saved in md.matches
-    }
-    
+    // 1. calculate kdl from last image using optical flow
+    TimeCamId tcidl_last(current_frame - 1, 0);  // left image in the last frame
+    pangolin::ManagedImage<uint8_t> imgl_last =
+        pangolin::LoadImage(images[tcidl_last]);
+    KeypointsData kdl_last = feature_corners.at(tcidl_last);
+
+    MatchData md_feat2track_left;
+    OpticalFlowBetweenFrame_opencv_version(current_frame, imgl_last, imgl,
+                                           kdl_last, kdl, landmarks,
+                                           md_feat2track_left);
+    //    OpticalFlowBetweenFrame_opencv_version(image of currentframge - 1,
+    //                                           kdl of currentframe - 1,
+    //                                           image of current frame, ){
+    //        // calculate kdl from last image using optical flow
+    //        match data keypoints->trackid pair saved in md.matches}
+
     // add these points to observation of landmarks
 
     // 2. calculate num of points, and sparsity
-    check_num_points() -> num of points; std::vector<Cell> cells
-    sparsity(cells); -> num_of_empty_cells
-    
-    //3. check number of calculated points, if under a threshold OR check grid sparsity, if too sparse.  let next be key frame.   do not add new landmarks
-    if(num_of_points<threshold || num_of_empty_cells>threshold2){
-      // set flag of key framge to be true;
+    std::vector<Cell> cells;
+    int h = 752, w = 480, rnum = 16,
+        cnum = 16;         // TODO: give them a number!!
+    int cellh = h / rnum;  // they are for later use, not for makecells
+    int cellw = w / cnum;
+    makeCells(h, w, rnum, cnum, cells);
 
-      // do not add new landmarks now ;
-      /* int i=0;//to calculate the number of newly added keypoints
-      for(every empty cell in cells){
-        detectKeypoints(imgl according to empty cell bound, output= keypoints);
-        original_keypoints.pushback(keypoints);
-        i++;
-      }*/
-    }
-    
-    // optical flow to right camera using new keypoints set and add them to existing kdr
+    check_num_points_in_cells(kdl, cells);
+    //    check_num_points()
+    //        ->num of points;
+    //    std::vector<Cell> cells sparsity(cells);
+    //    ->num_of_empty_cells
+    std::vector<int> empty_indexes;
+
+    int num_of_empty_cells = sparsity(cells, empty_indexes);
+    int threshold = 100;  // threshold for minimum num of points
+    int threshold2 = 56;  //  threshold for maximum num of empty cells
+    int num_newly_added_keypoints = 0;
+
+    //    if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2)
+    //    {
+    // add new landmarks;
+
+    //      add_new_keypoints_from_empty_cells(empty_indexes,
+    //                                         num_newly_added_keypoints,
+    //                                         imgl, kdl, cells, cellw,
+    //                                         cellh);
+    // the number of newly added keypoints in left frame is saved in
+    // num_newly_added_keypoints
+    //    }
+
+    // 3. check number of calculated points, if under a threshold OR check
+    // grid sparsity, if too sparse.  let next be key frame.   do not add
+    // new landmarks
+    //    if (num_of_points < threshold || num_of_empty_cells > threshold2) {
+    //      // set flag of key framge to be true;
+
+    //      // do not add new landmarks now ;
+    //      /* int i=0;//to calculate the number of newly added keypoints
+    //      for(every empty cell in cells){
+    //        detectKeypoints(imgl according to empty cell bound, output=
+    //        keypoints); original_keypoints.pushback(keypoints); i++;
+    //      }*/
+    //    }
+
+    // optical flow to right camera using new keypoints set and add them to
+    // existing kdr
     //************************************ELSE-CHANGE-END*******************************
 
-    detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
-                                  rotate_features);
+    //    detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
+    //                                  rotate_features);
 
     feature_corners[tcidl] = kdl;
 
-    MatchData md;
-    find_matches_landmarks(kdl, landmarks, feature_corners, projected_points,
-                           projected_track_ids, match_max_dist_2d,
-                           feature_match_max_dist, feature_match_test_next_best,
-                           md);
+    //    MatchData md;
+    //    find_matches_landmarks(kdl, landmarks, feature_corners,
+    //    projected_points,
+    //                           projected_track_ids, match_max_dist_2d,
+    //                           feature_match_max_dist,
+    //                           feature_match_test_next_best, md);
 
-    std::cout << "Found " << md.matches.size() << " matches." << std::endl;
+    std::cout << "Found " << md_feat2track_left.matches.size() << " matches."
+              << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
 
     localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
-                    reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
-                    inliers);
+                    reprojection_error_pnp_inlier_threshold_pixel,
+                    md_feat2track_left, T_w_c, inliers);
 
     current_pose = T_w_c;
 
     if (int(inliers.size()) < new_kf_min_inliers && !opt_running &&
+        (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) &&
         !opt_finished) {
       take_keyframe = true;
     }

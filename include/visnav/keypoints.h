@@ -276,7 +276,7 @@ void matchDescriptors(const std::vector<std::bitset<256>>& corner_descriptors_1,
 }
 
 // TODO PROJECT: compute patch region for optical flow(inside the radius range)
-void computePatch(const cv::Mat const& img, const Eigen::Vector2i& patch_center,
+void computePatch(const cv::Mat& img, const Eigen::Vector2i& patch_center,
                   const int optf_patch_radius,
                   std::vector<Eigen::Vector2i>& patch_region) {
   for (int r = patch_center[0] - optf_patch_radius;
