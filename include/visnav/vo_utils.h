@@ -173,7 +173,7 @@ void OpticalFlowBetweenFrame_opencv_version(
   std::vector<float> errors;
   cv::Size winSize(31, 31);
 
-  // convert double vector to float vector in eigen
+  // convert double vector to float vector in cv
   for (const auto p_2dl : kdlt0.corners) {
     cv::Point2f p_2d;
     p_2d.x = float(p_2dl(0));
@@ -187,11 +187,23 @@ void OpticalFlowBetweenFrame_opencv_version(
   TimeCamId tcid = std::make_pair(current_frame, 0);
   for (int i = 0; i < points1.size(); i++) {
     if (status[i]) {
-      kdlt1.corners.emplace_back(points1[j].x, points1[j].y);
-      TrackId trackid = findTrackId(tcid, landmarks, i);
-      kdlt1.trackids.push_back(trackid);
-      md_feat2track.matches.push_back(std::make_pair(j, trackid));
-      j++;
+      std::vector<cv::Point2f> p_backward_src;
+      std::vector<cv::Point2f> p_backward_tar;
+      std::vector<unsigned char> status_backward;
+      std::vector<float> errors_backward;
+      p_backward_src.push_back(points1[i]);
+      cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, p_backward_src,
+                               p_backward_tar, status_backward,
+                               errors_backward);
+      float distance = norm(points1[i] - p_backward_tar[0]);
+      if (status_backward[0] == 1 && distance < 1) {
+        kdlt1.corners.emplace_back(points1[j].x, points1[j].y);
+        TrackId trackid = findTrackId(tcid, landmarks, i);
+        kdlt1.trackids.push_back(trackid);
+        md_feat2track.matches.push_back(std::make_pair(j, trackid));
+        md_feat2track.inliers.push_back(std::make_pair(j, trackid));
+        j++;
+      }
     }
   }
   //  for (int i = 0; i < points0.size(); i++) {  // ever input point in left
@@ -226,7 +238,7 @@ void OpticalFlowToRightFrame_opencv_version(
   std::vector<float> errors;
   cv::Size winSize(31, 31);
 
-  // convert double vector to float vector in eigen
+  // convert double vector to float vector in cv
   for (const auto p_2dl : kdl.corners) {
     cv::Point2f p_2d;
     p_2d.x = float(p_2dl(0));
@@ -241,17 +253,27 @@ void OpticalFlowToRightFrame_opencv_version(
   for (int i = 0; i < pointsl.size(); i++) {  // ever input point in left cam
 
     if (status[i]) {
-      kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
-
-      TrackId trackid =
-          findTrackId(tcid, landmarks, i);  // trackid according to left
-
-      md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
-      md_stereo.matches.push_back(std::make_pair(i, j));
-      if (i > pointsl.size() - num_newly_added_keypoints - 1) {
-        md_stereo_new.matches.push_back(std::make_pair(i, j));
+      std::vector<cv::Point2f> p_backward_src;
+      std::vector<cv::Point2f> p_backward_tar;
+      std::vector<unsigned char> status_backward;
+      std::vector<float> errors_backward;
+      p_backward_src.push_back(pointsr[i]);
+      cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, p_backward_src, p_backward_tar,
+                               status_backward, errors_backward);
+      float distance = norm(pointsl[i] - p_backward_tar[0]);
+      if (status_backward[0] == 1 && distance < 1) {
+        kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
+        TrackId trackid =
+            findTrackId(tcid, landmarks, i);  // trackid according to left
+        md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
+        md_stereo.matches.push_back(std::make_pair(i, j));
+        md_stereo.inliers.push_back(std::make_pair(i, j));
+        if (i > pointsl.size() - num_newly_added_keypoints - 1) {
+          md_stereo_new.matches.push_back(std::make_pair(i, j));
+          md_stereo_new.inliers.push_back(std::make_pair(i, j));
+        }
+        j++;
       }
-      j++;
     }
     //    }
   }
@@ -273,7 +295,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
   std::vector<float> errors;
   cv::Size winSize(31, 31);
 
-  // convert double vector to float vector in eigen
+  // convert double vector to float vector in cv
   for (const auto p_2dl : kdl.corners) {
     cv::Point2f p_2d;
     p_2d.x = float(p_2dl(0));
@@ -283,7 +305,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
   cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
                            errors);  // winSize, 4
   kdr.corners.clear();
-
+  int j = 0;
   for (int i = 0; i < pointsl.size(); i++) {  // ever input point in left cam
     //    for (int j = 0; j < pointsr.size();
     //         j++) {  // every output point in right cam
@@ -292,11 +314,23 @@ void OpticalFlowFirstStereoPair_opencv_version(
     //        md_stereo.matches.push_back(std::make_pair(i, j));
     //      }
     //    }
-    int j = 0;
+
     if (status[i]) {
-      kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
-      md_stereo.matches.push_back(std::make_pair(i, j));
-      j++;
+      std::vector<cv::Point2f> p_backward_src;
+      std::vector<cv::Point2f> p_backward_tar;
+      std::vector<unsigned char> status_backward;
+      std::vector<float> errors_backward;
+      p_backward_src.push_back(pointsr[i]);
+      cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, p_backward_src, p_backward_tar,
+                               status_backward, errors_backward);
+      float distance = norm(pointsl[i] - p_backward_tar[0]);
+      std::cout << pointsl[i] << ", " << p_backward_tar[0] << std::endl;
+      if (status_backward[0] == 1 && distance < 1) {
+        kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
+        md_stereo.matches.push_back(std::make_pair(i, j));
+        md_stereo.inliers.push_back(std::make_pair(i, j));
+        j++;
+      }
     }
   }
 }

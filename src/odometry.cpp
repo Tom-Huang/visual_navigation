@@ -396,14 +396,14 @@ void draw_image_overlay(pangolin::View& v, size_t view_id) {
 
       for (size_t i = 0; i < cr.corners.size(); i++) {
         Eigen::Vector2d c = cr.corners[i];
-        double angle = cr.corner_angles[i];
+        //        double angle = cr.corner_angles[i];
         pangolin::glDrawCirclePerimeter(c[0], c[1], 3.0);
 
         Eigen::Vector2d r(3, 0);
-        Eigen::Rotation2Dd rot(angle);
-        r = rot * r;
+        //        Eigen::Rotation2Dd rot(angle);
+        //        r = rot * r;
 
-        pangolin::glDrawLine(c, c + r);
+        //        pangolin::glDrawLine(c, c + r);
       }
 
       pangolin::GlFont::I()
@@ -451,14 +451,14 @@ void draw_image_overlay(pangolin::View& v, size_t view_id) {
                                   : it->second.matches[i].second;
 
           Eigen::Vector2d c = cr.corners[c_idx];
-          double angle = cr.corner_angles[c_idx];
+          //          double angle = cr.corner_angles[c_idx];
           pangolin::glDrawCirclePerimeter(c[0], c[1], 3.0);
 
           Eigen::Vector2d r(3, 0);
-          Eigen::Rotation2Dd rot(angle);
-          r = rot * r;
+          //          Eigen::Rotation2Dd rot(angle);
+          //          r = rot * r;
 
-          pangolin::glDrawLine(c, c + r);
+          //          pangolin::glDrawLine(c, c + r);
 
           if (show_ids) {
             pangolin::GlFont::I().Text("%d", i).Draw(c[0], c[1]);
@@ -483,14 +483,14 @@ void draw_image_overlay(pangolin::View& v, size_t view_id) {
                                   : it->second.inliers[i].second;
 
           Eigen::Vector2d c = cr.corners[c_idx];
-          double angle = cr.corner_angles[c_idx];
+          //          double angle = cr.corner_angles[c_idx];
           pangolin::glDrawCirclePerimeter(c[0], c[1], 3.0);
 
           Eigen::Vector2d r(3, 0);
-          Eigen::Rotation2Dd rot(angle);
-          r = rot * r;
+          //          Eigen::Rotation2Dd rot(angle);
+          //          r = rot * r;
 
-          pangolin::glDrawLine(c, c + r);
+          //          pangolin::glDrawLine(c, c + r);
 
           if (show_ids) {
             pangolin::GlFont::I().Text("%d", i).Draw(c[0], c[1]);
@@ -839,14 +839,14 @@ bool next_step() {
       md_stereo.T_i_j = T_0_1;
 
       Eigen::Matrix3d E;
-      computeEssential(T_0_1, E);
+      //      computeEssential(T_0_1, E);
 
-      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
-                       md_stereo.matches, feature_match_max_dist,
-                       feature_match_test_next_best);
+      //      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
+      //                       md_stereo.matches, feature_match_max_dist,
+      //                       feature_match_test_next_best);
 
-      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
-                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+      //      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+      //                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
 
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
@@ -864,7 +864,7 @@ bool next_step() {
       //                           feature_match_test_next_best, md);
 
       std::cout << "KF Found " << md_feat2track_left.matches.size()
-                << " matches." << std::endl;
+                << " frame to frame matches." << std::endl;
 
       Sophus::SE3d T_w_c;
       std::vector<int> inliers;
@@ -872,10 +872,14 @@ bool next_step() {
           calib_cam.intrinsics[0], kdl, landmarks,
           reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
           T_w_c, inliers);
+      current_pose = T_w_c;
+
+      cameras[tcidl].T_w_c = current_pose;
+      cameras[tcidr].T_w_c = current_pose * T_0_1;
       initializeLandmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, md_stereo,
                           landmarks, next_landmark_id);
 
-    } else {
+    } else {  // for second and later frames
       //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
       TimeCamId tcidl_last(current_frame - 1,
                            0);  // left image in the last frame
@@ -977,14 +981,14 @@ bool next_step() {
       md_stereo.T_i_j = T_0_1;
 
       Eigen::Matrix3d E;
-      computeEssential(T_0_1, E);
+      //      computeEssential(T_0_1, E);
 
-      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
-                       md_stereo.matches, feature_match_max_dist,
-                       feature_match_test_next_best);
+      //      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
+      //                       md_stereo.matches, feature_match_max_dist,
+      //                       feature_match_test_next_best);
 
-      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
-                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+      //      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+      //                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
 
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
@@ -1027,6 +1031,9 @@ bool next_step() {
       remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
                            old_landmarks, kf_frames);
     }
+    // update image views
+    change_display_to_image(tcidl);
+    change_display_to_image(tcidr);
 
     optimize();
 
@@ -1040,7 +1047,7 @@ bool next_step() {
 
     current_frame++;
     return true;
-  } else {
+  } else {  // not key frame
     TimeCamId tcidl(current_frame, 0), tcidr(current_frame, 1);
 
     std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>>
@@ -1138,8 +1145,8 @@ bool next_step() {
     //                           feature_match_max_dist,
     //                           feature_match_test_next_best, md);
 
-    std::cout << "Found " << md_feat2track_left.matches.size() << " matches."
-              << std::endl;
+    std::cout << "Found " << md_feat2track_left.matches.size()
+              << "frame to frame matches." << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
@@ -1231,7 +1238,7 @@ void optimize() {
     num_obs += kv.second.obs.size();
   }
 
-  std::cerr << "Optimizing map with " << cameras.size() << ", "
+  std::cerr << "Optimizing map with " << cameras.size() << " cameras, "
             << landmarks.size() << " points and " << num_obs << " observations."
             << std::endl;
 
