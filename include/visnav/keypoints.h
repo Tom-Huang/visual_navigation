@@ -226,6 +226,10 @@ void detectKeypointsAndDescriptors(
   computeDescriptors(img_raw, kd);
 }
 
+// void detectKeypointsOfFirstLeftFrame(const pangolin::ManagedImage<uint8_t>&
+// img_raw, KeypointsData& kd,
+//                                     int num_features, bool rotate_features)
+
 void matchFastHelper(const std::vector<std::bitset<256>>& corner_descriptors_1,
                      const std::vector<std::bitset<256>>& corner_descriptors_2,
                      std::map<int, int>& matches, int threshold,

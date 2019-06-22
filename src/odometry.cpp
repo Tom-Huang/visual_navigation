@@ -832,8 +832,12 @@ bool next_step() {
     MatchData md_feat2track_left;
 
     if (current_frame == 0) {
-      detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
-                                    rotate_features);
+      //      detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
+      //                                    rotate_features);
+      detectKeypoints(imgl, kdl, num_features_per_image);
+      OpticalFlowFirstStereoPair_opencv_version(current_frame, imgl, imgr, kdl,
+                                                kdr, landmarks, md_stereo);
+
     } else {
       TimeCamId tcidl_last(current_frame - 1,
                            0);  // left image in the last frame
@@ -847,92 +851,92 @@ bool next_step() {
                                 // md_feat2track_left.matches stores the current
                                 // frame's feat2track match,
                                 //注意此处的featureid对每张不同的图都是从0开始的
-    }
+      // add these points to observation of landmarks  left camera
+      // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
+      // current_frame, ){
 
-    // add these points to observation of landmarks  left camera
-    // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
-    // current_frame, ){
+      //  md.matches = [featureid, trackid];
+      //}//HUANG_DONE
+      add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
+                                      current_frame);
+      // TODO: kdl这个变量在函数中没有用
 
-    //  md.matches = [featureid, trackid];
-    //}//HUANG_DONE
-    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
-                                    current_frame);
-    // TODO: kdl这个变量在函数中没有用
+      // make_cells(image_width, image_length, num_of_colums/rows,
+      // std::vector<cell> cells){
+      //  get cells with position value but without number of points value.
 
-    // make_cells(image_width, image_length, num_of_colums/rows,
-    // std::vector<cell> cells){
-    //  get cells with position value but without number of points value.
+      //} //common_type.h HUANG_DONE
+      std::vector<Cell> cells;
+      int h = 752, w = 480, rnum = 16,
+          cnum = 16;         // TODO: give them a number!!
+      int cellh = h / rnum;  // they are for later use, not for makecells
+      int cellw = w / cnum;
+      makeCells(h, w, rnum, cnum, cells);
 
-    //} //common_type.h HUANG_DONE
-    std::vector<Cell> cells;
-    int h = 752, w = 480, rnum = 16,
-        cnum = 16;         // TODO: give them a number!!
-    int cellh = h / rnum;  // they are for later use, not for makecells
-    int cellw = w / cnum;
-    makeCells(h, w, rnum, cnum, cells);
+      check_num_points_in_cells(
+          kdl, cells);  //-> num_of_points; std::vector<Cell> cells
+      //{
+      // TODO: kdl is in what corrdinate?
+      //} TAN_DONE
 
-    check_num_points_in_cells(
-        kdl, cells);  //-> num_of_points; std::vector<Cell> cells
-    //{
-    // TODO: kdl is in what corrdinate?
-    //} TAN_DONE
+      std::vector<int> empty_indexes;
 
-    std::vector<int> empty_indexes;
+      int num_of_empty_cells = sparsity(cells, empty_indexes);
+      int threshold = 100;   // threshold for minimum num of points
+      int threshold2 = 200;  //  threshold for maximum num of empty cells
+      int num_newly_added_keypoints = 0;
 
-    int num_of_empty_cells = sparsity(cells, empty_indexes);
-    int threshold = 100;   // threshold for minimum num of points
-    int threshold2 = 200;  //  threshold for maximum num of empty cells
-    int num_newly_added_keypoints = 0;
+      if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) {
+        // add new landmarks;
+        add_new_keypoints_from_empty_cells(empty_indexes,
+                                           num_newly_added_keypoints, imgl, kdl,
+                                           cells, cellw, cellh);
+        // the number of newly added keypoints in left frame is saved in
+        // num_newly_added_keypoints
+      }
 
-    if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) {
-      // add new landmarks;
-      add_new_keypoints_from_empty_cells(empty_indexes,
-                                         num_newly_added_keypoints, imgl, kdl,
-                                         cells, cellw, cellh);
-      // the number of newly added keypoints in left frame is saved in
-      // num_newly_added_keypoints
-    }
+      // add observation of right camera
 
-    // add observation of right camera
+      MatchData md_feat2track_right;
+      MatchData md_stereo_new;  // md_stereo contains all matches, md_stereo_new
+                                // contains only new matches
+      // optical flow to calc keypoints in right camera using new keypoints set
+      // of left.
+      OpticalFlowToRightFrame_opencv_version(
+          current_frame, imgl, imgr, kdl, kdr, landmarks, md_feat2track_right,
+          md_stereo, md_stereo_new,
+          num_newly_added_keypoints);  // fill kdr according to kdl, fill
+                                       // md_stereo
 
-    MatchData md_feat2track_right;
-    MatchData md_stereo_new;  // md_stereo contains all matches, md_stereo_new
-                              // contains only new matches
-    // optical flow to calc keypoints in right camera using new keypoints set of
-    // left.
-    OpticalFlowToRightFrame_opencv_version(
-        current_frame, imgl, imgr, kdl, kdr, landmarks, md_feat2track_right,
-        md_stereo, md_stereo_new,
-        num_newly_added_keypoints);  // fill kdr according to kdl, fill
-                                     // md_stereo
+      // and add them to existing kdr
+      //    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_left,
+      //    landmarks,
+      //                                      current_frame);  // HUANG
 
-    // and add them to existing kdr
-    //    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_left,
-    //    landmarks,
-    //                                      current_frame);  // HUANG
+      add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
+                                       current_frame);
 
-    add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
-                                     current_frame);
+      // (if take key point):  triangulation using the last i points.(fullfil
+      // the pos of landmark)
+      KeypointsData kdl_new_part, kdr_new_part;
 
-    // (if take key point):  triangulation using the last i points.(fullfil the
-    // pos of landmark)
-    KeypointsData kdl_new_part, kdr_new_part;
+      for (auto match : md_stereo_new.matches) {
+        kdl_new_part.corners.push_back(kdl.corners[match.first]);
+        kdr_new_part.corners.push_back(kdr.corners[match.second]);
+      }
 
-    for (auto match : md_stereo_new.matches) {
-      kdl_new_part.corners.push_back(kdl.corners[match.first]);
-      kdr_new_part.corners.push_back(kdr.corners[match.second]);
-    }
+      // add kdr and kdl to feature_corners
+      //    feature_corners.insert(std::make_pair(tcidl, kdl));
+      //    feature_corners.insert(std::make_pair(tcidr, kdr));
 
-    // add kdr and kdl to feature_corners
-    //    feature_corners.insert(std::make_pair(tcidl, kdl));
-    //    feature_corners.insert(std::make_pair(tcidr, kdr));
-
-    /*
+      /*
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
                                   rotate_features);
     */
+    }
+
     //***********************************CHANGE_END***********************************
     md_stereo.T_i_j = T_0_1;
 
