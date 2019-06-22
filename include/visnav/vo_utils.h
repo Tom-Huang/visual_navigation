@@ -139,6 +139,23 @@ void find_matches_landmarks(
   }
 }
 
+// TODO PROJECT: find trackid corresponding to featureid in current frame and
+// camera
+TrackId findTrackId(TimeCamId tcid, const Landmarks& landmarks,
+                    FeatureId featid) {
+  for (const auto trackid_landmark_pair : landmarks) {
+    TrackId trackid = trackid_landmark_pair.first;
+    if (trackid_landmark_pair.second.obs.find(tcid) !=
+        trackid_landmark_pair.second.obs.end()) {
+      FeatureId obs_featid = trackid_landmark_pair.second.obs.at(tcid);
+      if (obs_featid == featid) return trackid;
+    } else {
+      continue;
+    }
+  }
+  return -1;
+}
+
 // TODO PROJECT: use optical flow to calculate feature points in next left frame
 // based on feature points in the last left frame
 void OpticalFlowBetweenFrame_opencv_version(
@@ -167,10 +184,11 @@ void OpticalFlowBetweenFrame_opencv_version(
                            errors, winSize, 4);
   kdlt1.corners.clear();
   int j = 0;
+  TimeCamId tcid = std::make_pair(current_frame, 0);
   for (int i = 0; i < points1.size(); i++) {
     if (status[i]) {
       kdlt1.corners.emplace_back(points1[j].x, points1[j].y);
-      TrackId trackid = kdlt0.trackids[i];
+      TrackId trackid = findTrackId(tcid, landmarks, i);
       kdlt1.trackids.push_back(trackid);
       md_feat2track.matches.push_back(std::make_pair(j, trackid));
       j++;
@@ -218,22 +236,24 @@ void OpticalFlowToRightFrame_opencv_version(
   cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
                            errors);  // winSize, 4
   kdr.corners.clear();
-
+  int j = 0;
+  TimeCamId tcid = std::make_pair(current_frame, 0);
   for (int i = 0; i < pointsl.size(); i++) {  // ever input point in left cam
-    for (int j = 0; j < pointsr.size();
-         j++) {  // every output point in right cam
-      if (status[i]) {
-        kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
 
-        TrackId trackid = kdl.trackids[i];  // trackid according to left
-        kdr.trackids.push_back(trackid);
-        md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
-        md_stereo.matches.push_back(std::make_pair(i, j));
-        if (i > pointsl.size() - num_newly_added_keypoints - 1) {
-          md_stereo_new.matches.push_back(std::make_pair(i, j));
-        }
+    if (status[i]) {
+      kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
+
+      TrackId trackid =
+          findTrackId(tcid, landmarks, i);  // trackid according to left
+
+      md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
+      md_stereo.matches.push_back(std::make_pair(i, j));
+      if (i > pointsl.size() - num_newly_added_keypoints - 1) {
+        md_stereo_new.matches.push_back(std::make_pair(i, j));
       }
+      j++;
     }
+    //    }
   }
 }
 
@@ -265,15 +285,18 @@ void OpticalFlowFirstStereoPair_opencv_version(
   kdr.corners.clear();
 
   for (int i = 0; i < pointsl.size(); i++) {  // ever input point in left cam
-    for (int j = 0; j < pointsr.size();
-         j++) {  // every output point in right cam
-      if (status[i]) {
-        kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
-
-        TrackId trackid = kdl.trackids[i];  // trackid according to left
-        kdr.trackids.push_back(trackid);
-        md_stereo.matches.push_back(std::make_pair(i, j));
-      }
+    //    for (int j = 0; j < pointsr.size();
+    //         j++) {  // every output point in right cam
+    //      if (status[i]) {
+    //        kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
+    //        md_stereo.matches.push_back(std::make_pair(i, j));
+    //      }
+    //    }
+    int j = 0;
+    if (status[i]) {
+      kdr.corners.emplace_back(pointsr[j].x, pointsr[j].y);
+      md_stereo.matches.push_back(std::make_pair(i, j));
+      j++;
     }
   }
 }
@@ -421,6 +444,117 @@ void triangulate_new_part(
                       ->unproject(kdr_new_part.corners[featidr])
                       .normalized());
   }
+}
+
+// TODO PROJECT: add new landmark for first stereo pair, add trackid in
+// kpl, kpr
+void initializeLandmarks(const TimeCamId tcidl, const TimeCamId tcidr,
+                         KeypointsData& kdl, KeypointsData& kdr,
+                         const Sophus::SE3d& T_w_c0,
+                         const Calibration& calib_cam,
+                         const MatchData& md_stereo, Landmarks& landmarks,
+                         TrackId& next_landmark_id) {
+  const Sophus::SE3d T_0_1 = calib_cam.T_i_c[0].inverse() * calib_cam.T_i_c[1];
+  const Eigen::Vector3d t_0_1 = T_0_1.translation();
+  const Eigen::Matrix3d R_0_1 = T_0_1.rotationMatrix();
+
+  opengv::bearingVectors_t bv1;
+  opengv::bearingVectors_t bv2;
+  for (int i = 0; i < md_stereo.inliers.size(); i++) {
+    FeatureId featidl = md_stereo.inliers[i].first;
+    FeatureId featidr = md_stereo.inliers[i].second;
+    bv1.push_back(
+        calib_cam.intrinsics[0]->unproject(kdl.corners[featidl]).normalized());
+    bv2.push_back(
+        calib_cam.intrinsics[1]->unproject(kdr.corners[featidr]).normalized());
+  }
+
+  for (int i = 0; i < md_stereo.inliers.size(); i++) {
+    FeatureId featidl = md_stereo.inliers[i].first;
+    FeatureId featidr = md_stereo.inliers[i].second;
+
+    // create new landmark by triangulation
+    opengv::relative_pose::CentralRelativeAdapter adapter(bv1, bv2, t_0_1,
+                                                          R_0_1);
+    opengv::point_t p_3d_c = opengv::triangulation::triangulate(adapter, i);
+    landmarks[next_landmark_id].p = T_w_c0 * p_3d_c;
+    landmarks[next_landmark_id].obs.emplace(tcidl, featidl);
+    landmarks[next_landmark_id].obs.emplace(tcidr, featidr);
+    next_landmark_id++;
+  }
+}
+
+// TODO PROJECT: localize camera, but ignore keypoints with trackid -1
+void localize_camera_optical_flow(
+    const std::shared_ptr<AbstractCamera<double>>& cam,
+    const KeypointsData& kdl, const Landmarks& landmarks,
+    const double reprojection_error_pnp_inlier_threshold_pixel,
+    const MatchData& md, Sophus::SE3d& T_w_c, std::vector<int>& inliers) {
+  inliers.clear();
+
+  if (md.matches.size() == 0) {
+    T_w_c = Sophus::SE3d();
+    return;
+  }
+
+  // TODO SHEET 5: Find the pose (T_w_c) and the inliers using the landmark to
+  // keypoints matches and PnP. This should be similar to the localize_camera in
+  // exercise 4 but in this execise we don't explicitelly have tracks.
+  opengv::bearingVectors_t bearingvec1;
+  opengv::points_t points_w;
+  for (const auto kpid_trackid_pair : md.matches) {
+    if (kpid_trackid_pair.second == -1) {
+      continue;
+    } else {
+      bearingvec1.push_back(
+          cam->unproject(kdl.corners[kpid_trackid_pair.first]).normalized());
+      points_w.push_back(landmarks.at(kpid_trackid_pair.second).p);
+    }
+  }
+
+  // create central adapter
+  opengv::absolute_pose::CentralAbsoluteAdapter adapter(bearingvec1, points_w);
+
+  // create a Ransac object
+  opengv::sac::Ransac<
+      opengv::sac_problems::absolute_pose::AbsolutePoseSacProblem>
+      ransac;
+
+  // create an AbsolutePoseSacProblem
+  std::shared_ptr<opengv::sac_problems::absolute_pose::AbsolutePoseSacProblem>
+      absposeproblem_ptr(
+          new opengv::sac_problems::absolute_pose::AbsolutePoseSacProblem(
+              adapter, opengv::sac_problems::absolute_pose::
+                           AbsolutePoseSacProblem::KNEIP));
+
+  // run ransac
+  ransac.sac_model_ = absposeproblem_ptr;
+  ransac.threshold_ =
+      1.0 - cos(atan(reprojection_error_pnp_inlier_threshold_pixel / 500.0));
+  ransac.computeModel();
+
+  // construct a new adapter with inliers computed from ransac
+  opengv::bearingVectors_t bearingvec1_inliers;
+  opengv::points_t points_w_inliers;
+  for (const auto in_ind : ransac.inliers_) {
+    bearingvec1_inliers.push_back(bearingvec1[in_ind]);
+    points_w_inliers.push_back(points_w[in_ind]);
+  }
+  opengv::absolute_pose::CentralAbsoluteAdapter adapter_inliers(
+      bearingvec1_inliers, points_w_inliers);
+  adapter_inliers.sett(ransac.model_coefficients_.block(0, 3, 3, 1));
+  adapter_inliers.setR(ransac.model_coefficients_.block(0, 0, 3, 3));
+
+  // nonliner optimization
+  opengv::transformation_t nonlinear_transformation =
+      opengv::absolute_pose::optimize_nonlinear(adapter_inliers);
+
+  // recompute the inliers
+  ransac.sac_model_->selectWithinDistance(nonlinear_transformation,
+                                          ransac.threshold_, inliers);
+
+  T_w_c = Sophus::SE3d(nonlinear_transformation.block(0, 0, 3, 3),
+                       nonlinear_transformation.block(0, 3, 3, 1));
 }
 
 void localize_camera(const std::shared_ptr<AbstractCamera<double>>& cam,

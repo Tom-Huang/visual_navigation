@@ -827,7 +827,6 @@ bool next_step() {
     //  match data keypoint feature id ->trackid pair saved in md.matches
 
     //}//vo_utils.h, HUANG_DONE
-    //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
 
     MatchData md_feat2track_left;
 
@@ -837,8 +836,47 @@ bool next_step() {
       detectKeypoints(imgl, kdl, num_features_per_image);
       OpticalFlowFirstStereoPair_opencv_version(current_frame, imgl, imgr, kdl,
                                                 kdr, landmarks, md_stereo);
+      md_stereo.T_i_j = T_0_1;
+
+      Eigen::Matrix3d E;
+      computeEssential(T_0_1, E);
+
+      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
+                       md_stereo.matches, feature_match_max_dist,
+                       feature_match_test_next_best);
+
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+
+      std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
+                << std::endl;
+
+      feature_corners[tcidl] = kdl;
+      feature_corners[tcidr] = kdr;
+      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+
+      //    MatchData md;
+
+      //    find_matches_landmarks(kdl, landmarks, feature_corners,
+      //    projected_points,
+      //                           projected_track_ids, match_max_dist_2d,
+      //                           feature_match_max_dist,
+      //                           feature_match_test_next_best, md);
+
+      std::cout << "KF Found " << md_feat2track_left.matches.size()
+                << " matches." << std::endl;
+
+      Sophus::SE3d T_w_c;
+      std::vector<int> inliers;
+      localize_camera_optical_flow(
+          calib_cam.intrinsics[0], kdl, landmarks,
+          reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
+          T_w_c, inliers);
+      initializeLandmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, md_stereo,
+                          landmarks, next_landmark_id);
 
     } else {
+      //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
       TimeCamId tcidl_last(current_frame - 1,
                            0);  // left image in the last frame
       pangolin::ManagedImage<uint8_t> imgl_last =
@@ -935,60 +973,61 @@ bool next_step() {
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
                                   rotate_features);
     */
+      //***********************************CHANGE_END***********************************
+      md_stereo.T_i_j = T_0_1;
+
+      Eigen::Matrix3d E;
+      computeEssential(T_0_1, E);
+
+      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
+                       md_stereo.matches, feature_match_max_dist,
+                       feature_match_test_next_best);
+
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+
+      std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
+                << std::endl;
+
+      feature_corners[tcidl] = kdl;
+      feature_corners[tcidr] = kdr;
+      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+
+      //    MatchData md;
+
+      //    find_matches_landmarks(kdl, landmarks, feature_corners,
+      //    projected_points,
+      //                           projected_track_ids, match_max_dist_2d,
+      //                           feature_match_max_dist,
+      //                           feature_match_test_next_best, md);
+
+      std::cout << "KF Found " << md_feat2track_left.matches.size()
+                << " matches." << std::endl;
+
+      Sophus::SE3d T_w_c;
+      std::vector<int> inliers;
+      localize_camera_optical_flow(
+          calib_cam.intrinsics[0], kdl, landmarks,
+          reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
+          T_w_c, inliers);
+
+      current_pose = T_w_c;
+
+      cameras[tcidl].T_w_c = current_pose;
+      cameras[tcidr].T_w_c = current_pose * T_0_1;
+
+      //    add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
+      //                      md_stereo, md, landmarks, next_landmark_id);
+
+      // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
+      triangulate_new_part(tcidl, tcidr, kdl_new_part, kdr_new_part, T_w_c,
+                           calib_cam, inliers, md_stereo_new,
+                           md_feat2track_left, landmarks, next_landmark_id);
+
+      remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
+                           old_landmarks, kf_frames);
     }
 
-    //***********************************CHANGE_END***********************************
-    md_stereo.T_i_j = T_0_1;
-
-    Eigen::Matrix3d E;
-    computeEssential(T_0_1, E);
-
-    matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
-                     md_stereo.matches, feature_match_max_dist,
-                     feature_match_test_next_best);
-
-    findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
-                         calib_cam.intrinsics[1], E, 1e-3, md_stereo);
-
-    std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
-              << std::endl;
-
-    feature_corners[tcidl] = kdl;
-    feature_corners[tcidr] = kdr;
-    feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
-
-    //    MatchData md;
-
-    //    find_matches_landmarks(kdl, landmarks, feature_corners,
-    //    projected_points,
-    //                           projected_track_ids, match_max_dist_2d,
-    //                           feature_match_max_dist,
-    //                           feature_match_test_next_best, md);
-
-    std::cout << "KF Found " << md_feat2track_left.matches.size() << " matches."
-              << std::endl;
-
-    Sophus::SE3d T_w_c;
-    std::vector<int> inliers;
-    localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
-                    reprojection_error_pnp_inlier_threshold_pixel,
-                    md_feat2track_left, T_w_c, inliers);
-
-    current_pose = T_w_c;
-
-    cameras[tcidl].T_w_c = current_pose;
-    cameras[tcidr].T_w_c = current_pose * T_0_1;
-
-    //    add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
-    //                      md_stereo, md, landmarks, next_landmark_id);
-
-    // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
-    triangulate_new_part(tcidl, tcidr, kdl_new_part, kdr_new_part, T_w_c,
-                         calib_cam, inliers, md_stereo_new, md_feat2track_left,
-                         landmarks, next_landmark_id);
-
-    remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks, old_landmarks,
-                         kf_frames);
     optimize();
 
     current_pose = cameras[tcidl].T_w_c;
@@ -1105,9 +1144,9 @@ bool next_step() {
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
 
-    localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
-                    reprojection_error_pnp_inlier_threshold_pixel,
-                    md_feat2track_left, T_w_c, inliers);
+    localize_camera_optical_flow(calib_cam.intrinsics[0], kdl, landmarks,
+                                 reprojection_error_pnp_inlier_threshold_pixel,
+                                 md_feat2track_left, T_w_c, inliers);
 
     current_pose = T_w_c;
 
