@@ -834,19 +834,21 @@ bool next_step() {
       //      detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
       //                                    rotate_features);
       detectKeypoints(imgl, kdl, num_features_per_image);
+
       OpticalFlowFirstStereoPair_opencv_version(current_frame, imgl, imgr, kdl,
                                                 kdr, landmarks, md_stereo);
+
       md_stereo.T_i_j = T_0_1;
 
       Eigen::Matrix3d E;
-      //      computeEssential(T_0_1, E);
+      computeEssential(T_0_1, E);
 
       //      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
       //                       md_stereo.matches, feature_match_max_dist,
       //                       feature_match_test_next_best);
 
-      //      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
-      //                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
 
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
@@ -981,14 +983,14 @@ bool next_step() {
       md_stereo.T_i_j = T_0_1;
 
       Eigen::Matrix3d E;
-      //      computeEssential(T_0_1, E);
+      computeEssential(T_0_1, E);
 
       //      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
       //                       md_stereo.matches, feature_match_max_dist,
       //                       feature_match_test_next_best);
 
-      //      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
-      //                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
 
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
@@ -1054,11 +1056,12 @@ bool next_step() {
         projected_points;
     std::vector<TrackId> projected_track_ids;
 
-    project_landmarks(current_pose, calib_cam.intrinsics[0], landmarks,
-                      cam_z_threshold, projected_points, projected_track_ids);
+    //    project_landmarks(current_pose, calib_cam.intrinsics[0], landmarks,
+    //                      cam_z_threshold, projected_points,
+    //                      projected_track_ids);
 
-    std::cout << "Projected " << projected_track_ids.size() << " points."
-              << std::endl;
+    //    std::cout << "Projected " << projected_track_ids.size() << " points."
+    //              << std::endl;
 
     KeypointsData kdl;
 
@@ -1075,6 +1078,9 @@ bool next_step() {
     OpticalFlowBetweenFrame_opencv_version(current_frame, imgl_last, imgl,
                                            kdl_last, kdl, landmarks,
                                            md_feat2track_left);
+
+    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
+                                    current_frame);
     //    OpticalFlowBetweenFrame_opencv_version(image of currentframge - 1,
     //                                           kdl of currentframe - 1,
     //                                           image of current frame, ){
@@ -1165,7 +1171,7 @@ bool next_step() {
 
     if (!opt_running && opt_finished) {
       opt_thread->join();
-      landmarks = landmarks_opt;
+      // landmarks = landmarks_opt;
       cameras = cameras_opt;
       calib_cam = calib_cam_opt;
 
