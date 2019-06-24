@@ -90,6 +90,7 @@ constexpr int NUM_CAMS = 2;
 ///////////////////////////////////////////////////////////////////////////////
 
 int current_frame = 0;
+int last_key_frame = 0;
 Sophus::SE3d current_pose;
 bool take_keyframe = true;
 TrackId next_landmark_id = 0;
@@ -890,7 +891,8 @@ bool next_step() {
       KeypointsData kdl_last = feature_corners.at(tcidl_last);
 
       OpticalFlowBetweenFrame_opencv_version(
-          current_frame, imgl_last, imgl, kdl_last, kdl, landmarks,
+          current_frame, last_key_frame, imgl_last, imgl, kdl_last, kdl,
+          landmarks,
           md_feat2track_left);  // kdl is filled in this function.
                                 // md_feat2track_left.matches stores the current
                                 // frame's feat2track match,
@@ -911,7 +913,7 @@ bool next_step() {
 
       //} //common_type.h HUANG_DONE
       std::vector<Cell> cells;
-      int h = 752, w = 480, rnum = 16,
+      int h = 480, w = 752, rnum = 16,
           cnum = 16;         // TODO: give them a number!!
       int cellh = h / rnum;  // they are for later use, not for makecells
       int cellw = w / cnum;
@@ -1047,6 +1049,7 @@ bool next_step() {
 
     compute_projections();
 
+    last_key_frame = current_frame;
     current_frame++;
     return true;
   } else {  // not key frame
@@ -1075,12 +1078,12 @@ bool next_step() {
     KeypointsData kdl_last = feature_corners.at(tcidl_last);
 
     MatchData md_feat2track_left;
-    OpticalFlowBetweenFrame_opencv_version(current_frame, imgl_last, imgl,
-                                           kdl_last, kdl, landmarks,
-                                           md_feat2track_left);
+    OpticalFlowBetweenFrame_opencv_version(current_frame, last_key_frame,
+                                           imgl_last, imgl, kdl_last, kdl,
+                                           landmarks, md_feat2track_left);
 
-    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
-                                    current_frame);
+    //    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
+    //                                    current_frame);
     //    OpticalFlowBetweenFrame_opencv_version(image of currentframge - 1,
     //                                           kdl of currentframe - 1,
     //                                           image of current frame, ){
@@ -1171,7 +1174,7 @@ bool next_step() {
 
     if (!opt_running && opt_finished) {
       opt_thread->join();
-      // landmarks = landmarks_opt;
+      landmarks = landmarks_opt;
       cameras = cameras_opt;
       calib_cam = calib_cam_opt;
 

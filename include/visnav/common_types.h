@@ -80,6 +80,10 @@ struct KeypointsData {
 
   // TODO PROJECT: implement trackids inside keypointsData
   std::vector<TrackId> trackids;
+
+  // TODO PROJECT: store inliers for frame to frame optical flow
+  std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>>
+      corners_inliers;
 };
 
 /// feature corners is a collection of { imageId => KeypointsData }
@@ -242,7 +246,7 @@ using TrackProjections =
 // corners of the cell inside an image. It also stores the number of key points
 // inside the cell
 struct Cell {
-  std::pair<int, int> topleft;
+  std::pair<int, int> topleft;  // (y,x) or (row, column)
   std::pair<int, int> bottomright;
   int kpnum;
 };
