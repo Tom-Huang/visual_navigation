@@ -328,12 +328,12 @@ void bundle_adjustment(const Corners& feature_corners,
   // add residual blocks
   for (const auto landmark : landmarks) {
     for (const auto feat : landmark.second.obs) {
-      auto it = std::find(landmark.second.outlier_obs.begin(),
-                          landmark.second.outlier_obs.end(), feat);
-      if (it != landmark.second.outlier_obs.end()) {
-        std::cout << "one outlier" << std::endl;
-        continue;
-      }
+      //      auto it = std::find(landmark.second.outlier_obs.begin(),
+      //                          landmark.second.outlier_obs.end(), feat);
+      //      if (it != landmark.second.outlier_obs.end()) {
+      //        std::cout << "one outlier" << std::endl;
+      //        continue;
+      //      }
       TimeCamId tcid = feat.first;
       FeatureId featid = feat.second;
 

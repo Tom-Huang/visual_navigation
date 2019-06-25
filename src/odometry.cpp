@@ -91,6 +91,7 @@ constexpr int NUM_CAMS = 2;
 
 int current_frame = 0;
 int last_key_frame = 0;
+MatchData last_feat2track_left;
 Sophus::SE3d current_pose;
 bool take_keyframe = true;
 TrackId next_landmark_id = 0;
@@ -854,9 +855,9 @@ bool next_step() {
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
 
-      feature_corners[tcidl] = kdl;
-      feature_corners[tcidr] = kdr;
-      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+      for (int i = 0; i < md_stereo.inliers.size(); i++) {
+        kdl.corners_inliers.push_back(kdl.corners[md_stereo.inliers[i].first]);
+      }
 
       //    MatchData md;
 
@@ -881,7 +882,19 @@ bool next_step() {
       cameras[tcidr].T_w_c = current_pose * T_0_1;
       initializeLandmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, md_stereo,
                           landmarks, next_landmark_id);
-
+      kdl.trackids.clear();
+      for (int i = 0; i < kdl.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidl, landmarks, i);
+        kdl.trackids.push_back(trackid);
+      }
+      kdr.trackids.clear();
+      for (int i = 0; i < kdr.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidr, landmarks, i);
+        kdr.trackids.push_back(trackid);
+      }
+      feature_corners[tcidl] = kdl;
+      feature_corners[tcidr] = kdr;
+      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
     } else {  // for second and later frames
       //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
       TimeCamId tcidl_last(current_frame - 1,
@@ -913,33 +926,35 @@ bool next_step() {
 
       //} //common_type.h HUANG_DONE
       std::vector<Cell> cells;
+
+      //{
+      // TODO: kdl is in what corrdinate?
+      //} TAN_DONE
+
       int h = 480, w = 752, rnum = 16,
           cnum = 16;         // TODO: give them a number!!
       int cellh = h / rnum;  // they are for later use, not for makecells
       int cellw = w / cnum;
       makeCells(h, w, rnum, cnum, cells);
+      std::vector<int> empty_indexes;
 
       check_num_points_in_cells(
           kdl, cells);  //-> num_of_points; std::vector<Cell> cells
-      //{
-      // TODO: kdl is in what corrdinate?
-      //} TAN_DONE
-
-      std::vector<int> empty_indexes;
 
       int num_of_empty_cells = sparsity(cells, empty_indexes);
       int threshold = 100;   // threshold for minimum num of points
       int threshold2 = 200;  //  threshold for maximum num of empty cells
       int num_newly_added_keypoints = 0;
 
-      if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) {
-        // add new landmarks;
-        add_new_keypoints_from_empty_cells(empty_indexes,
-                                           num_newly_added_keypoints, imgl, kdl,
-                                           cells, cellw, cellh);
-        // the number of newly added keypoints in left frame is saved in
-        // num_newly_added_keypoints
-      }
+      //      if (kdl.corners.size() < threshold || num_of_empty_cells >
+      //      threshold2) {
+      // add new keypoints;
+      add_new_keypoints_from_empty_cells(empty_indexes,
+                                         num_newly_added_keypoints, imgl, kdl,
+                                         cells, cellw, cellh);
+      // the number of newly added keypoints in left frame is saved in
+      // num_newly_added_keypoints
+      //      }
 
       // add observation of right camera
 
@@ -959,8 +974,8 @@ bool next_step() {
       //    landmarks,
       //                                      current_frame);  // HUANG
 
-      add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
-                                       current_frame);
+      // add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
+      //                                       current_frame);
 
       // (if take key point):  triangulation using the last i points.(fullfil
       // the pos of landmark)
@@ -993,6 +1008,40 @@ bool next_step() {
 
       findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
                            calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+
+      cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+      cv::Mat imgr_cv(imgl_last.h, imgl_last.w, CV_8U, imgl_last.ptr);
+      // for visualization in opencv to check bugs
+      for (const auto i_j_pair : md_feat2track_left.inliers) {
+        int i = i_j_pair.first;   // featid
+        int j = i_j_pair.second;  // trackid
+
+        cv::Point left;
+
+        left.x = int(kdl.corners[i](0));
+        left.y = int(kdl.corners[i](1));
+
+        cv::circle(imgl_cv, left, 5, (255, 0, 0));
+        cv::putText(imgl_cv, std::to_string(j), left, cv::FONT_HERSHEY_SIMPLEX,
+                    1, (255, 255, 255), 2);
+      }
+      for (int i = 0; i < kdl_last.corners.size(); i++) {
+        cv::Point right;
+        right.x = int(kdl_last.corners[i](0));
+        right.y = int(kdl_last.corners[i](1));
+        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
+        TrackId trackid =
+            kdl_last.trackids[i];  // findTrackId(tcid_last_key, landmarks, i);
+        cv::circle(imgr_cv, right, 5, (255, 0, 0));
+        cv::putText(imgr_cv, std::to_string(trackid), right,
+                    cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2);
+      }
+
+      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
+      cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
+      cv::imshow("left", imgl_cv);
+      cv::imshow("right", imgr_cv);
+      cv::waitKey();
 
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
@@ -1043,6 +1092,8 @@ bool next_step() {
 
     current_pose = cameras[tcidl].T_w_c;
 
+    std::cout << cameras[tcidl].T_w_c.translation() << std::endl;
+
     // update image views
     change_display_to_image(tcidl);
     change_display_to_image(tcidr);
@@ -1050,6 +1101,7 @@ bool next_step() {
     compute_projections();
 
     last_key_frame = current_frame;
+    last_feat2track_left = md_feat2track_left;
     current_frame++;
     return true;
   } else {  // not key frame
@@ -1145,14 +1197,53 @@ bool next_step() {
     //    detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
     //                                  rotate_features);
 
-    feature_corners[tcidl] = kdl;
-
     //    MatchData md;
     //    find_matches_landmarks(kdl, landmarks, feature_corners,
     //    projected_points,
     //                           projected_track_ids, match_max_dist_2d,
     //                           feature_match_max_dist,
     //                           feature_match_test_next_best, md);
+
+    //    cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+    //    cv::Mat imgr_cv(imgl_last.h, imgl_last.w, CV_8U, imgl_last.ptr);
+    //    // for visualization in opencv to check bugs
+    //    if (current_frame > 105) {
+    //      for (const auto i_j_pair : md_feat2track_left.inliers) {
+    //        int i = i_j_pair.first;   // featid
+    //        int j = i_j_pair.second;  // trackid
+
+    //        cv::Point left;
+
+    //        left.x = int(kdl.corners[i](0));
+    //        left.y = int(kdl.corners[i](1));
+
+    //        cv::circle(imgl_cv, left, 5, (255, 0, 0));
+    //        cv::putText(imgl_cv, std::to_string(j), left,
+    //        cv::FONT_HERSHEY_SIMPLEX,
+    //                    1, (255, 255, 255), 2);
+    //      }
+    //      for (const auto i_j_pair : last_feat2track_left.inliers) {
+    //        int i = i_j_pair.first;   // featid
+    //        int j = i_j_pair.second;  // trackid
+    //        cv::Point right;
+    //        right.x = int(kdl_last.corners[i](0));
+    //        right.y = int(kdl_last.corners[i](1));
+    //        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
+    //        TrackId trackid =
+    //            kdl_last.trackids[i];  // findTrackId(tcid_last_key,
+    //            landmarks, i);
+    //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
+    //        cv::putText(imgr_cv, std::to_string(j), right,
+    //        cv::FONT_HERSHEY_SIMPLEX,
+    //                    1, (255, 255, 255), 2);
+    //      }
+
+    //      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
+    //      cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
+    //      cv::imshow("left", imgl_cv);
+    //      cv::imshow("right", imgr_cv);
+    //      cv::waitKey();
+    //    }
 
     std::cout << "Found " << md_feat2track_left.matches.size()
               << "frame to frame matches." << std::endl;
@@ -1164,7 +1255,15 @@ bool next_step() {
                                  reprojection_error_pnp_inlier_threshold_pixel,
                                  md_feat2track_left, T_w_c, inliers);
 
+    for (int i = 0; i < inliers.size(); i++) {
+      kdl.corners_inliers.push_back(kdl.corners[inliers[i]]);
+    }
+
     current_pose = T_w_c;
+
+    std::cout << current_pose.translation() << std::endl;
+
+    feature_corners[tcidl] = kdl;
 
     if (int(inliers.size()) < new_kf_min_inliers && !opt_running &&
         (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) &&
@@ -1184,6 +1283,8 @@ bool next_step() {
     // update image views
     change_display_to_image(tcidl);
     change_display_to_image(tcidr);
+
+    last_feat2track_left = md_feat2track_left;
 
     current_frame++;
     return true;
@@ -1255,7 +1356,7 @@ void optimize() {
   // camera constant is a bit suboptimal, since we only need 1 DoF, but it's
   // simple and the initial poses should be good from calibration.
   FrameId fid = *(kf_frames.begin());
-  // std::cout << "fid " << fid << std::endl;
+  std::cout << "fid " << fid << std::endl;
 
   // Prepare bundle adjustment
   BundleAdjustmentOptions ba_options;

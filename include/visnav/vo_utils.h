@@ -194,6 +194,7 @@ void OpticalFlowBetweenFrame_opencv_version(
   cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
                            errors, winSize, 4);
   kdlt1.corners.clear();
+  kdlt1.trackids.clear();
   int j = 0;
   TimeCamId tcidl = std::make_pair(current_frame, 0);
   TimeCamId tcidl_last_key = std::make_pair(last_key_frame, 0);
@@ -209,8 +210,13 @@ void OpticalFlowBetweenFrame_opencv_version(
       //                               errors_backward);
       //      float distance = norm(points1[i] - p_backward_tar[0]);
       if (1) {  // status_backward[0] == 1 && distance < 1) {
-        kdlt1.corners.emplace_back(points1[j].x, points1[j].y);
-        TrackId trackid = findTrackId(tcidl_last_key, landmarks, i);
+        kdlt1.corners.emplace_back(points1[i].x, points1[i].y);
+        TrackId trackid =
+            kdlt0.trackids[i];  // findTrackId(tcidl_last_key, landmarks, i);
+                                //        if (tcidl.first > 105) {
+        //          std::cout << kdlt0.trackids[i] << ", " << trackid <<
+        //          std::endl;
+        //        }
         kdlt1.trackids.push_back(trackid);
         md_feat2track.matches.push_back(std::make_pair(j, trackid));
         md_feat2track.inliers.push_back(std::make_pair(j, trackid));
@@ -276,28 +282,31 @@ void OpticalFlowToRightFrame_opencv_version(
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
       if (1) {  // status_backward[0] == 1 && distance < 1) {
         kdr.corners.emplace_back(pointsr[i].x, pointsr[i].y);
-        TrackId trackid =
-            findTrackId(tcidl, landmarks, i);  // trackid according to left
+        TrackId trackid = kdl.trackids[i];
+        // findTrackId(tcidl, landmarks, i);  // trackid according to left
         md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
         md_stereo.matches.push_back(std::make_pair(i, j));
         md_stereo.inliers.push_back(std::make_pair(i, j));
         // for visualization in opencv to check bugs
-        //        cv::Point left;
-        //        cv::Point right;
-        //        left.x = int(pointsl[i].x);
-        //        left.y = int(pointsl[i].y);
-        //        right.x = int(pointsr[i].x);
-        //        right.y = int(pointsr[i].y);
-        //        cv::circle(imgl_cv, left, 5, (255, 0, 0));
-        //        cv::putText(imgl_cv, std::to_string(i), left,
-        //        cv::FONT_HERSHEY_SIMPLEX,
-        //                    1, (255, 255, 255), 2);
-        //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
-        //        cv::putText(imgr_cv, std::to_string(i), right,
-        //        cv::FONT_HERSHEY_SIMPLEX,
-        //                    1, (255, 255, 255), 2);
+        //        if (current_frame > 0) {
+        //          cv::Point left;
+        //          cv::Point right;
+        //          left.x = int(pointsl[i].x);
+        //          left.y = int(pointsl[i].y);
+        //          right.x = int(pointsr[i].x);
+        //          right.y = int(pointsr[i].y);
+        //          cv::circle(imgl_cv, left, 5, (255, 0, 0));
+        //          cv::putText(imgl_cv, std::to_string(i), left,
+        //                      cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255),
+        //                      2);
+        //          cv::circle(imgr_cv, right, 5, (255, 0, 0));
+        //          cv::putText(imgr_cv, std::to_string(i), right,
+        //                      cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255),
+        //                      2);
+        //        }
+
         // end of bugs checking code
-        if (i > pointsl.size() - num_newly_added_keypoints - 1) {
+        if (i > pointsl.size() - num_newly_added_keypoints) {
           md_stereo_new.matches.push_back(std::make_pair(i, j));
           md_stereo_new.inliers.push_back(std::make_pair(i, j));
         }
@@ -419,7 +428,7 @@ void add_points_to_landmark_obs_left(const MatchData& md_feat2track,
     if (trackid == -1)
       continue;
     else
-      landmarks[trackid].obs.emplace(tcid, featid);
+      landmarks.at(trackid).obs.emplace(tcid, featid);
   }
 }
 
@@ -433,7 +442,10 @@ void add_points_to_landmark_obs_right(const MatchData& md_feat2track_right,
   for (const auto feat_track_pair : md_feat2track_right.matches) {
     FeatureId featid = feat_track_pair.first;
     TrackId trackid = feat_track_pair.second;
-    landmarks[trackid].obs.emplace(tcid, featid);
+    if (trackid == -1)
+      continue;
+    else
+      landmarks.at(trackid).obs.emplace(tcid, featid);
   }
 }
 // void add_points_to_landmarks_obs_right(const MatchData& md_stereo,
@@ -466,9 +478,10 @@ void check_num_points_in_cells(const KeypointsData& kdlt1,
                                std::vector<Cell>& cells) {
   for (auto& kp : kdlt1.corners) {
     for (auto& cell : cells) {
-      if (kp[0] >= cell.topleft.first && kp[1] >= cell.topleft.second &&
-          kp[0] < cell.bottomright.first && kp[1] < cell.bottomright.second) {
+      if (kp[0] >= cell.topleft.second && kp[1] >= cell.topleft.first &&
+          kp[0] < cell.bottomright.second && kp[1] < cell.bottomright.first) {
         cell.kpnum++;
+        break;
       }
     }
   }
@@ -497,8 +510,9 @@ void add_new_keypoints_from_empty_cells(std::vector<int> empty_indexes,
   for (int j = 0; j < empty_indexes.size(); j++) {  // every empty cell in cells
     // now the current empty cell is cells[empty_indexes[j]]
     pangolin::ManagedImage<uint8_t> subimage;
-    subimage.CopyFrom(imgl.SubImage(cells[j].topleft.second,
-                                    cells[j].topleft.first, cellw, cellh));
+    subimage.CopyFrom(imgl.SubImage(cells[empty_indexes[j]].topleft.second,
+                                    cells[empty_indexes[j]].topleft.first,
+                                    cellw, cellh));
 
     KeypointsData kd_new;
     detectKeypoints(
@@ -507,7 +521,8 @@ void add_new_keypoints_from_empty_cells(std::vector<int> empty_indexes,
     // add newly detected keypoints
     for (int i = 0; i < kd_new.corners.size(); i++) {
       kd_new.corners[i] +=
-          Eigen::Vector2d(cells[j].topleft.second, cells[j].topleft.first);
+          Eigen::Vector2d(cells[empty_indexes[j]].topleft.second,
+                          cells[empty_indexes[j]].topleft.first);
     }
     kdl.corners.insert(kdl.corners.end(), kd_new.corners.begin(),
                        kd_new.corners.end());
@@ -610,13 +625,13 @@ void localize_camera_optical_flow(
   // exercise 4 but in this execise we don't explicitelly have tracks.
   opengv::bearingVectors_t bearingvec1;
   opengv::points_t points_w;
-  for (const auto kpid_trackid_pair : md.matches) {
-    if (kpid_trackid_pair.second == -1) {
+  for (const auto featid_trackid_pair : md.matches) {
+    if (featid_trackid_pair.second == -1) {
       continue;
     } else {
       bearingvec1.push_back(
-          cam->unproject(kdl.corners[kpid_trackid_pair.first]).normalized());
-      points_w.push_back(landmarks.at(kpid_trackid_pair.second).p);
+          cam->unproject(kdl.corners[featid_trackid_pair.first]).normalized());
+      points_w.push_back(landmarks.at(featid_trackid_pair.second).p);
     }
   }
 
