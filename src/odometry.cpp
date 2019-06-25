@@ -187,7 +187,7 @@ pangolin::Var<double> match_max_dist_2d("hidden.match_max_dist_2d", 20.0, 1.0,
 
 pangolin::Var<int> new_kf_min_inliers("hidden.new_kf_min_inliers", 80, 1, 200);
 
-pangolin::Var<int> max_num_kfs("hidden.max_num_kfs", 10, 5, 20);
+pangolin::Var<int> max_num_kfs("hidden.max_num_kfs", 2, 2, 20);
 
 pangolin::Var<double> cam_z_threshold("hidden.cam_z_threshold", 0.1, 1.0, 0.0);
 
@@ -895,6 +895,10 @@ bool next_step() {
       feature_corners[tcidl] = kdl;
       feature_corners[tcidr] = kdr;
       feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+
+      remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
+                           old_landmarks, kf_frames);
+
     } else {  // for second and later frames
       //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
       TimeCamId tcidl_last(current_frame - 1,
@@ -943,7 +947,7 @@ bool next_step() {
 
       int num_of_empty_cells = sparsity(cells, empty_indexes);
       int threshold = 100;   // threshold for minimum num of points
-      int threshold2 = 200;  //  threshold for maximum num of empty cells
+      int threshold2 = 100;  //  threshold for maximum num of empty cells
       int num_newly_added_keypoints = 0;
 
       //      if (kdl.corners.size() < threshold || num_of_empty_cells >
@@ -951,7 +955,11 @@ bool next_step() {
       // add new keypoints;
       add_new_keypoints_from_empty_cells(empty_indexes,
                                          num_newly_added_keypoints, imgl, kdl,
-                                         cells, cellw, cellh);
+                                         cells, cellw, cellh, rnum, cnum);
+
+      std::cout << "KF Found " << num_newly_added_keypoints << " keypoints"
+                << std::endl;
+
       // the number of newly added keypoints in left frame is saved in
       // num_newly_added_keypoints
       //      }
@@ -1009,46 +1017,47 @@ bool next_step() {
       findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
                            calib_cam.intrinsics[1], E, 1e-3, md_stereo);
 
-      cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
-      cv::Mat imgr_cv(imgl_last.h, imgl_last.w, CV_8U, imgl_last.ptr);
-      // for visualization in opencv to check bugs
-      for (const auto i_j_pair : md_feat2track_left.inliers) {
-        int i = i_j_pair.first;   // featid
-        int j = i_j_pair.second;  // trackid
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo_new);
 
-        cv::Point left;
+      //      cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+      //      cv::Mat imgr_cv(imgl_last.h, imgl_last.w, CV_8U, imgl_last.ptr);
+      //      // for visualization in opencv to check bugs
+      //      for (const auto i_j_pair : md_feat2track_left.inliers) {
+      //        int i = i_j_pair.first;   // featid
+      //        int j = i_j_pair.second;  // trackid
 
-        left.x = int(kdl.corners[i](0));
-        left.y = int(kdl.corners[i](1));
+      //        cv::Point left;
 
-        cv::circle(imgl_cv, left, 5, (255, 0, 0));
-        cv::putText(imgl_cv, std::to_string(j), left, cv::FONT_HERSHEY_SIMPLEX,
-                    1, (255, 255, 255), 2);
-      }
-      for (int i = 0; i < kdl_last.corners.size(); i++) {
-        cv::Point right;
-        right.x = int(kdl_last.corners[i](0));
-        right.y = int(kdl_last.corners[i](1));
-        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
-        TrackId trackid =
-            kdl_last.trackids[i];  // findTrackId(tcid_last_key, landmarks, i);
-        cv::circle(imgr_cv, right, 5, (255, 0, 0));
-        cv::putText(imgr_cv, std::to_string(trackid), right,
-                    cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2);
-      }
+      //        left.x = int(kdl.corners[i](0));
+      //        left.y = int(kdl.corners[i](1));
 
-      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
-      cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
-      cv::imshow("left", imgl_cv);
-      cv::imshow("right", imgr_cv);
-      cv::waitKey();
+      //        cv::circle(imgl_cv, left, 5, (255, 0, 0));
+      //        cv::putText(imgl_cv, std::to_string(j), left,
+      //        cv::FONT_HERSHEY_SIMPLEX,
+      //                    1, (255, 255, 255), 2);
+      //      }
+      //      for (int i = 0; i < kdl_last.corners.size(); i++) {
+      //        cv::Point right;
+      //        right.x = int(kdl_last.corners[i](0));
+      //        right.y = int(kdl_last.corners[i](1));
+      //        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
+      //        TrackId trackid =
+      //            kdl_last.trackids[i];  // findTrackId(tcid_last_key,
+      //            landmarks, i);
+      //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
+      //        cv::putText(imgr_cv, std::to_string(trackid), right,
+      //                    cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2);
+      //      }
+
+      //      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
+      //      cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
+      //      cv::imshow("left", imgl_cv);
+      //      cv::imshow("right", imgr_cv);
+      //      cv::waitKey();
 
       std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
                 << std::endl;
-
-      feature_corners[tcidl] = kdl;
-      feature_corners[tcidr] = kdr;
-      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
 
       //    MatchData md;
 
@@ -1077,9 +1086,25 @@ bool next_step() {
       //                      md_stereo, md, landmarks, next_landmark_id);
 
       // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
-      triangulate_new_part(tcidl, tcidr, kdl_new_part, kdr_new_part, T_w_c,
-                           calib_cam, inliers, md_stereo_new,
-                           md_feat2track_left, landmarks, next_landmark_id);
+      triangulate_new_part(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
+                           md_stereo_new, md_feat2track_left, landmarks,
+                           next_landmark_id);
+
+      kdl.trackids.clear();
+      kdr.trackids.clear();
+      for (int i = 0; i < kdl.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidl, landmarks, i);
+        kdl.trackids.push_back(trackid);
+      }
+      kdr.trackids.clear();
+      for (int i = 0; i < kdr.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidr, landmarks, i);
+        kdr.trackids.push_back(trackid);
+      }
+
+      feature_corners[tcidl] = kdl;
+      feature_corners[tcidr] = kdr;
+      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
 
       remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
                            old_landmarks, kf_frames);
@@ -1160,7 +1185,7 @@ bool next_step() {
     std::vector<int> empty_indexes;
 
     int num_of_empty_cells = sparsity(cells, empty_indexes);
-    int threshold = 100;  // threshold for minimum num of points
+    int threshold = 200;  // threshold for minimum num of points
     int threshold2 = 56;  //  threshold for maximum num of empty cells
     int num_newly_added_keypoints = 0;
 
@@ -1261,7 +1286,7 @@ bool next_step() {
 
     current_pose = T_w_c;
 
-    std::cout << current_pose.translation() << std::endl;
+    //    std::cout << current_pose.translation() << std::endl;
 
     feature_corners[tcidl] = kdl;
 

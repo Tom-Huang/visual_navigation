@@ -179,9 +179,14 @@ void OpticalFlowBetweenFrame_opencv_version(
 
   std::vector<cv::Point2f> points0;
   std::vector<cv::Point2f> points1;
+  std::vector<cv::Point2f> points0_back;
 
   std::vector<unsigned char> status;
+  std::vector<unsigned char> status_back;
+
   std::vector<float> errors;
+  std::vector<float> errors_back;
+
   cv::Size winSize(31, 31);
 
   // convert double vector to float vector in cv
@@ -193,13 +198,17 @@ void OpticalFlowBetweenFrame_opencv_version(
   }
   cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
                            errors, winSize, 4);
+  cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
+                           status_back, errors_back, winSize, 4);
+
   kdlt1.corners.clear();
   kdlt1.trackids.clear();
   int j = 0;
   TimeCamId tcidl = std::make_pair(current_frame, 0);
   TimeCamId tcidl_last_key = std::make_pair(last_key_frame, 0);
   for (int i = 0; i < points1.size(); i++) {
-    if (status[i]) {
+    float distance = norm(points0[i] - points0_back[i]);
+    if (status[i] && status_back[i] && distance < 1) {
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -251,9 +260,12 @@ void OpticalFlowToRightFrame_opencv_version(
 
   std::vector<cv::Point2f> pointsl;
   std::vector<cv::Point2f> pointsr;
+  std::vector<cv::Point2f> pointsl_back;  // points used for backward check
 
   std::vector<unsigned char> status;
+  std::vector<unsigned char> status_back;
   std::vector<float> errors;
+  std::vector<float> errors_back;
   cv::Size winSize(31, 31);
 
   // convert double vector to float vector in cv
@@ -265,12 +277,15 @@ void OpticalFlowToRightFrame_opencv_version(
   }
   cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors,
                            winSize, 4);  // winSize, 4
+  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                           errors_back, winSize, 4);  // backward check
+
   kdr.corners.clear();
   int j = 0;
   TimeCamId tcidl = std::make_pair(current_frame, 0);
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
-
-    if (status[i]) {
+    float distance = norm(pointsl[i] - pointsl_back[i]);
+    if (status[i] && status_back[i] && distance < 1) {
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -282,9 +297,12 @@ void OpticalFlowToRightFrame_opencv_version(
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
       if (1) {  // status_backward[0] == 1 && distance < 1) {
         kdr.corners.emplace_back(pointsr[i].x, pointsr[i].y);
-        TrackId trackid = kdl.trackids[i];
-        // findTrackId(tcidl, landmarks, i);  // trackid according to left
-        md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
+        if (i < pointsl.size() - num_newly_added_keypoints) {
+          TrackId trackid = kdl.trackids[i];
+          // findTrackId(tcidl, landmarks, i);  // trackid according to left
+          md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
+        }
+
         md_stereo.matches.push_back(std::make_pair(i, j));
         md_stereo.inliers.push_back(std::make_pair(i, j));
         // for visualization in opencv to check bugs
@@ -306,7 +324,7 @@ void OpticalFlowToRightFrame_opencv_version(
         //        }
 
         // end of bugs checking code
-        if (i > pointsl.size() - num_newly_added_keypoints) {
+        if (i >= pointsl.size() - num_newly_added_keypoints) {
           md_stereo_new.matches.push_back(std::make_pair(i, j));
           md_stereo_new.inliers.push_back(std::make_pair(i, j));
         }
@@ -333,9 +351,12 @@ void OpticalFlowFirstStereoPair_opencv_version(
 
   std::vector<cv::Point2f> pointsl;
   std::vector<cv::Point2f> pointsr;
+  std::vector<cv::Point2f> pointsl_back;  // points used for backward check
 
   std::vector<unsigned char> status;
+  std::vector<unsigned char> status_back;
   std::vector<float> errors;
+  std::vector<float> errors_back;
   cv::Size winSize(31, 31);
 
   // convert double vector to float vector in cv
@@ -347,12 +368,14 @@ void OpticalFlowFirstStereoPair_opencv_version(
   }
   cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors,
                            winSize, 4);  // winSize, 4
+  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                           errors_back, winSize, 4);  // backward check
   kdr.corners.clear();
   int j = 0;
 
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
-
-    if (status[i]) {
+    float distance = norm(pointsl[i] - pointsl_back[i]);
+    if (status[i] && status_back[i] && distance < 1) {
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -501,12 +524,13 @@ int sparsity(std::vector<Cell>& cells, std::vector<int>& empty_indexes) {
 }
 
 // TODO PROJECT: add new key points from empty cells.
-void add_new_keypoints_from_empty_cells(std::vector<int> empty_indexes,
-                                        int& num_newly_added_keypoints,
-                                        pangolin::ManagedImage<uint8_t>& imgl,
-                                        KeypointsData& kdl,
-                                        const std::vector<Cell> cells,
-                                        int cellw, int cellh) {
+void add_new_keypoints_from_empty_cells(
+    std::vector<int> empty_indexes, int& num_newly_added_keypoints,
+    pangolin::ManagedImage<uint8_t>& imgl, KeypointsData& kdl,
+    const std::vector<Cell> cells, int cellw, int cellh, int rnum, int cnum) {
+  KeypointsData kd_new;
+  int cell_newly_added_num_kp = 0;
+
   for (int j = 0; j < empty_indexes.size(); j++) {  // every empty cell in cells
     // now the current empty cell is cells[empty_indexes[j]]
     pangolin::ManagedImage<uint8_t> subimage;
@@ -514,10 +538,21 @@ void add_new_keypoints_from_empty_cells(std::vector<int> empty_indexes,
                                     cells[empty_indexes[j]].topleft.first,
                                     cellw, cellh));
 
-    KeypointsData kd_new;
-    detectKeypoints(
-        subimage, kd_new,
-        1000);  // -1 means no limit on maximum num of detected features.
+    cell_newly_added_num_kp = 0;
+    kd_new.corners.clear();
+
+    int top_cell = (empty_indexes[j] < cnum) ? 1 : 0;
+    int bottom_cell = (empty_indexes[j] >= (rnum - 1) * cnum) ? 1 : 0;
+    int left_cell = (empty_indexes[j] % cnum == 0) ? 1 : 0;
+    int right_cell = (empty_indexes[j] % cnum == (cnum - 1)) ? 1 : 0;
+    if (top_cell == 0 && bottom_cell == 0 && left_cell == 0 &&
+        right_cell == 0) {
+      detectKeypoints_optical_flow_version(
+          subimage, kd_new, 3,
+          cell_newly_added_num_kp);  // -1 means no limit on maximum
+                                     // num of detected features.
+    }
+
     // add newly detected keypoints
     for (int i = 0; i < kd_new.corners.size(); i++) {
       kd_new.corners[i] +=
@@ -526,7 +561,7 @@ void add_new_keypoints_from_empty_cells(std::vector<int> empty_indexes,
     }
     kdl.corners.insert(kdl.corners.end(), kd_new.corners.begin(),
                        kd_new.corners.end());
-    num_newly_added_keypoints += kd_new.corners.size();
+    num_newly_added_keypoints += cell_newly_added_num_kp;
   }
 }
 
@@ -541,9 +576,11 @@ void triangulate_new_part(
   const Sophus::SE3d T_0_1 = calib_cam.T_i_c[0].inverse() * calib_cam.T_i_c[1];
   const Eigen::Vector3d t_0_1 = T_0_1.translation();
   const Eigen::Matrix3d R_0_1 = T_0_1.rotationMatrix();
+
   // create bearing vectors for triangulation
   opengv::bearingVectors_t bv1;
   opengv::bearingVectors_t bv2;
+
   for (int i = 0; i < md_stereo_new_part.inliers.size(); i++) {
     FeatureId featidl = md_stereo_new_part.inliers[i].first;
     FeatureId featidr = md_stereo_new_part.inliers[i].second;
@@ -554,6 +591,7 @@ void triangulate_new_part(
                       ->unproject(kdr_new_part.corners[featidr])
                       .normalized());
   }
+
   for (int i = 0; i < md_stereo_new_part.inliers.size(); i++) {
     FeatureId featidl = md_stereo_new_part.inliers[i].first;
     FeatureId featidr = md_stereo_new_part.inliers[i].second;

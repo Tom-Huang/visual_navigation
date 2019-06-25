@@ -132,6 +132,26 @@ char pattern_31_y_b[256] = {
     -9,  -1,  -2,  -8,  5,   10,  5,   5,   11,  -6,  -12, 9,   4,   -2, -2,
     -11};
 
+void detectKeypoints_optical_flow_version(
+    const pangolin::ManagedImage<uint8_t>& img_raw, KeypointsData& kd,
+    int num_features, int& newly_added_num) {
+  cv::Mat image(img_raw.h, img_raw.w, CV_8U, img_raw.ptr);
+
+  std::vector<cv::Point2f> points;
+  goodFeaturesToTrack(image, points, num_features, 0.01, 8);
+
+  kd.corners.clear();
+  kd.corner_angles.clear();
+  kd.corner_descriptors.clear();
+
+  for (size_t i = 0; i < points.size(); i++) {
+    //    if (img_raw.InBounds(points[i].x, points[i].y, EDGE_THRESHOLD)) {
+    kd.corners.emplace_back(points[i].x, points[i].y);
+    //    }
+  }
+  newly_added_num = kd.corners.size();
+}
+
 void detectKeypoints(const pangolin::ManagedImage<uint8_t>& img_raw,
                      KeypointsData& kd, int num_features) {
   cv::Mat image(img_raw.h, img_raw.w, CV_8U, img_raw.ptr);
