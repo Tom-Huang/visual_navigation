@@ -187,7 +187,7 @@ pangolin::Var<double> match_max_dist_2d("hidden.match_max_dist_2d", 20.0, 1.0,
 
 pangolin::Var<int> new_kf_min_inliers("hidden.new_kf_min_inliers", 80, 1, 200);
 
-pangolin::Var<int> max_num_kfs("hidden.max_num_kfs", 2, 2, 20);
+pangolin::Var<int> max_num_kfs("hidden.max_num_kfs", 10, 2, 20);
 
 pangolin::Var<double> cam_z_threshold("hidden.cam_z_threshold", 0.1, 1.0, 0.0);
 
@@ -982,8 +982,8 @@ bool next_step() {
       //    landmarks,
       //                                      current_frame);  // HUANG
 
-      // add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
-      //                                       current_frame);
+      add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
+                                       current_frame);
 
       // (if take key point):  triangulation using the last i points.(fullfil
       // the pos of landmark)
@@ -1303,6 +1303,10 @@ bool next_step() {
       calib_cam = calib_cam_opt;
 
       opt_finished = false;
+    }
+
+    if (kdl.corners.size() < 30) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     // update image views

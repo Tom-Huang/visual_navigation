@@ -548,7 +548,7 @@ void add_new_keypoints_from_empty_cells(
     if (top_cell == 0 && bottom_cell == 0 && left_cell == 0 &&
         right_cell == 0) {
       detectKeypoints_optical_flow_version(
-          subimage, kd_new, 3,
+          subimage, kd_new, 1,
           cell_newly_added_num_kp);  // -1 means no limit on maximum
                                      // num of detected features.
     }
