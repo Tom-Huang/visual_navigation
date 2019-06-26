@@ -558,7 +558,7 @@ void add_new_keypoints_from_empty_cells(
     if (top_cell == 0 && bottom_cell == 0 && left_cell == 0 &&
         right_cell == 0) {
       detectKeypoints_optical_flow_version(
-          subimage, kd_new, 2,
+          subimage, kd_new, 5,
           cell_newly_added_num_kp);  // -1 means no limit on maximum
                                      // num of detected features.
     }
@@ -572,6 +572,28 @@ void add_new_keypoints_from_empty_cells(
     kdl.corners.insert(kdl.corners.end(), kd_new.corners.begin(),
                        kd_new.corners.end());
     num_newly_added_keypoints += cell_newly_added_num_kp;
+  }
+}
+
+void add_new_keypoints_from_empty_cells_v2(
+    std::vector<int> empty_indexes, int& num_newly_added_keypoints,
+    pangolin::ManagedImage<uint8_t>& imgl, KeypointsData& kdl, int num_features,
+    const std::vector<Cell> cells, int cellw, int cellh, int rnum, int cnum) {
+  KeypointsData kd_tmp;
+  detectKeypoints(imgl, kd_tmp, num_features);
+  num_newly_added_keypoints = 0;
+  for (const auto i : empty_indexes) {
+    for (const auto p_2d : kd_tmp.corners) {
+      int top = cells[i].topleft.first;
+      int left = cells[i].topleft.second;
+      int bottom = cells[i].bottomright.first;
+      int right = cells[i].bottomright.second;
+      if (p_2d(0) >= left && p_2d(0) < right && p_2d(1) >= top &&
+          p_2d(1) < bottom) {
+        kdl.corners.push_back(p_2d);
+        num_newly_added_keypoints++;
+      }
+    }
   }
 }
 

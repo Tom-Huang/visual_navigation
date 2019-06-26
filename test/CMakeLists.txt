@@ -26,8 +26,8 @@ enable_testing()
 #add_executable(test_ex4 src/test_ex4.cpp)
 #target_link_libraries(test_ex4 gtest gtest_main ceres opengv ${TBB_LIBRARIES})
 
-add_executable(test_ex5 src/test_ex5.cpp)
-target_link_libraries(test_ex5 gtest gtest_main ceres opengv ${TBB_LIBRARIES} ${OpenCV_LIBS})
+#add_executable(test_ex5 src/test_ex5.cpp)
+#target_link_libraries(test_ex5 gtest gtest_main ceres opengv ${TBB_LIBRARIES} ${OpenCV_LIBS})
 
 
 

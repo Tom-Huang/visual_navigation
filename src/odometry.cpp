@@ -956,9 +956,9 @@ bool next_step() {
       //      if (kdl.corners.size() < threshold || num_of_empty_cells >
       //      threshold2) {
       // add new keypoints;
-      add_new_keypoints_from_empty_cells(empty_indexes,
-                                         num_newly_added_keypoints, imgl, kdl,
-                                         cells, cellw, cellh, rnum, cnum);
+      add_new_keypoints_from_empty_cells_v2(
+          empty_indexes, num_newly_added_keypoints, imgl, kdl,
+          num_features_per_image, cells, cellw, cellh, rnum, cnum);
 
       std::cout << "KF Found " << num_newly_added_keypoints << " keypoints"
                 << std::endl;
