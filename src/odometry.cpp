@@ -872,10 +872,12 @@ bool next_step() {
 
       Sophus::SE3d T_w_c;
       std::vector<int> inliers;
+      MatchData md_feat2track_left_recorded;  // feature that can be found in
+                                              // landmarks
       localize_camera_optical_flow(
           calib_cam.intrinsics[0], kdl, landmarks,
           reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
-          T_w_c, inliers);
+          md_feat2track_left_recorded, T_w_c, inliers);
       current_pose = T_w_c;
 
       cameras[tcidl].T_w_c = current_pose;
@@ -1080,10 +1082,12 @@ bool next_step() {
 
       Sophus::SE3d T_w_c;
       std::vector<int> inliers;
+      MatchData md_feat2track_left_recorded;  // feature that can be found in
+                                              // landmarks
       localize_camera_optical_flow(
           calib_cam.intrinsics[0], kdl, landmarks,
           reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
-          T_w_c, inliers);
+          md_feat2track_left_recorded, T_w_c, inliers);
 
       current_pose = T_w_c;
 
@@ -1092,7 +1096,7 @@ bool next_step() {
 
       add_new_landmarks_optical_flow_version(
           tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers, md_stereo,
-          md_feat2track_left, landmarks, next_landmark_id);
+          md_feat2track_left_recorded, landmarks, next_landmark_id);
 
       // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
       triangulate_new_part(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
@@ -1204,7 +1208,7 @@ bool next_step() {
     // add new landmarks;
 
     //      add_new_keypoints_from_empty_cells(empty_indexes,
-    //                                         num_newly_added_keypoints,
+    //                                          num_newly_added_keypoints,
     //                                         imgl, kdl, cells, cellw,
     //                                         cellh);
     // the number of newly added keypoints in left frame is saved in
@@ -1285,10 +1289,13 @@ bool next_step() {
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
+    MatchData md_feat2track_left_recorded;  // feature that can be found in
+                                            // landmarks
 
     localize_camera_optical_flow(calib_cam.intrinsics[0], kdl, landmarks,
                                  reprojection_error_pnp_inlier_threshold_pixel,
-                                 md_feat2track_left, T_w_c, inliers);
+                                 md_feat2track_left,
+                                 md_feat2track_left_recorded, T_w_c, inliers);
 
     for (int i = 0; i < inliers.size(); i++) {
       kdl.corners_inliers.push_back(kdl.corners[inliers[i]]);
@@ -1315,7 +1322,7 @@ bool next_step() {
       opt_finished = false;
     }
 
-    if (kdl.corners.size() < 70) {
+    if (kdl.corners.size() < 150 && opt_running) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 

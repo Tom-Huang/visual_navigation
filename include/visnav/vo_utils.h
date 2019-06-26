@@ -558,7 +558,7 @@ void add_new_keypoints_from_empty_cells(
     if (top_cell == 0 && bottom_cell == 0 && left_cell == 0 &&
         right_cell == 0) {
       detectKeypoints_optical_flow_version(
-          subimage, kd_new, 1,
+          subimage, kd_new, 2,
           cell_newly_added_num_kp);  // -1 means no limit on maximum
                                      // num of detected features.
     }
@@ -577,12 +577,14 @@ void add_new_keypoints_from_empty_cells(
 
 // TODO PROJECT: triangulate newly added key points pairs and add them to
 // landmarks
-void triangulate_new_part(
-    const TimeCamId tcidl, const TimeCamId tcidr,
-    const KeypointsData& kdl_new_part, const KeypointsData& kdr_new_part,
-    const Sophus::SE3d& T_w_c0, const Calibration& calib_cam,
-    const std::vector<int> inliers, const MatchData& md_stereo_new_part,
-    const MatchData& md, Landmarks& landmarks, TrackId& next_landmark_id) {
+void triangulate_new_part(const TimeCamId tcidl, const TimeCamId tcidr,
+                          const KeypointsData& kdl, const KeypointsData& kdr,
+                          const Sophus::SE3d& T_w_c0,
+                          const Calibration& calib_cam,
+                          const std::vector<int> inliers,
+                          const MatchData& md_stereo_new_part,
+                          const MatchData& md, Landmarks& landmarks,
+                          TrackId& next_landmark_id) {
   const Sophus::SE3d T_0_1 = calib_cam.T_i_c[0].inverse() * calib_cam.T_i_c[1];
   const Eigen::Vector3d t_0_1 = T_0_1.translation();
   const Eigen::Matrix3d R_0_1 = T_0_1.rotationMatrix();
@@ -594,12 +596,10 @@ void triangulate_new_part(
   for (int i = 0; i < md_stereo_new_part.inliers.size(); i++) {
     FeatureId featidl = md_stereo_new_part.inliers[i].first;
     FeatureId featidr = md_stereo_new_part.inliers[i].second;
-    bv1.push_back(calib_cam.intrinsics[0]
-                      ->unproject(kdl_new_part.corners[featidl])
-                      .normalized());
-    bv2.push_back(calib_cam.intrinsics[1]
-                      ->unproject(kdr_new_part.corners[featidr])
-                      .normalized());
+    bv1.push_back(
+        calib_cam.intrinsics[0]->unproject(kdl.corners[featidl]).normalized());
+    bv2.push_back(
+        calib_cam.intrinsics[1]->unproject(kdr.corners[featidr]).normalized());
   }
 
   for (int i = 0; i < md_stereo_new_part.inliers.size(); i++) {
@@ -660,7 +660,8 @@ void localize_camera_optical_flow(
     const std::shared_ptr<AbstractCamera<double>>& cam,
     const KeypointsData& kdl, const Landmarks& landmarks,
     const double reprojection_error_pnp_inlier_threshold_pixel,
-    const MatchData& md, Sophus::SE3d& T_w_c, std::vector<int>& inliers) {
+    const MatchData& md, MatchData& md_feat2track_left_recorded,
+    Sophus::SE3d& T_w_c, std::vector<int>& inliers) {
   inliers.clear();
 
   if (md.matches.size() == 0) {
@@ -673,6 +674,7 @@ void localize_camera_optical_flow(
   // exercise 4 but in this execise we don't explicitelly have tracks.
   opengv::bearingVectors_t bearingvec1;
   opengv::points_t points_w;
+  md_feat2track_left_recorded.matches.clear();
   for (const auto featid_trackid_pair : md.matches) {
     if (featid_trackid_pair.second == -1) {
       continue;
@@ -680,6 +682,7 @@ void localize_camera_optical_flow(
       bearingvec1.push_back(
           cam->unproject(kdl.corners[featid_trackid_pair.first]).normalized());
       points_w.push_back(landmarks.at(featid_trackid_pair.second).p);
+      md_feat2track_left_recorded.matches.push_back(featid_trackid_pair);
     }
   }
 
@@ -814,17 +817,16 @@ void add_new_landmarks_optical_flow_version(
     // add observations for matches in inliers
     landmarks.at(trackid).obs.emplace(tcidl, featidl);
 
-    //    for (int stereo_i = 0; stereo_i < md_stereo.inliers.size();
-    //    stereo_i++) {
-    //      FeatureId featidl_stereo = md_stereo.inliers[stereo_i].first;
-    //      FeatureId featidr = md_stereo.inliers[stereo_i].second;
+    for (int stereo_i = 0; stereo_i < md_stereo.inliers.size(); stereo_i++) {
+      FeatureId featidl_stereo = md_stereo.inliers[stereo_i].first;
+      FeatureId featidr = md_stereo.inliers[stereo_i].second;
 
-    //      // add obervations for stereo matches
-    //      if (featidl_stereo == featidl) {
-    //        landmarks.at(trackid).obs.emplace(tcidr, featidr);
-    //        break;
-    //      }
-    //    }
+      // add obervations for stereo matches
+      if (featidl_stereo == featidl) {
+        landmarks.at(trackid).obs.emplace(tcidr, featidr);
+        break;
+      }
+    }
   }
 
   //  for (int i = 0; i < md_stereo.inliers.size(); i++) {
