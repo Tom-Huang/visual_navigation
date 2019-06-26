@@ -920,8 +920,9 @@ bool next_step() {
 
       //  md.matches = [featureid, trackid];
       //}//HUANG_DONE
-      add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
-                                      current_frame);
+      //      add_points_to_landmark_obs_left(md_feat2track_left, kdl,
+      //      landmarks,
+      //                                      current_frame);
       // TODO: kdl这个变量在函数中没有用
 
       // make_cells(image_width, image_length, num_of_colums/rows,
@@ -977,13 +978,17 @@ bool next_step() {
           num_newly_added_keypoints);  // fill kdr according to kdl, fill
                                        // md_stereo
 
+      std::cout << md_feat2track_right.matches.size() << ", "
+                << kdr.corners.size() - num_newly_added_keypoints << std::endl;
+
       // and add them to existing kdr
       //    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_left,
       //    landmarks,
       //                                      current_frame);  // HUANG
 
-      add_points_to_landmark_obs_right(md_feat2track_right, kdr, landmarks,
-                                       current_frame);
+      //      add_points_to_landmark_obs_right(md_feat2track_right, kdr,
+      //      landmarks,
+      //                                       current_frame);
 
       // (if take key point):  triangulation using the last i points.(fullfil
       // the pos of landmark)
@@ -1021,9 +1026,9 @@ bool next_step() {
                            calib_cam.intrinsics[1], E, 1e-3, md_stereo_new);
 
       //      cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
-      //      cv::Mat imgr_cv(imgl_last.h, imgl_last.w, CV_8U, imgl_last.ptr);
+      //      cv::Mat imgr_cv(imgr.h, imgr.w, CV_8U, imgr.ptr);
       //      // for visualization in opencv to check bugs
-      //      for (const auto i_j_pair : md_feat2track_left.inliers) {
+      //      for (const auto i_j_pair : md_feat2track_left.matches) {
       //        int i = i_j_pair.first;   // featid
       //        int j = i_j_pair.second;  // trackid
 
@@ -1037,17 +1042,20 @@ bool next_step() {
       //        cv::FONT_HERSHEY_SIMPLEX,
       //                    1, (255, 255, 255), 2);
       //      }
-      //      for (int i = 0; i < kdl_last.corners.size(); i++) {
+      //      for (const auto i_j_pair : md_feat2track_right.matches) {
+      //        int i = i_j_pair.first;   // featid
+      //        int j = i_j_pair.second;  // trackid
       //        cv::Point right;
-      //        right.x = int(kdl_last.corners[i](0));
-      //        right.y = int(kdl_last.corners[i](1));
+      //        right.x = int(kdr.corners[i](0));
+      //        right.y = int(kdr.corners[i](1));
       //        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
-      //        TrackId trackid =
-      //            kdl_last.trackids[i];  // findTrackId(tcid_last_key,
-      //            landmarks, i);
+      //        TrackId trackid = kdl_last.trackids[i];  //
+      //        //              findTrackId(tcid_last_key,
+      //        //                  landmarks, i);
       //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
-      //        cv::putText(imgr_cv, std::to_string(trackid), right,
-      //                    cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2);
+      //        cv::putText(imgr_cv, std::to_string(j), right,
+      //        cv::FONT_HERSHEY_SIMPLEX,
+      //                    1, (255, 255, 255), 2);
       //      }
 
       //      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
@@ -1068,7 +1076,7 @@ bool next_step() {
       //                           feature_match_test_next_best, md);
 
       std::cout << "KF Found " << md_feat2track_left.matches.size()
-                << " matches." << std::endl;
+                << "frame to frame matches." << std::endl;
 
       Sophus::SE3d T_w_c;
       std::vector<int> inliers;
@@ -1082,8 +1090,9 @@ bool next_step() {
       cameras[tcidl].T_w_c = current_pose;
       cameras[tcidr].T_w_c = current_pose * T_0_1;
 
-      //    add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
-      //                      md_stereo, md, landmarks, next_landmark_id);
+      add_new_landmarks_optical_flow_version(
+          tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers, md_stereo,
+          md_feat2track_left, landmarks, next_landmark_id);
 
       // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
       triangulate_new_part(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
@@ -1117,6 +1126,7 @@ bool next_step() {
 
     current_pose = cameras[tcidl].T_w_c;
 
+    std::cout << "Current frame ID: " << current_frame << std::endl;
     std::cout << cameras[tcidl].T_w_c.translation() << std::endl;
 
     // update image views
@@ -1305,7 +1315,7 @@ bool next_step() {
       opt_finished = false;
     }
 
-    if (kdl.corners.size() < 30) {
+    if (kdl.corners.size() < 70) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 

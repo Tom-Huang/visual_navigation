@@ -264,11 +264,14 @@ void OpticalFlowToRightFrame_opencv_version(
 
   std::vector<unsigned char> status;
   std::vector<unsigned char> status_back;
+
   std::vector<float> errors;
   std::vector<float> errors_back;
+
   cv::Size winSize(31, 31);
 
   // convert double vector to float vector in cv
+  // kdl.corners have already been executed frame to frame backward check
   for (const auto p_2dl : kdl.corners) {
     cv::Point2f p_2d;
     p_2d.x = float(p_2dl(0));
@@ -281,9 +284,13 @@ void OpticalFlowToRightFrame_opencv_version(
                            errors_back, winSize, 4);  // backward check
 
   kdr.corners.clear();
+  md_feat2track_right.matches.clear();
+  md_stereo_new.matches.clear();
   int j = 0;
   TimeCamId tcidl = std::make_pair(current_frame, 0);
+
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
+    // pointsr should be the same size as pointsl and kdl.corners
     float distance = norm(pointsl[i] - pointsl_back[i]);
     if (status[i] && status_back[i] && distance < 1) {
       //      std::vector<cv::Point2f> p_backward_src;
@@ -297,7 +304,10 @@ void OpticalFlowToRightFrame_opencv_version(
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
       if (1) {  // status_backward[0] == 1 && distance < 1) {
         kdr.corners.emplace_back(pointsr[i].x, pointsr[i].y);
-        if (i < pointsl.size() - num_newly_added_keypoints) {
+
+        // we link the feature id of right frame to trackid
+        // by checking the left corners' trackid
+        if (i < (pointsl.size() - num_newly_added_keypoints)) {
           TrackId trackid = kdl.trackids[i];
           // findTrackId(tcidl, landmarks, i);  // trackid according to left
           md_feat2track_right.matches.push_back(std::make_pair(j, trackid));
@@ -786,6 +796,49 @@ void localize_camera(const std::shared_ptr<AbstractCamera<double>>& cam,
                        nonlinear_transformation.block(0, 3, 3, 1));
 }
 
+void add_new_landmarks_optical_flow_version(
+    const TimeCamId tcidl, const TimeCamId tcidr, const KeypointsData& kdl,
+    const KeypointsData& kdr, const Sophus::SE3d& T_w_c0,
+    const Calibration& calib_cam, const std::vector<int> inliers,
+    const MatchData& md_stereo, const MatchData& md, Landmarks& landmarks,
+    TrackId& next_landmark_id) {
+  const Sophus::SE3d T_0_1 = calib_cam.T_i_c[0].inverse() * calib_cam.T_i_c[1];
+  const Eigen::Vector3d t_0_1 = T_0_1.translation();
+  const Eigen::Matrix3d R_0_1 = T_0_1.rotationMatrix();
+
+  for (const auto inliers_ind : inliers) {
+    FeatureId featidl = md.matches[inliers_ind].first;
+    TrackId trackid = md.matches[inliers_ind].second;
+    if (trackid == -1) continue;
+
+    // add observations for matches in inliers
+    landmarks.at(trackid).obs.emplace(tcidl, featidl);
+
+    //    for (int stereo_i = 0; stereo_i < md_stereo.inliers.size();
+    //    stereo_i++) {
+    //      FeatureId featidl_stereo = md_stereo.inliers[stereo_i].first;
+    //      FeatureId featidr = md_stereo.inliers[stereo_i].second;
+
+    //      // add obervations for stereo matches
+    //      if (featidl_stereo == featidl) {
+    //        landmarks.at(trackid).obs.emplace(tcidr, featidr);
+    //        break;
+    //      }
+    //    }
+  }
+
+  //  for (int i = 0; i < md_stereo.inliers.size(); i++) {
+  //    FeatureId featidl = md_stereo.inliers[i].first;
+  //    FeatureId featidr = md_stereo.inliers[i].second;
+  //    int find_flag = 0;
+  //    for (int j = 0; j < inliers.size(); j++) {
+  //      if (md.matches[inliers[j]].first == featidl) {
+  //        find_flag = 1;
+  //        break;
+  //      }
+  //    }
+  //  }
+}
 void add_new_landmarks(const TimeCamId tcidl, const TimeCamId tcidr,
                        const KeypointsData& kdl, const KeypointsData& kdr,
                        const Sophus::SE3d& T_w_c0, const Calibration& calib_cam,
