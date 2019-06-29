@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pangolin/image/image_io.h>
 #include <pangolin/image/typed_image.h>
 #include <pangolin/pangolin.h>
+#include <pangolin/gl/gl.hpp>
 
 #include <CLI/CLI.hpp>
 
@@ -74,6 +75,7 @@ void draw_image_overlay(pangolin::View& v, size_t cam_id);
 void change_display_to_image(const TimeCamId& tcid);
 void draw_scene();
 void load_data(const std::string& path, const std::string& calib_path);
+void load_ground_truth_cam_pose(const std::string& dataset_path);
 bool next_step();
 void optimize();
 void compute_projections();
@@ -138,6 +140,19 @@ Landmarks old_landmarks;
 /// cameras, landmarks, and feature_tracks; used for visualization and
 /// determining outliers; indexed by images
 ImageProjections image_projections;
+
+// TODO PROJECT: create a vector storing all camera position for alignment with
+// ground truth
+Mat3X ground_truth_cam_pos;
+std::map<std::string, Eigen::Vector3d> timestamp2pos;
+
+// TODO PROJECT: vector of time stamp for finding ground truth, each timestamp
+// corresponds to an integer 0 or 1, 1 represent the time stamp exist, otherwise
+// not
+std::map<std::string, int> timestamp_exist;
+
+// TODO PROJECT: estimated camera position of all timestamp
+Mat3X estimated_cam_pos;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -244,6 +259,7 @@ int main(int argc, char** argv) {
   }
 
   load_data(dataset_path, cam_calib);
+  load_ground_truth_cam_pose(dataset_path);
 
   if (show_gui) {
     pangolin::CreateWindowAndBind("Main", 1800, 1000);
@@ -309,6 +325,52 @@ int main(int argc, char** argv) {
       glClearColor(0.95f, 0.95f, 0.95f, 1.0f);  // light gray background
 
       draw_scene();
+
+      // TODO PROJECT: visualize the trajectory of estimated camera pose
+
+      if (estimated_cam_pos.cols() >= 1) {
+        // glLineWidth(0.1f);
+        glPointSize(5.0);
+        const u_int8_t color[3]{255, 0, 0};
+        glColor3ubv(color);
+        glBegin(GL_POINTS);
+        Eigen::Index max_cols = estimated_cam_pos.cols();
+        for (Eigen::Index i = 0; i < max_cols; i++) {
+          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
+          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+        }
+
+        glEnd();
+      }
+
+      // TODO PROJECT: visualize the trajectory of ground truth camera pose
+      if (estimated_cam_pos.cols() > 2700) {
+        Eigen::Index truncate_begin =
+            estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
+        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
+            0, truncate_begin, 3, ground_truth_cam_pos.cols());
+        Mat3X ground_truth_transformed;
+        ErrorMetricValue* ate;
+        align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
+                          ground_truth_transformed, ate);
+        glPointSize(5.0);
+        const u_int8_t color_gt[3]{0, 255, 0};
+        glColor3ubv(color_gt);
+        glBegin(GL_POINTS);
+        Eigen::Index max_cols_gt = ground_truth_transformed.cols();
+        for (Eigen::Index i = 0; i < max_cols_gt; i++) {
+          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+          Eigen::Vector3d p = ground_truth_cam_pos.col(i);
+          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+          pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+        }
+
+        glEnd();
+      }
 
       img_view_display.Activate();
 
@@ -723,6 +785,10 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
       if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
 
       std::string img_name = line.substr(20, line.size() - 21);
+      // TODO PROJECT: store timestamp to timestamp_exist map
+      std::string s_timestamp = line.substr(0, 19);
+      std::cout << "load_data timestamp: " << s_timestamp << std::endl;
+      timestamp_exist[s_timestamp] = 1;
 
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
@@ -780,6 +846,70 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
   show_frame2.Meta().gui_changed = true;
 }
 
+// TODO PROJECT: help to split a string with a delimiter, return a vector of
+// string split by delimiter
+void split_with_delim(const std::string& input,
+                      std::vector<std::string>& output, char delim) {
+  std::size_t current, previous = 0;
+  current = input.find(delim);
+  while (current != std::string::npos) {
+    output.push_back(input.substr(previous, current - previous));
+    previous = current + 1;
+    current = input.find(delim, previous);
+  }
+}
+
+// TODO PROJECT: load ground truth camera pose
+void load_ground_truth_cam_pose(const std::string& dataset_path) {
+  const std::string timestams_path =
+      dataset_path + "/state_groundtruth_estimate0/data.csv";
+
+  {
+    std::ifstream times(timestams_path);
+
+    int64_t timestamp;
+
+    int id = 0;
+
+    std::cout << timestamp_exist.size() << std::endl;
+    while (times) {
+      std::string line;
+      std::vector<std::string> split_line;
+      std::getline(times, line);
+
+      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
+
+      // ensure that we actually read a new timestamp (and not e.g. just newline
+      // at the end of the file)
+      if (times.fail()) {
+        times.clear();
+        std::string temp;
+        times >> temp;
+        if (temp.size() > 0) {
+          std::cerr << "Skipping '" << temp << "' while reading times."
+                    << std::endl;
+        }
+        continue;
+      }
+
+      split_with_delim(line, split_line, ',');
+
+      // extract camera position
+      //      std::cout << split_line[0] << std::endl;
+      if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
+        Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[1]),
+                             std::stod(split_line[2]));
+        ground_truth_cam_pos.conservativeResize(
+            3, ground_truth_cam_pos.cols() + 1);
+        ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
+      } else {
+        continue;
+      }
+      id++;
+    }
+    std::cerr << "Loaded " << id << " ground truth positions. " << std::endl;
+  }
+}
 ///////////////////////////////////////////////////////////////////////////////
 /// Here the algorithmically interesting implementation begins
 ///////////////////////////////////////////////////////////////////////////////
@@ -824,8 +954,9 @@ bool next_step() {
     // landmarks
     // 3. check grid sparsity, if too sparse. add new landmarks
     // OpticalFlowBetweenFrame_opencv_version(currentframe, image of
-    // currentframge-1, feature_corners, kdl of currentframe-1, image of current
-    // frame, landmarks, md, ){ calculate kdl from last image using optical flow
+    // currentframge-1, feature_corners, kdl of currentframe-1, image of
+    // current frame, landmarks, md, ){ calculate kdl from last image using
+    // optical flow
     //  match data keypoint feature id ->trackid pair saved in md.matches
 
     //}//vo_utils.h, HUANG_DONE
@@ -880,6 +1011,9 @@ bool next_step() {
           md_feat2track_left_recorded, T_w_c, inliers);
       current_pose = T_w_c;
 
+      estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+      estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+
       cameras[tcidl].T_w_c = current_pose;
       cameras[tcidr].T_w_c = current_pose * T_0_1;
       initializeLandmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, md_stereo,
@@ -913,8 +1047,8 @@ bool next_step() {
           current_frame, last_key_frame, imgl_last, imgl, kdl_last, kdl,
           landmarks,
           md_feat2track_left);  // kdl is filled in this function.
-                                // md_feat2track_left.matches stores the current
-                                // frame's feat2track match,
+                                // md_feat2track_left.matches stores the
+                                // current frame's feat2track match,
                                 //注意此处的featureid对每张不同的图都是从0开始的
       // add these points to observation of landmarks  left camera
       // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
@@ -970,10 +1104,10 @@ bool next_step() {
       // add observation of right camera
 
       MatchData md_feat2track_right;
-      MatchData md_stereo_new;  // md_stereo contains all matches, md_stereo_new
-                                // contains only new matches
-      // optical flow to calc keypoints in right camera using new keypoints set
-      // of left.
+      MatchData md_stereo_new;  // md_stereo contains all matches,
+                                // md_stereo_new contains only new matches
+      // optical flow to calc keypoints in right camera using new keypoints
+      // set of left.
       OpticalFlowToRightFrame_opencv_version(
           current_frame, imgl, imgr, kdl, kdr, landmarks, md_feat2track_right,
           md_stereo, md_stereo_new,
@@ -1091,6 +1225,9 @@ bool next_step() {
 
       current_pose = T_w_c;
 
+      estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+      estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+
       cameras[tcidl].T_w_c = current_pose;
       cameras[tcidr].T_w_c = current_pose * T_0_1;
 
@@ -1154,7 +1291,8 @@ bool next_step() {
     //                      cam_z_threshold, projected_points,
     //                      projected_track_ids);
 
-    //    std::cout << "Projected " << projected_track_ids.size() << " points."
+    //    std::cout << "Projected " << projected_track_ids.size() << "
+    //    points."
     //              << std::endl;
 
     KeypointsData kdl;
@@ -1163,7 +1301,8 @@ bool next_step() {
 
     //****************************************ELSE——CHANGE——START*******************************
     // 1. calculate kdl from last image using optical flow
-    TimeCamId tcidl_last(current_frame - 1, 0);  // left image in the last frame
+    TimeCamId tcidl_last(current_frame - 1,
+                         0);  // left image in the last frame
     pangolin::ManagedImage<uint8_t> imgl_last =
         pangolin::LoadImage(images[tcidl_last]);
     KeypointsData kdl_last = feature_corners.at(tcidl_last);
@@ -1200,10 +1339,11 @@ bool next_step() {
 
     int num_of_empty_cells = sparsity(cells, empty_indexes);
     int threshold = 200;  // threshold for minimum num of points
-    int threshold2 = 56;  //  threshold for maximum num of empty cells
+    int threshold2 = 30;  //  threshold for maximum num of empty cells
     int num_newly_added_keypoints = 0;
 
-    //    if (kdl.corners.size() < threshold || num_of_empty_cells > threshold2)
+    //    if (kdl.corners.size() < threshold || num_of_empty_cells >
+    //    threshold2)
     //    {
     // add new landmarks;
 
@@ -1303,13 +1443,16 @@ bool next_step() {
 
     current_pose = T_w_c;
 
+    estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+    estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+
     //    std::cout << current_pose.translation() << std::endl;
 
     feature_corners[tcidl] = kdl;
 
-    if (int(inliers.size()) < new_kf_min_inliers && !opt_running &&
-        (kdl.corners.size() < threshold || num_of_empty_cells > threshold2) &&
-        !opt_finished) {
+    if ((int(inliers.size()) < new_kf_min_inliers ||
+         kdl.corners.size() < threshold || num_of_empty_cells > threshold2) &&
+        !opt_running && !opt_finished) {
       take_keyframe = true;
     }
 
@@ -1322,9 +1465,9 @@ bool next_step() {
       opt_finished = false;
     }
 
-    if (kdl.corners.size() < 150 && opt_running) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
+    //    if (kdl.corners.size() < 150 && opt_running) {
+    //      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    //    }
 
     // update image views
     change_display_to_image(tcidl);
@@ -1398,9 +1541,9 @@ void optimize() {
             << landmarks.size() << " points and " << num_obs << " observations."
             << std::endl;
 
-  // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole second
-  // camera constant is a bit suboptimal, since we only need 1 DoF, but it's
-  // simple and the initial poses should be good from calibration.
+  // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole
+  // second camera constant is a bit suboptimal, since we only need 1 DoF, but
+  // it's simple and the initial poses should be good from calibration.
   FrameId fid = *(kf_frames.begin());
   std::cout << "fid " << fid << std::endl;
 
