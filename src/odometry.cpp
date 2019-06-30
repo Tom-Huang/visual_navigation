@@ -861,11 +861,11 @@ void split_with_delim(const std::string& input,
 
 // TODO PROJECT: load ground truth camera pose
 void load_ground_truth_cam_pose(const std::string& dataset_path) {
-  const std::string timestams_path =
+  const std::string timestamps_path =
       dataset_path + "/state_groundtruth_estimate0/data.csv";
 
   {
-    std::ifstream times(timestams_path);
+    std::ifstream times(timestamps_path);
 
     int64_t timestamp;
 
@@ -897,8 +897,9 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       // extract camera position
       //      std::cout << split_line[0] << std::endl;
       if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
-        Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[1]),
-                             std::stod(split_line[2]));
+        Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[2]),
+                             std::stod(split_line[3]));
+
         ground_truth_cam_pos.conservativeResize(
             3, ground_truth_cam_pos.cols() + 1);
         ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
@@ -1552,7 +1553,7 @@ void optimize() {
   ba_options.optimize_intrinsics = ba_optimize_intrinsics;
   ba_options.use_huber = true;
   ba_options.huber_parameter = reprojection_error_huber_pixel;
-  ba_options.max_num_iterations = 20;
+  ba_options.max_num_iterations = 40;
   ba_options.verbosity_level = ba_verbose;
 
   calib_cam_opt = calib_cam;
