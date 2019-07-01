@@ -363,7 +363,7 @@ int main(int argc, char** argv) {
         Eigen::Index max_cols_gt = ground_truth_transformed.cols();
         for (Eigen::Index i = 0; i < max_cols_gt; i++) {
           //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
-          Eigen::Vector3d p = ground_truth_cam_pos.col(i);
+          Eigen::Vector3d p = ground_truth_transformed.col(i);//ground_truth_cam_pos
           // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
           //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
           pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
