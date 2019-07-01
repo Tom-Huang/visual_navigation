@@ -151,11 +151,14 @@ std::map<std::string, Eigen::Vector3d> timestamp2pos;
 // not
 std::map<std::string, int> timestamp_exist;
 std::map<std::string, int> timestamp_ground_truth;
+std::vector<std::string> timestamp_gt_vec;
+std::map<std::string, FrameId> timestamp_frameid_map;
 
 // TODO PROJECT: estimated camera position of all timestamp
 Mat3X estimated_cam_pos;
 Mat3X ground_truth_transformed;
 ErrorMetricValue* ate;
+Mat3X corresponding_est_cam_pos;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -355,6 +358,20 @@ int main(int argc, char** argv) {
             estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
         Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
             0, truncate_begin, 3, ground_truth_cam_pos.cols());
+
+        if (corresponding_est_cam_pos.cols() == 0) {
+          for (const auto ts_gt : timestamp_gt_vec) {
+            FrameId frameid = timestamp_frameid_map.at(ts_gt);
+            corresponding_est_cam_pos.conservativeResize(
+                3, corresponding_est_cam_pos.cols() + 1);
+            corresponding_est_cam_pos.col(corresponding_est_cam_pos.cols() -
+                                          1) = estimated_cam_pos.col(frameid);
+          }
+          std::cout << "corresponding cam pos size: "
+                    << corresponding_est_cam_pos.cols() << std::endl;
+          std::cout << "ground truth cam pos size: "
+                    << ground_truth_cam_pos.cols() << std::endl;
+        }
 
         if (ground_truth_transformed.cols() == 0) {
           align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
@@ -817,6 +834,7 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
       std::string s_timestamp = line.substr(0, 19);
       std::cout << "load_data timestamp: " << s_timestamp << std::endl;
       timestamp_exist[s_timestamp] = 1;
+      timestamp_frameid_map[s_timestamp] = id;
 
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
@@ -933,6 +951,7 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
         ground_truth_cam_pos.conservativeResize(
             3, ground_truth_cam_pos.cols() + 1);
         ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
+        timestamp_gt_vec.push_back(split_line[0]);
       } else {
         continue;
       }
