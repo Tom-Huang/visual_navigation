@@ -150,9 +150,12 @@ std::map<std::string, Eigen::Vector3d> timestamp2pos;
 // corresponds to an integer 0 or 1, 1 represent the time stamp exist, otherwise
 // not
 std::map<std::string, int> timestamp_exist;
+std::map<std::string, int> timestamp_ground_truth;
 
 // TODO PROJECT: estimated camera position of all timestamp
 Mat3X estimated_cam_pos;
+Mat3X ground_truth_transformed;
+ErrorMetricValue* ate;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -352,10 +355,16 @@ int main(int argc, char** argv) {
             estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
         Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
             0, truncate_begin, 3, ground_truth_cam_pos.cols());
-        Mat3X ground_truth_transformed;
-        ErrorMetricValue* ate;
-        align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
-                          ground_truth_transformed, ate);
+
+        if (ground_truth_transformed.cols() == 0) {
+          align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
+                            ground_truth_transformed, ate);
+          //          std::cout << "rmse: " << ate->rmse << std::endl;
+          //          std::cout << "mean: " << ate->mean << std::endl;
+          //          std::cout << "min: " << ate->min << std::endl;
+          //          std::cout << "max: " << ate->max << std::endl;
+          //          std::cout << "count: " << ate->count << std::endl;
+        }
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
         glColor3ubv(color_gt);
@@ -363,10 +372,29 @@ int main(int argc, char** argv) {
         Eigen::Index max_cols_gt = ground_truth_transformed.cols();
         for (Eigen::Index i = 0; i < max_cols_gt; i++) {
           //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
-          Eigen::Vector3d p = ground_truth_transformed.col(i);//ground_truth_cam_pos
+
+          Eigen::Vector3d p =
+              ground_truth_transformed.col(i);  // ground_truth_cam_pos
+
           // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
           //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
           pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+        }
+
+        glEnd();
+
+        // plot estimated points used for alignment
+        glPointSize(7.0);
+        const u_int8_t color[3]{0, 0, 255};
+        glColor3ubv(color);
+        glBegin(GL_POINTS);
+        Eigen::Index max_cols = estimated_cam_pos.cols();
+        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
+          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
+          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
         }
 
         glEnd();
@@ -877,8 +905,8 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       std::vector<std::string> split_line;
       std::getline(times, line);
 
+      //      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
       if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
-
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
       if (times.fail()) {
@@ -897,6 +925,8 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       // extract camera position
       //      std::cout << split_line[0] << std::endl;
       if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
+        timestamp_ground_truth[split_line[0]] = 1;
+        std::cout << split_line[0] << std::endl;
         Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[2]),
                              std::stod(split_line[3]));
 
@@ -908,6 +938,29 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       }
       id++;
     }
+
+    int iter = 0;
+    int miss_num = 0;
+    for (const auto ts : timestamp_exist) {
+      std::cout << "iter: " << iter++ << std::endl;
+
+      if (timestamp_ground_truth.find(ts.first) !=
+          timestamp_ground_truth.end()) {
+        std::cout << ts.first << ", " << ts.first << ", "
+                  << timestamp_ground_truth[ts.first] << std::endl;
+      } else {
+        miss_num++;
+        std::cout << ts.first << ", " << std::endl;
+      }
+    }
+
+    std::cerr << "miss number: " << miss_num << std::endl;
+
+    std::cerr << timestamp_exist.size() << ", " << timestamp_ground_truth.size()
+              << std::endl;
+
+    std::cerr << "ground_truth_cam_pos col size: "
+              << ground_truth_cam_pos.cols() << std::endl;
     std::cerr << "Loaded " << id << " ground truth positions. " << std::endl;
   }
 }
@@ -1466,9 +1519,9 @@ bool next_step() {
       opt_finished = false;
     }
 
-    //    if (kdl.corners.size() < 150 && opt_running) {
-    //      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    //    }
+    if (kdl.corners.size() < 150 && opt_running) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
 
     // update image views
     change_display_to_image(tcidl);
@@ -1553,7 +1606,7 @@ void optimize() {
   ba_options.optimize_intrinsics = ba_optimize_intrinsics;
   ba_options.use_huber = true;
   ba_options.huber_parameter = reprojection_error_huber_pixel;
-  ba_options.max_num_iterations = 40;
+  ba_options.max_num_iterations = 20;
   ba_options.verbosity_level = ba_verbose;
 
   calib_cam_opt = calib_cam;

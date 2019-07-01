@@ -1082,14 +1082,14 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
     //    const Mat3X diff = data - ((s * R * model).colwise() + t);
     const Mat3X diff = data - ((R * model).colwise() + t);
     const ArrX errors = diff.colwise().norm().transpose();
-    auto& ref = *ate;
-    ref.rmse = std::sqrt(errors.square().sum() / errors.rows());
-    ref.mean = errors.mean();
-    ref.min = errors.minCoeff();
-    ref.max = errors.maxCoeff();
-    ref.count = errors.rows();
+    //  auto& ref = *ate;
+    ate->rmse = std::sqrt(errors.square().sum() / errors.rows());
+    ate->mean = errors.mean();
+    ate->min = errors.minCoeff();
+    ate->max = errors.maxCoeff();
+    ate->count = errors.rows();
   }
-
+  std::cout << "ate calculation succeeds." << std::endl;
   return Sophus::Sim3d(Sophus::RxSO3d(1, R), t);
 }
 
