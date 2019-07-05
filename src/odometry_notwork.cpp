@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pangolin/image/image_io.h>
 #include <pangolin/image/typed_image.h>
 #include <pangolin/pangolin.h>
+#include <pangolin/gl/gl.hpp>
 
 #include <CLI/CLI.hpp>
 
@@ -91,6 +92,8 @@ constexpr int NUM_CAMS = 2;
 ///////////////////////////////////////////////////////////////////////////////
 
 int current_frame = 0;
+int last_key_frame = 0;
+MatchData last_feat2track_left;
 Sophus::SE3d current_pose;
 bool take_keyframe = true;
 TrackId next_landmark_id = 0;
@@ -138,24 +141,18 @@ Landmarks old_landmarks;
 /// determining outliers; indexed by images
 ImageProjections image_projections;
 
-// Project: create a vector storing all camera position for alignment with
+// TODO PROJECT: create a vector storing all camera position for alignment with
 // ground truth
 Mat3X ground_truth_cam_pos;
 std::map<std::string, Eigen::Vector3d> timestamp2pos;
 
-// Project: vector of time stamp for finding ground truth, each timestamp
+// TODO PROJECT: vector of time stamp for finding ground truth, each timestamp
 // corresponds to an integer 0 or 1, 1 represent the time stamp exist, otherwise
 // not
 std::map<std::string, int> timestamp_exist;
-std::map<std::string, int> timestamp_ground_truth;
-std::vector<std::string> timestamp_gt_vec;
-std::map<std::string, FrameId> timestamp_frameid_map;
 
-// Project: estimated camera position of all timestamp
+// TODO PROJECT: estimated camera position of all timestamp
 Mat3X estimated_cam_pos;
-Mat3X ground_truth_transformed;
-ErrorMetricValue* ate;
-Mat3X corresponding_est_cam_pos;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -205,7 +202,7 @@ pangolin::Var<double> match_max_dist_2d("hidden.match_max_dist_2d", 20.0, 1.0,
 
 pangolin::Var<int> new_kf_min_inliers("hidden.new_kf_min_inliers", 80, 1, 200);
 
-pangolin::Var<int> max_num_kfs("hidden.max_num_kfs", 10, 5, 20);
+pangolin::Var<int> max_num_kfs("hidden.max_num_kfs", 10, 2, 20);
 
 pangolin::Var<double> cam_z_threshold("hidden.cam_z_threshold", 0.1, 1.0, 0.0);
 
@@ -329,7 +326,6 @@ int main(int argc, char** argv) {
 
       draw_scene();
 
-      // *********************Project:
       if (estimated_cam_pos.cols() >= 1) {
         // glLineWidth(0.1f);
         glPointSize(5.0);
@@ -347,36 +343,18 @@ int main(int argc, char** argv) {
 
         glEnd();
       }
-      // visualization of the ground truth
-      if (estimated_cam_pos.cols() >= 2700) {
+
+      // TODO PROJECT: visualize the trajectory of estimated camera pose
+      // TODO PROJECT: visualize the trajectory of ground truth camera pose
+      if (estimated_cam_pos.cols() >= 2700) {  // 2700
         Eigen::Index truncate_begin =
             estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
         Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
             0, truncate_begin, 3, ground_truth_cam_pos.cols());
-
-        if (corresponding_est_cam_pos.cols() == 0) {
-          for (const auto ts_gt : timestamp_gt_vec) {
-            FrameId frameid = timestamp_frameid_map.at(ts_gt);
-            corresponding_est_cam_pos.conservativeResize(
-                3, corresponding_est_cam_pos.cols() + 1);
-            corresponding_est_cam_pos.col(corresponding_est_cam_pos.cols() -
-                                          1) = estimated_cam_pos.col(frameid);
-          }
-          std::cout << "corresponding cam pos size: "
-                    << corresponding_est_cam_pos.cols() << std::endl;
-          std::cout << "ground truth cam pos size: "
-                    << ground_truth_cam_pos.cols() << std::endl;
-        }
-
-        if (ground_truth_transformed.cols() == 0) {
-          align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
-                            ground_truth_transformed, ate);
-          //          std::cout << "rmse: " << ate->rmse << std::endl;
-          //          std::cout << "mean: " << ate->mean << std::endl;
-          //          std::cout << "min: " << ate->min << std::endl;
-          //          std::cout << "max: " << ate->max << std::endl;
-          //          std::cout << "count: " << ate->count << std::endl;
-        }
+        Mat3X ground_truth_transformed;
+        ErrorMetricValue* ate;
+        align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
+                          ground_truth_transformed, ate);
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
         glColor3ubv(color_gt);
@@ -384,34 +362,15 @@ int main(int argc, char** argv) {
         Eigen::Index max_cols_gt = ground_truth_transformed.cols();
         for (Eigen::Index i = 0; i < max_cols_gt; i++) {
           //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
-
           Eigen::Vector3d p =
-              ground_truth_transformed.col(i);  // ground_truth_cam_pos
-
+              ground_truth_transformed.col(i);  // estimated_cam_pos.col
           // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
           //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
           pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
         }
 
         glEnd();
-
-        // plot estimated points used for alignment
-        glPointSize(7.0);
-        const u_int8_t color[3]{0, 0, 255};
-        glColor3ubv(color);
-        glBegin(GL_POINTS);
-        Eigen::Index max_cols = estimated_cam_pos.cols();
-        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
-          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
-          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
-          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
-          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
-          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
-        }
-
-        glEnd();
       }
-      //********************** Project_END
 
       img_view_display.Activate();
 
@@ -501,14 +460,14 @@ void draw_image_overlay(pangolin::View& v, size_t view_id) {
 
       for (size_t i = 0; i < cr.corners.size(); i++) {
         Eigen::Vector2d c = cr.corners[i];
-        double angle = cr.corner_angles[i];
+        //        double angle = cr.corner_angles[i];
         pangolin::glDrawCirclePerimeter(c[0], c[1], 3.0);
 
         Eigen::Vector2d r(3, 0);
-        Eigen::Rotation2Dd rot(angle);
-        r = rot * r;
+        //        Eigen::Rotation2Dd rot(angle);
+        //        r = rot * r;
 
-        pangolin::glDrawLine(c, c + r);
+        //        pangolin::glDrawLine(c, c + r);
       }
 
       pangolin::GlFont::I()
@@ -556,14 +515,14 @@ void draw_image_overlay(pangolin::View& v, size_t view_id) {
                                   : it->second.matches[i].second;
 
           Eigen::Vector2d c = cr.corners[c_idx];
-          double angle = cr.corner_angles[c_idx];
+          //          double angle = cr.corner_angles[c_idx];
           pangolin::glDrawCirclePerimeter(c[0], c[1], 3.0);
 
           Eigen::Vector2d r(3, 0);
-          Eigen::Rotation2Dd rot(angle);
-          r = rot * r;
+          //          Eigen::Rotation2Dd rot(angle);
+          //          r = rot * r;
 
-          pangolin::glDrawLine(c, c + r);
+          //          pangolin::glDrawLine(c, c + r);
 
           if (show_ids) {
             pangolin::GlFont::I().Text("%d", i).Draw(c[0], c[1]);
@@ -588,14 +547,14 @@ void draw_image_overlay(pangolin::View& v, size_t view_id) {
                                   : it->second.inliers[i].second;
 
           Eigen::Vector2d c = cr.corners[c_idx];
-          double angle = cr.corner_angles[c_idx];
+          //          double angle = cr.corner_angles[c_idx];
           pangolin::glDrawCirclePerimeter(c[0], c[1], 3.0);
 
           Eigen::Vector2d r(3, 0);
-          Eigen::Rotation2Dd rot(angle);
-          r = rot * r;
+          //          Eigen::Rotation2Dd rot(angle);
+          //          r = rot * r;
 
-          pangolin::glDrawLine(c, c + r);
+          //          pangolin::glDrawLine(c, c + r);
 
           if (show_ids) {
             pangolin::GlFont::I().Text("%d", i).Draw(c[0], c[1]);
@@ -826,6 +785,10 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
       if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
 
       std::string img_name = line.substr(20, line.size() - 21);
+      // TODO PROJECT: store timestamp to timestamp_exist map
+      std::string s_timestamp = line.substr(0, 19);
+      std::cout << "load_data timestamp: " << s_timestamp << std::endl;
+      timestamp_exist[s_timestamp] = 1;
 
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
@@ -883,7 +846,7 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
   show_frame2.Meta().gui_changed = true;
 }
 
-// Project: help to split a string with a delimiter, return a vector of
+// TODO PROJECT: help to split a string with a delimiter, return a vector of
 // string split by delimiter
 void split_with_delim(const std::string& input,
                       std::vector<std::string>& output, char delim) {
@@ -896,7 +859,7 @@ void split_with_delim(const std::string& input,
   }
 }
 
-// Project: load ground truth camera pose
+// TODO PROJECT: load ground truth camera pose
 void load_ground_truth_cam_pose(const std::string& dataset_path) {
   const std::string timestamps_path =
       dataset_path + "/state_groundtruth_estimate0/data.csv";
@@ -914,8 +877,8 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       std::vector<std::string> split_line;
       std::getline(times, line);
 
-      //      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
       if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
+
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
       if (times.fail()) {
@@ -934,47 +897,23 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       // extract camera position
       //      std::cout << split_line[0] << std::endl;
       if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
-        timestamp_ground_truth[split_line[0]] = 1;
-        std::cout << split_line[0] << std::endl;
         Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[2]),
                              std::stod(split_line[3]));
+        Eigen::Matrix3d transf_sensor_cam;
+        transf_sensor_cam << 0, 1, 0, -1, 0, 0, 0, 0, 1;
+        // p_3d = p_3d.transpose() * transf_sensor_cam;
 
         ground_truth_cam_pos.conservativeResize(
             3, ground_truth_cam_pos.cols() + 1);
         ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
-        timestamp_gt_vec.push_back(split_line[0]);
       } else {
         continue;
       }
       id++;
     }
-
-    int iter = 0;
-    int miss_num = 0;
-    for (const auto ts : timestamp_exist) {
-      std::cout << "iter: " << iter++ << std::endl;
-
-      if (timestamp_ground_truth.find(ts.first) !=
-          timestamp_ground_truth.end()) {
-        std::cout << ts.first << ", " << ts.first << ", "
-                  << timestamp_ground_truth[ts.first] << std::endl;
-      } else {
-        miss_num++;
-        std::cout << ts.first << ", " << std::endl;
-      }
-    }
-
-    std::cerr << "miss number: " << miss_num << std::endl;
-
-    std::cerr << timestamp_exist.size() << ", " << timestamp_ground_truth.size()
-              << std::endl;
-
-    std::cerr << "ground_truth_cam_pos col size: "
-              << ground_truth_cam_pos.cols() << std::endl;
     std::cerr << "Loaded " << id << " ground truth positions. " << std::endl;
   }
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 /// Here the algorithmically interesting implementation begins
 ///////////////////////////////////////////////////////////////////////////////
@@ -1007,63 +946,333 @@ bool next_step() {
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
     pangolin::ManagedImage<uint8_t> imgr = pangolin::LoadImage(images[tcidr]);
 
+    //************************************CHANGE_START******************************************
+    // first frame:
+    // 1. detect keypoints
+    // 2. optical flow for right camera
+    // 3. triangulate / initialize landmrks
+
+    // replace this part with
+    // 1. calculate kdl from last image using optical flow
+    // 2. check number of calculated points, if under a threshold, add new
+    // landmarks
+    // 3. check grid sparsity, if too sparse. add new landmarks
+    // OpticalFlowBetweenFrame_opencv_version(currentframe, image of
+    // currentframge-1, feature_corners, kdl of currentframe-1, image of
+    // current frame, landmarks, md, ){ calculate kdl from last image using
+    // optical flow
+    //  match data keypoint feature id ->trackid pair saved in md.matches
+
+    //}//vo_utils.h, HUANG_DONE
+
+    MatchData md_feat2track_left;
+
+    if (current_frame == 0) {
+      //      detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
+      //                                    rotate_features);
+      detectKeypoints(imgl, kdl, num_features_per_image);
+
+      OpticalFlowFirstStereoPair_opencv_version(current_frame, imgl, imgr, kdl,
+                                                kdr, landmarks, md_stereo);
+
+      md_stereo.T_i_j = T_0_1;
+
+      Eigen::Matrix3d E;
+      computeEssential(T_0_1, E);
+
+      //      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
+      //                       md_stereo.matches, feature_match_max_dist,
+      //                       feature_match_test_next_best);
+
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+
+      std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
+                << std::endl;
+
+      for (int i = 0; i < md_stereo.inliers.size(); i++) {
+        kdl.corners_inliers.push_back(kdl.corners[md_stereo.inliers[i].first]);
+      }
+
+      //    MatchData md;
+
+      //    find_matches_landmarks(kdl, landmarks, feature_corners,
+      //    projected_points,
+      //                           projected_track_ids, match_max_dist_2d,
+      //                           feature_match_max_dist,
+      //                           feature_match_test_next_best, md);
+
+      std::cout << "KF Found " << md_feat2track_left.matches.size()
+                << " frame to frame matches." << std::endl;
+
+      Sophus::SE3d T_w_c;
+      std::vector<int> inliers;
+      MatchData md_feat2track_left_recorded;  // feature that can be found in
+                                              // landmarks
+      localize_camera_optical_flow(
+          calib_cam.intrinsics[0], kdl, landmarks,
+          reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
+          md_feat2track_left_recorded, T_w_c, inliers);
+      current_pose = T_w_c;
+
+      estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+      estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+
+      cameras[tcidl].T_w_c = current_pose;
+      cameras[tcidr].T_w_c = current_pose * T_0_1;
+      initializeLandmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, md_stereo,
+                          landmarks, next_landmark_id);
+      kdl.trackids.clear();
+      for (int i = 0; i < kdl.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidl, landmarks, i);
+        kdl.trackids.push_back(trackid);
+      }
+      kdr.trackids.clear();
+      for (int i = 0; i < kdr.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidr, landmarks, i);
+        kdr.trackids.push_back(trackid);
+      }
+      feature_corners[tcidl] = kdl;
+      feature_corners[tcidr] = kdr;
+      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+
+      remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
+                           old_landmarks, kf_frames);
+
+    } else {  // for second and later frames
+      //注意：下面代码都在处理从第二组图片开始的事情！！！！！！！
+      TimeCamId tcidl_last(current_frame - 1,
+                           0);  // left image in the last frame
+      pangolin::ManagedImage<uint8_t> imgl_last =
+          pangolin::LoadImage(images[tcidl_last]);
+      KeypointsData kdl_last = feature_corners.at(tcidl_last);
+
+      OpticalFlowBetweenFrame_opencv_version(
+          current_frame, last_key_frame, imgl_last, imgl, kdl_last, kdl,
+          landmarks,
+          md_feat2track_left);  // kdl is filled in this function.
+                                // md_feat2track_left.matches stores the
+                                // current frame's feat2track match,
+                                //注意此处的featureid对每张不同的图都是从0开始的
+      // add these points to observation of landmarks  left camera
+      // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
+      // current_frame, ){
+
+      //  md.matches = [featureid, trackid];
+      //}//HUANG_DONE
+      //      add_points_to_landmark_obs_left(md_feat2track_left, kdl,
+      //      landmarks,
+      //                                      current_frame);
+      // TODO: kdl这个变量在函数中没有用
+
+      // make_cells(image_width, image_length, num_of_colums/rows,
+      // std::vector<cell> cells){
+      //  get cells with position value but without number of points value.
+
+      //} //common_type.h HUANG_DONE
+      std::vector<Cell> cells;
+
+      //{
+      // TODO: kdl is in what corrdinate?
+      //} TAN_DONE
+
+      int h = 480, w = 752, rnum = 16,
+          cnum = 16;         // TODO: give them a number!!
+      int cellh = h / rnum;  // they are for later use, not for makecells
+      int cellw = w / cnum;
+      makeCells(h, w, rnum, cnum, cells);
+      std::vector<int> empty_indexes;
+
+      check_num_points_in_cells(
+          kdl, cells);  //-> num_of_points; std::vector<Cell> cells
+
+      int num_of_empty_cells = sparsity(cells, empty_indexes);
+      int threshold = 100;   // threshold for minimum num of points
+      int threshold2 = 100;  //  threshold for maximum num of empty cells
+      int num_newly_added_keypoints = 0;
+
+      //      if (kdl.corners.size() < threshold || num_of_empty_cells >
+      //      threshold2) {
+      // add new keypoints;
+      add_new_keypoints_from_empty_cells_v2(
+          empty_indexes, num_newly_added_keypoints, imgl, kdl,
+          num_features_per_image, cells, cellw, cellh, rnum, cnum);
+
+      std::cout << "KF Found " << num_newly_added_keypoints << " keypoints"
+                << std::endl;
+
+      // the number of newly added keypoints in left frame is saved in
+      // num_newly_added_keypoints
+      //      }
+
+      // add observation of right camera
+
+      MatchData md_feat2track_right;
+      MatchData md_stereo_new;  // md_stereo contains all matches,
+                                // md_stereo_new contains only new matches
+      // optical flow to calc keypoints in right camera using new keypoints
+      // set of left.
+      OpticalFlowToRightFrame_opencv_version(
+          current_frame, imgl, imgr, kdl, kdr, landmarks, md_feat2track_right,
+          md_stereo, md_stereo_new,
+          num_newly_added_keypoints);  // fill kdr according to kdl, fill
+                                       // md_stereo
+
+      std::cout << md_feat2track_right.matches.size() << ", "
+                << kdr.corners.size() - num_newly_added_keypoints << std::endl;
+
+      // and add them to existing kdr
+      //    add_points_to_landmarks_obs_right(md_stereo, md_feat2track_left,
+      //    landmarks,
+      //                                      current_frame);  // HUANG
+
+      //      add_points_to_landmark_obs_right(md_feat2track_right, kdr,
+      //      landmarks,
+      //                                       current_frame);
+
+      // (if take key point):  triangulation using the last i points.(fullfil
+      // the pos of landmark)
+      KeypointsData kdl_new_part, kdr_new_part;
+
+      for (auto match : md_stereo_new.matches) {
+        kdl_new_part.corners.push_back(kdl.corners[match.first]);
+        kdr_new_part.corners.push_back(kdr.corners[match.second]);
+      }
+
+      // add kdr and kdl to feature_corners
+      //    feature_corners.insert(std::make_pair(tcidl, kdl));
+      //    feature_corners.insert(std::make_pair(tcidr, kdr));
+
+      /*
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
                                   rotate_features);
+    */
+      //***********************************CHANGE_END***********************************
+      md_stereo.T_i_j = T_0_1;
 
-    md_stereo.T_i_j = T_0_1;
+      Eigen::Matrix3d E;
+      computeEssential(T_0_1, E);
 
-    Eigen::Matrix3d E;
-    computeEssential(T_0_1, E);
+      //      matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
+      //                       md_stereo.matches, feature_match_max_dist,
+      //                       feature_match_test_next_best);
 
-    matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
-                     md_stereo.matches, feature_match_max_dist,
-                     feature_match_test_next_best);
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo);
 
-    findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
-                         calib_cam.intrinsics[1], E, 1e-3, md_stereo);
+      findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
+                           calib_cam.intrinsics[1], E, 1e-3, md_stereo_new);
 
-    std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
-              << std::endl;
+      //      cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+      //      cv::Mat imgr_cv(imgr.h, imgr.w, CV_8U, imgr.ptr);
+      //      // for visualization in opencv to check bugs
+      //      for (const auto i_j_pair : md_feat2track_left.matches) {
+      //        int i = i_j_pair.first;   // featid
+      //        int j = i_j_pair.second;  // trackid
 
-    feature_corners[tcidl] = kdl;
-    feature_corners[tcidr] = kdr;
-    feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+      //        cv::Point left;
 
-    MatchData md;
+      //        left.x = int(kdl.corners[i](0));
+      //        left.y = int(kdl.corners[i](1));
 
-    find_matches_landmarks(kdl, landmarks, feature_corners, projected_points,
-                           projected_track_ids, match_max_dist_2d,
-                           feature_match_max_dist, feature_match_test_next_best,
-                           md);
+      //        cv::circle(imgl_cv, left, 5, (255, 0, 0));
+      //        cv::putText(imgl_cv, std::to_string(j), left,
+      //        cv::FONT_HERSHEY_SIMPLEX,
+      //                    1, (255, 255, 255), 2);
+      //      }
+      //      for (const auto i_j_pair : md_feat2track_right.matches) {
+      //        int i = i_j_pair.first;   // featid
+      //        int j = i_j_pair.second;  // trackid
+      //        cv::Point right;
+      //        right.x = int(kdr.corners[i](0));
+      //        right.y = int(kdr.corners[i](1));
+      //        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
+      //        TrackId trackid = kdl_last.trackids[i];  //
+      //        //              findTrackId(tcid_last_key,
+      //        //                  landmarks, i);
+      //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
+      //        cv::putText(imgr_cv, std::to_string(j), right,
+      //        cv::FONT_HERSHEY_SIMPLEX,
+      //                    1, (255, 255, 255), 2);
+      //      }
 
-    std::cout << "KF Found " << md.matches.size() << " matches." << std::endl;
+      //      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
+      //      cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
+      //      cv::imshow("left", imgl_cv);
+      //      cv::imshow("right", imgr_cv);
+      //      cv::waitKey();
 
-    Sophus::SE3d T_w_c;
-    std::vector<int> inliers;
-    localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
-                    reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
-                    inliers);
+      std::cout << "KF Found " << md_stereo.inliers.size() << " stereo-matches."
+                << std::endl;
 
-    //****************Project
-    estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
-    estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
-    //****************Project_END
+      //    MatchData md;
 
-    current_pose = T_w_c;
+      //    find_matches_landmarks(kdl, landmarks, feature_corners,
+      //    projected_points,
+      //                           projected_track_ids, match_max_dist_2d,
+      //                           feature_match_max_dist,
+      //                           feature_match_test_next_best, md);
 
-    cameras[tcidl].T_w_c = current_pose;
-    cameras[tcidr].T_w_c = current_pose * T_0_1;
+      std::cout << "KF Found " << md_feat2track_left.matches.size()
+                << "frame to frame matches." << std::endl;
 
-    add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
-                      md_stereo, md, landmarks, next_landmark_id);
+      Sophus::SE3d T_w_c;
+      std::vector<int> inliers;
+      MatchData md_feat2track_left_recorded;  // feature that can be found in
+                                              // landmarks
+      localize_camera_optical_flow(
+          calib_cam.intrinsics[0], kdl, landmarks,
+          reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
+          md_feat2track_left_recorded, T_w_c, inliers);
 
-    remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks, old_landmarks,
-                         kf_frames);
+      current_pose = T_w_c;
+
+      estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+      estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+
+      cameras[tcidl].T_w_c = current_pose;
+      cameras[tcidr].T_w_c = current_pose * T_0_1;
+
+      add_new_landmarks_optical_flow_version(
+          tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers, md_stereo,
+          md_feat2track_left_recorded, landmarks, next_landmark_id);
+
+      // Triangulation 步骤应该晚点调用，以下暂给出对应新代码需要给进去的参数
+      triangulate_new_part(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
+                           md_stereo_new, md_feat2track_left, landmarks,
+                           next_landmark_id);
+
+      kdl.trackids.clear();
+      kdr.trackids.clear();
+      for (int i = 0; i < kdl.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidl, landmarks, i);
+        kdl.trackids.push_back(trackid);
+      }
+      kdr.trackids.clear();
+      for (int i = 0; i < kdr.corners.size(); i++) {
+        TrackId trackid = findTrackId(tcidr, landmarks, i);
+        kdr.trackids.push_back(trackid);
+      }
+
+      feature_corners[tcidl] = kdl;
+      feature_corners[tcidr] = kdr;
+      feature_matches[std::make_pair(tcidl, tcidr)] = md_stereo;
+
+      remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
+                           old_landmarks, kf_frames);
+    }
+    // update image views
+    change_display_to_image(tcidl);
+    change_display_to_image(tcidr);
+
     optimize();
 
     current_pose = cameras[tcidl].T_w_c;
+
+    std::cout << "Current frame ID: " << current_frame << std::endl;
+    std::cout << cameras[tcidl].T_w_c.translation() << std::endl;
 
     // update image views
     change_display_to_image(tcidl);
@@ -1071,49 +1280,183 @@ bool next_step() {
 
     compute_projections();
 
+    last_key_frame = current_frame;
+    last_feat2track_left = md_feat2track_left;
     current_frame++;
     return true;
-  } else {
+  } else {  // not key frame
     TimeCamId tcidl(current_frame, 0), tcidr(current_frame, 1);
 
     std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>>
         projected_points;
     std::vector<TrackId> projected_track_ids;
 
-    project_landmarks(current_pose, calib_cam.intrinsics[0], landmarks,
-                      cam_z_threshold, projected_points, projected_track_ids);
+    //    project_landmarks(current_pose, calib_cam.intrinsics[0], landmarks,
+    //                      cam_z_threshold, projected_points,
+    //                      projected_track_ids);
 
-    std::cout << "Projected " << projected_track_ids.size() << " points."
-              << std::endl;
+    //    std::cout << "Projected " << projected_track_ids.size() << "
+    //    points."
+    //              << std::endl;
 
     KeypointsData kdl;
 
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
 
-    detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
-                                  rotate_features);
+    //****************************************ELSE——CHANGE——START*******************************
+    // 1. calculate kdl from last image using optical flow
+    TimeCamId tcidl_last(current_frame - 1,
+                         0);  // left image in the last frame
+    pangolin::ManagedImage<uint8_t> imgl_last =
+        pangolin::LoadImage(images[tcidl_last]);
+    KeypointsData kdl_last = feature_corners.at(tcidl_last);
 
-    feature_corners[tcidl] = kdl;
+    MatchData md_feat2track_left;
+    OpticalFlowBetweenFrame_opencv_version(current_frame, last_key_frame,
+                                           imgl_last, imgl, kdl_last, kdl,
+                                           landmarks, md_feat2track_left);
 
-    MatchData md;
-    find_matches_landmarks(kdl, landmarks, feature_corners, projected_points,
-                           projected_track_ids, match_max_dist_2d,
-                           feature_match_max_dist, feature_match_test_next_best,
-                           md);
+    //    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
+    //                                    current_frame);
+    //    OpticalFlowBetweenFrame_opencv_version(image of currentframge - 1,
+    //                                           kdl of currentframe - 1,
+    //                                           image of current frame, ){
+    //        // calculate kdl from last image using optical flow
+    //        match data keypoints->trackid pair saved in md.matches}
 
-    std::cout << "Found " << md.matches.size() << " matches." << std::endl;
+    // add these points to observation of landmarks
+
+    // 2. calculate num of points, and sparsity
+    std::vector<Cell> cells;
+    int h = 752, w = 480, rnum = 16,
+        cnum = 16;         // TODO: give them a number!!
+    int cellh = h / rnum;  // they are for later use, not for makecells
+    int cellw = w / cnum;
+    makeCells(h, w, rnum, cnum, cells);
+
+    check_num_points_in_cells(kdl, cells);
+    //    check_num_points()
+    //        ->num of points;
+    //    std::vector<Cell> cells sparsity(cells);
+    //    ->num_of_empty_cells
+    std::vector<int> empty_indexes;
+
+    int num_of_empty_cells = sparsity(cells, empty_indexes);
+    int threshold = 200;  // threshold for minimum num of points
+    int threshold2 = 30;  //  threshold for maximum num of empty cells
+    int num_newly_added_keypoints = 0;
+
+    //    if (kdl.corners.size() < threshold || num_of_empty_cells >
+    //    threshold2)
+    //    {
+    // add new landmarks;
+
+    //      add_new_keypoints_from_empty_cells(empty_indexes,
+    //                                          num_newly_added_keypoints,
+    //                                         imgl, kdl, cells, cellw,
+    //                                         cellh);
+    // the number of newly added keypoints in left frame is saved in
+    // num_newly_added_keypoints
+    //    }
+
+    // 3. check number of calculated points, if under a threshold OR check
+    // grid sparsity, if too sparse.  let next be key frame.   do not add
+    // new landmarks
+    //    if (num_of_points < threshold || num_of_empty_cells > threshold2) {
+    //      // set flag of key framge to be true;
+
+    //      // do not add new landmarks now ;
+    //      /* int i=0;//to calculate the number of newly added keypoints
+    //      for(every empty cell in cells){
+    //        detectKeypoints(imgl according to empty cell bound, output=
+    //        keypoints); original_keypoints.pushback(keypoints); i++;
+    //      }*/
+    //    }
+
+    // optical flow to right camera using new keypoints set and add them to
+    // existing kdr
+    //************************************ELSE-CHANGE-END*******************************
+
+    //    detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
+    //                                  rotate_features);
+
+    //    MatchData md;
+    //    find_matches_landmarks(kdl, landmarks, feature_corners,
+    //    projected_points,
+    //                           projected_track_ids, match_max_dist_2d,
+    //                           feature_match_max_dist,
+    //                           feature_match_test_next_best, md);
+
+    //    cv::Mat imgl_cv(imgl.h, imgl.w, CV_8U, imgl.ptr);
+    //    cv::Mat imgr_cv(imgl_last.h, imgl_last.w, CV_8U, imgl_last.ptr);
+    //    // for visualization in opencv to check bugs
+    //    if (current_frame > 105) {
+    //      for (const auto i_j_pair : md_feat2track_left.inliers) {
+    //        int i = i_j_pair.first;   // featid
+    //        int j = i_j_pair.second;  // trackid
+
+    //        cv::Point left;
+
+    //        left.x = int(kdl.corners[i](0));
+    //        left.y = int(kdl.corners[i](1));
+
+    //        cv::circle(imgl_cv, left, 5, (255, 0, 0));
+    //        cv::putText(imgl_cv, std::to_string(j), left,
+    //        cv::FONT_HERSHEY_SIMPLEX,
+    //                    1, (255, 255, 255), 2);
+    //      }
+    //      for (const auto i_j_pair : last_feat2track_left.inliers) {
+    //        int i = i_j_pair.first;   // featid
+    //        int j = i_j_pair.second;  // trackid
+    //        cv::Point right;
+    //        right.x = int(kdl_last.corners[i](0));
+    //        right.y = int(kdl_last.corners[i](1));
+    //        TimeCamId tcid_last_key = std::make_pair(last_key_frame, 0);
+    //        TrackId trackid =
+    //            kdl_last.trackids[i];  // findTrackId(tcid_last_key,
+    //            landmarks, i);
+    //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
+    //        cv::putText(imgr_cv, std::to_string(j), right,
+    //        cv::FONT_HERSHEY_SIMPLEX,
+    //                    1, (255, 255, 255), 2);
+    //      }
+
+    //      cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
+    //      cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
+    //      cv::imshow("left", imgl_cv);
+    //      cv::imshow("right", imgr_cv);
+    //      cv::waitKey();
+    //    }
+
+    std::cout << "Found " << md_feat2track_left.matches.size()
+              << "frame to frame matches." << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
+    MatchData md_feat2track_left_recorded;  // feature that can be found in
+                                            // landmarks
 
-    localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
-                    reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
-                    inliers);
+    localize_camera_optical_flow(calib_cam.intrinsics[0], kdl, landmarks,
+                                 reprojection_error_pnp_inlier_threshold_pixel,
+                                 md_feat2track_left,
+                                 md_feat2track_left_recorded, T_w_c, inliers);
+
+    for (int i = 0; i < inliers.size(); i++) {
+      kdl.corners_inliers.push_back(kdl.corners[inliers[i]]);
+    }
 
     current_pose = T_w_c;
 
-    if (int(inliers.size()) < new_kf_min_inliers && !opt_running &&
-        !opt_finished) {
+    estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+    estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+
+    //    std::cout << current_pose.translation() << std::endl;
+
+    feature_corners[tcidl] = kdl;
+
+    if ((int(inliers.size()) < new_kf_min_inliers ||
+         kdl.corners.size() < threshold || num_of_empty_cells > threshold2) &&
+        !opt_running && !opt_finished) {
       take_keyframe = true;
     }
 
@@ -1126,9 +1469,15 @@ bool next_step() {
       opt_finished = false;
     }
 
+    //    if (kdl.corners.size() < 150 && opt_running) {
+    //      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    //    }
+
     // update image views
     change_display_to_image(tcidl);
     change_display_to_image(tcidr);
+
+    last_feat2track_left = md_feat2track_left;
 
     current_frame++;
     return true;
@@ -1192,22 +1541,22 @@ void optimize() {
     num_obs += kv.second.obs.size();
   }
 
-  std::cerr << "Optimizing map with " << cameras.size() << ", "
+  std::cerr << "Optimizing map with " << cameras.size() << " cameras, "
             << landmarks.size() << " points and " << num_obs << " observations."
             << std::endl;
 
-  // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole second
-  // camera constant is a bit suboptimal, since we only need 1 DoF, but it's
-  // simple and the initial poses should be good from calibration.
+  // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole
+  // second camera constant is a bit suboptimal, since we only need 1 DoF, but
+  // it's simple and the initial poses should be good from calibration.
   FrameId fid = *(kf_frames.begin());
-  // std::cout << "fid " << fid << std::endl;
+  std::cout << "fid " << fid << std::endl;
 
   // Prepare bundle adjustment
   BundleAdjustmentOptions ba_options;
   ba_options.optimize_intrinsics = ba_optimize_intrinsics;
   ba_options.use_huber = true;
   ba_options.huber_parameter = reprojection_error_huber_pixel;
-  ba_options.max_num_iterations = 20;
+  ba_options.max_num_iterations = 40;
   ba_options.verbosity_level = ba_verbose;
 
   calib_cam_opt = calib_cam;
