@@ -350,6 +350,11 @@ struct ErrorMetricValue {
 Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
                                 Mat3X& model_transformed,
                                 ErrorMetricValue* ate) {
+  if (data.size() != model.size()) {
+    std::cerr << "Estimated poses size: " << data.size()
+              << " and ground truth size: " << model.size() << " doesn't match!"
+              << std::endl;
+  }
   // 0. Centroids
   const Vec3 centroid_data = data.rowwise().mean();
   const Vec3 centroid_model = model.rowwise().mean();

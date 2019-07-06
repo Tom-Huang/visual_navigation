@@ -263,6 +263,7 @@ int main(int argc, char** argv) {
 
   load_data(dataset_path, cam_calib);
   load_ground_truth_cam_pose(dataset_path);
+  std::cout << "timestamp_gt_vec size" << timestamp_gt_vec.size() << std::endl;
 
   if (show_gui) {
     pangolin::CreateWindowAndBind("Main", 1800, 1000);
@@ -348,7 +349,10 @@ int main(int argc, char** argv) {
         glEnd();
       }
       // visualization of the ground truth
-      if (estimated_cam_pos.cols() >= 2700) {
+      std::cout << "estimated_cam_pos.cols()" << estimated_cam_pos.cols()
+                << std::endl;
+      if (estimated_cam_pos.cols() >= 2700) {  // 146 keyframes
+        std::cout << "now bigger than 2700" << std::endl;
         Eigen::Index truncate_begin =
             estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
         Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
@@ -827,6 +831,13 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
 
       std::string img_name = line.substr(20, line.size() - 21);
 
+      // ************Project: store timestamp to timestamp_exist map
+      std::string s_timestamp = line.substr(0, 19);
+      std::cout << "load_data timestamp: " << s_timestamp << std::endl;
+      timestamp_exist[s_timestamp] = 1;
+      timestamp_frameid_map[s_timestamp] = id;
+      // *************Project_END
+
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
       if (times.fail()) {
@@ -904,8 +915,6 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
   {
     std::ifstream times(timestamps_path);
 
-    int64_t timestamp;
-
     int id = 0;
 
     std::cout << timestamp_exist.size() << std::endl;
@@ -914,7 +923,6 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
       std::vector<std::string> split_line;
       std::getline(times, line);
 
-      //      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
       if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
@@ -931,8 +939,6 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
 
       split_with_delim(line, split_line, ',');
 
-      // extract camera position
-      //      std::cout << split_line[0] << std::endl;
       if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
         timestamp_ground_truth[split_line[0]] = 1;
         std::cout << split_line[0] << std::endl;
@@ -1109,7 +1115,10 @@ bool next_step() {
     localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
                     reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
                     inliers);
-
+    //****************Project
+    estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+    estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
+    //***************Project_END
     current_pose = T_w_c;
 
     if (int(inliers.size()) < new_kf_min_inliers && !opt_running &&
