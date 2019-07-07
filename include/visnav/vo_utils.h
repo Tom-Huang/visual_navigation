@@ -1082,8 +1082,7 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
     //    const Mat3X diff = data - ((s * R * model).colwise() + t);
     const Mat3X diff = data - ((R * model).colwise() + t);
     const ArrX errors = diff.colwise().norm().transpose();
-    std::cout << diff << std::endl;
-    std::cout << errors << std::endl;
+
     //  auto& ref = *ate;
     ate.rmse = std::sqrt(errors.square().sum() / errors.rows());
     ate.mean = errors.mean();

@@ -171,6 +171,10 @@ double localization_time = 0;
 double add_landmark_time = 0;
 double optimization_time = 0;
 
+// TODO PROJECT: total optimized landmark number
+long num_total_opt_landmarks = 0;
+long num_total_opt_obs = 0;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
 ///////////////////////////////////////////////////////////////////////////////
@@ -408,6 +412,10 @@ int main(int argc, char** argv) {
                     << std::endl;
           std::cout << "optimization time: " << optimization_time << " seconds."
                     << std::endl;
+          std::cout << "total optimization landmarks number: "
+                    << num_total_opt_landmarks << std::endl;
+          std::cout << "total optimization observations number: "
+                    << num_total_opt_obs << std::endl;
         }
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
@@ -1225,14 +1233,13 @@ bool next_step() {
       add_new_keypoints_from_empty_cells(empty_indexes,
                                          num_newly_added_keypoints, imgl, kdl,
                                          cells, cellw, cellh, rnum, cnum);
-      stop = clock();
-      duration = double(stop - start) / double(CLOCKS_PER_SEC);
-      detect_time += duration;
-
       // add new keypoints;
       //      add_new_keypoints_from_empty_cells_v2(
       //          empty_indexes, num_newly_added_keypoints, imgl, kdl,
       //          num_features_per_image, cells, cellw, cellh, rnum, cnum);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      detect_time += duration;
 
       std::cout << "KF Found " << num_newly_added_keypoints << " keypoints"
                 << std::endl;
@@ -1488,8 +1495,8 @@ bool next_step() {
 
     // 2. calculate num of points, and sparsity
     std::vector<Cell> cells;
-    int h = 480, w = 752, rnum = 16,
-        cnum = 16;         // TODO: give them a number!!
+    int h = 480, w = 752, rnum = 30,
+        cnum = 47;         // TODO: give them a number!!
     int cellh = h / rnum;  // they are for later use, not for makecells
     int cellw = w / cnum;
     makeCells(h, w, rnum, cnum, cells);
@@ -1503,7 +1510,8 @@ bool next_step() {
 
     int num_of_empty_cells = sparsity(cells, empty_indexes);
     int threshold = 200;  // threshold for minimum num of points
-    int threshold2 = 30;  //  threshold for maximum num of empty cells
+    int threshold2 = 1200;
+    // 110  // 30;  //  threshold for maximum num of empty cells
     int num_newly_added_keypoints = 0;
 
     //    if (kdl.corners.size() < threshold || num_of_empty_cells >
@@ -1590,6 +1598,8 @@ bool next_step() {
 
     std::cout << "Found " << md_feat2track_left.matches.size()
               << "frame to frame matches." << std::endl;
+    std::cout << "Number of keypoints: " << kdl.corners.size() << std::endl;
+    std::cout << "Number of empty cells: " << empty_indexes.size() << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
@@ -1633,7 +1643,7 @@ bool next_step() {
       opt_finished = false;
     }
 
-    if (kdl.corners.size() < 150 && opt_running) {
+    if (kdl.corners.size() < 200 && opt_running) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
@@ -1708,6 +1718,9 @@ void optimize() {
   std::cerr << "Optimizing map with " << cameras.size() << " cameras, "
             << landmarks.size() << " points and " << num_obs << " observations."
             << std::endl;
+
+  num_total_opt_landmarks += landmarks.size();
+  num_total_opt_obs += num_obs;
 
   // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole
   // second camera constant is a bit suboptimal, since we only need 1 DoF, but
