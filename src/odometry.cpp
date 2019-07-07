@@ -374,7 +374,7 @@ int main(int argc, char** argv) {
         }
 
         if (ground_truth_transformed.cols() == 0) {
-          align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
+          align_points_sim3(corresponding_est_cam_pos, ground_truth_cam_pos,
                             ground_truth_transformed, ate);
           //          std::cout << "rmse: " << ate->rmse << std::endl;
           //          std::cout << "mean: " << ate->mean << std::endl;
