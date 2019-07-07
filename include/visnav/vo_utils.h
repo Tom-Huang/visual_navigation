@@ -45,6 +45,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <opengv/sac_problems/absolute_pose/AbsolutePoseSacProblem.hpp>
 #include <opengv/triangulation/methods.hpp>
 
+// TODO PROJECT: include sophus sim3
+#include <sophus/sim3.hpp>
+
 namespace visnav {
 
 void project_landmarks(
@@ -329,4 +332,104 @@ void remove_old_keyframes(const TimeCamId tcidl, const int max_num_kfs,
     }
   }
 }
+
+// TODO PROJECT: function for alignment of camera trajectory and ground truth
+using Mat3X = Eigen::Matrix<double, 3, Eigen::Dynamic>;
+using Mat3 = Eigen::Matrix<double, 3, 3>;
+using Vec3 = Eigen::Matrix<double, 3, 1>;
+using ArrX = Eigen::Array<double, 1, Eigen::Dynamic>;
+using Poses = std::vector<Sophus::SE3d>;
+
+struct ErrorMetricValue {
+  double rmse = 0;
+  double mean = 0;
+  double min = 0;
+  double max = 0;
+  double count = 0;  //!< number of elements involved in the evaluation
+};
+
+/// Compute Sim(3) transformation that aligns the 3D points in model to 3D
+/// points in data in the least squares sense using Horn's algorithm. I.e. the
+/// Sim(3) transformation T is computed that minimizes the sum over all i of
+/// ||T*m_i - d_i||^2, m_i are the column's of model and d_i are the column's of
+/// data. Both data and model need to be of the same dimension and have at least
+/// 3 columns.
+///
+/// Optionally computes the translational rmse.
+///
+/// Note that for the orientation we don't actually use Horn's algorithm, but
+/// the one published by Arun
+/// (http://post.queensu.ca/~sdb2/PAPERS/PAMI-3DLS-1987.pdf) based on SVD with
+/// later extension to cover degenerate cases.
+///
+/// See the illustrative comparison by Eggert:
+/// http://graphics.stanford.edu/~smr/ICP/comparison/eggert_comparison_mva97.pdf
+Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
+                                Mat3X& model_transformed,
+                                ErrorMetricValue& ate) {
+  // 0. Centroids
+  const Vec3 centroid_data = data.rowwise().mean();
+  const Vec3 centroid_model = model.rowwise().mean();
+
+  // center both clouds to 0 centroid
+  const Mat3X data_centered = data.colwise() - centroid_data;
+  const Mat3X model_centered = model.colwise() - centroid_model;
+  std::cout << "centralization succeeds." << std::endl;
+
+  // 1. Rotation
+
+  // sum of outer products of columns
+  const Mat3 W = data_centered * model_centered.transpose();
+
+  const auto svd = W.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
+
+  // last entry to ensure we don't get a reflection, only rotations
+  const Mat3 S = Eigen::DiagonalMatrix<double, 3, 3>(
+      1, 1,
+      svd.matrixU().determinant() * svd.matrixV().determinant() < 0 ? -1 : 1);
+
+  const Mat3 R = svd.matrixU() * S * svd.matrixV().transpose();
+
+  const Mat3X model_rotated = R * model_centered;
+
+  std::cout << "rotation succeeds." << std::endl;
+
+  //  // 2. Scale (regular, non-symmetric variant)
+
+  //  // sum of column-wise dot products
+  //  const double dots = (data_centered.cwiseProduct(model_rotated)).sum();
+
+  //  // sum of column-wise norms
+  //  const double norms = model_centered.colwise().squaredNorm().sum();
+
+  //  // scale
+  //  const double s = dots / norms;
+
+  // 3. Translation
+  const Vec3 t = centroid_data - R * centroid_model;
+
+  std::cout << "translation succeeds." << std::endl;
+
+  model_transformed = (R * model).colwise() + t;
+
+  std::cout << "model transformation succeeds." << std::endl;
+  // 4. Translational error
+  if (1) {  // ate.count == 0) {
+    // static_assert(ArrX::ColsAtCompileTime == 1);
+
+    //    const Mat3X diff = data - ((s * R * model).colwise() + t);
+    const Mat3X diff = data - ((R * model).colwise() + t);
+    const ArrX errors = diff.colwise().norm().transpose();
+
+    //  auto& ref = *ate;
+    ate.rmse = std::sqrt(errors.square().sum() / errors.rows());
+    ate.mean = errors.mean();
+    ate.min = errors.minCoeff();
+    ate.max = errors.maxCoeff();
+    ate.count = errors.rows();
+  }
+  std::cout << "ate calculation succeeds." << std::endl;
+  return Sophus::Sim3d(Sophus::RxSO3d(1, R), t);
+}
+
 }  // namespace visnav

@@ -64,6 +64,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <visnav/serialization.h>
 
+// TODO PROJECT: include time.h
+#include <time.h>
+
 using namespace visnav;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,6 +77,7 @@ void draw_image_overlay(pangolin::View& v, size_t cam_id);
 void change_display_to_image(const TimeCamId& tcid);
 void draw_scene();
 void load_data(const std::string& path, const std::string& calib_path);
+void load_ground_truth_cam_pose(const std::string& dataset_path);
 bool next_step();
 void optimize();
 void compute_projections();
@@ -136,6 +140,39 @@ Landmarks old_landmarks;
 /// cameras, landmarks, and feature_tracks; used for visualization and
 /// determining outliers; indexed by images
 ImageProjections image_projections;
+
+// TODO PROJECT: create a vector storing all camera position for alignment with
+// ground truth
+Mat3X ground_truth_cam_pos;
+std::map<std::string, Eigen::Vector3d> timestamp2pos;
+
+// TODO PROJECT: vector of time stamp for finding ground truth, each timestamp
+// corresponds to an integer 0 or 1, 1 represent the time stamp exist, otherwise
+// not
+std::map<std::string, int> timestamp_exist;
+std::map<std::string, int> timestamp_ground_truth;
+std::vector<std::string> timestamp_gt_vec;
+std::map<std::string, FrameId> timestamp_frameid_map;
+
+// TODO PROJECT: estimated camera position of all timestamp
+Mat3X estimated_cam_pos;
+Mat3X ground_truth_transformed;
+ErrorMetricValue ate;
+Mat3X corresponding_est_cam_pos;
+
+// TODO PROJECT: time
+double landmark_projection_time = 0;
+double detect_time = 0;  // detect key points and add new key points time
+double stereo_match_time = 0;
+double landmark_match_time = 0;
+double frame2frame_match_time = 0;
+double localization_time = 0;
+double add_landmark_time = 0;
+double optimization_time = 0;
+
+// TODO PROJECT: total optimized landmark number
+long num_total_opt_landmarks = 0;
+long num_total_opt_obs = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -242,6 +279,8 @@ int main(int argc, char** argv) {
   }
 
   load_data(dataset_path, cam_calib);
+  // TODO PROJECT: load ground truth data
+  load_ground_truth_cam_pose(dataset_path);
 
   if (show_gui) {
     pangolin::CreateWindowAndBind("Main", 1800, 1000);
@@ -307,6 +346,114 @@ int main(int argc, char** argv) {
       glClearColor(0.95f, 0.95f, 0.95f, 1.0f);  // light gray background
 
       draw_scene();
+
+      // TODO PROJECT: visualize the trajectory of estimated camera pose
+
+      if (estimated_cam_pos.cols() >= 1) {
+        // glLineWidth(0.1f);
+        glPointSize(5.0);
+        const u_int8_t color[3]{255, 0, 0};
+        glColor3ubv(color);
+        glBegin(GL_POINTS);
+        Eigen::Index max_cols = estimated_cam_pos.cols();
+        for (Eigen::Index i = 0; i < max_cols; i++) {
+          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
+          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+        }
+
+        glEnd();
+      }
+
+      // TODO PROJECT: visualize the trajectory of ground truth camera pose
+      if (estimated_cam_pos.cols() > 2700) {
+        Eigen::Index truncate_begin =
+            estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
+        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
+            0, truncate_begin, 3, ground_truth_cam_pos.cols());
+
+        if (corresponding_est_cam_pos.cols() == 0) {
+          for (const auto ts_gt : timestamp_gt_vec) {
+            FrameId frameid = timestamp_frameid_map.at(ts_gt);
+            corresponding_est_cam_pos.conservativeResize(
+                3, corresponding_est_cam_pos.cols() + 1);
+            corresponding_est_cam_pos.col(corresponding_est_cam_pos.cols() -
+                                          1) = estimated_cam_pos.col(frameid);
+          }
+          std::cout << "corresponding cam pos size: "
+                    << corresponding_est_cam_pos.cols() << std::endl;
+          std::cout << "ground truth cam pos size: "
+                    << ground_truth_cam_pos.cols() << std::endl;
+        }
+
+        if (ground_truth_transformed.cols() == 0) {
+          //          align_points_sim3(truncated_estimate_cam_pos,
+          //          ground_truth_cam_pos,
+          //                            ground_truth_transformed, ate);
+          align_points_sim3(corresponding_est_cam_pos, ground_truth_cam_pos,
+                            ground_truth_transformed, ate);
+          std::cout << "rmse: " << ate.rmse << std::endl;
+          std::cout << "mean: " << ate.mean << std::endl;
+          std::cout << "min: " << ate.min << std::endl;
+          std::cout << "max: " << ate.max << std::endl;
+          std::cout << "count: " << ate.count << std::endl;
+
+          std::cout << "landmark project time: " << landmark_projection_time
+                    << " seconds." << std::endl;
+          std::cout << "detection time: " << detect_time << " seconds."
+                    << std::endl;
+          std::cout << "stereo match time: " << stereo_match_time << " seconds."
+                    << std::endl;
+          std::cout << "landmark match time: " << landmark_match_time
+                    << " seconds." << std::endl;
+          std::cout << "localization time: " << localization_time << " seconds."
+                    << std::endl;
+          std::cout << "add landmark time: " << add_landmark_time << " seconds."
+                    << std::endl;
+          std::cout << "optimization time: " << optimization_time << " seconds."
+                    << std::endl;
+          std::cout << "total optimization landmarks number: "
+                    << num_total_opt_landmarks << std::endl;
+          std::cout << "total optimization observations number: "
+                    << num_total_opt_obs << std::endl;
+        }
+        glPointSize(5.0);
+        const u_int8_t color_gt[3]{0, 255, 0};
+        glColor3ubv(color_gt);
+        glBegin(GL_POINTS);
+        Eigen::Index max_cols_gt = ground_truth_transformed.cols();
+        for (Eigen::Index i = 0; i < max_cols_gt; i++) {
+          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+
+          Eigen::Vector3d p =
+              ground_truth_transformed.col(i);  // ground_truth_cam_pos
+
+          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+          pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+        }
+
+        glEnd();
+
+        // plot estimated points used for alignment
+        //        glPointSize(7.0);
+        //        const u_int8_t color[3]{0, 0, 255};
+        //        glColor3ubv(color);
+        //        glBegin(GL_POINTS);
+        //        Eigen::Index max_cols = estimated_cam_pos.cols();
+        //        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
+        //          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i -
+        //          1); Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+        //          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1),
+        //          p1(2));
+        //          //          pangolin::glVertex(p0);  //(p0(0), p0(1),
+        //          p0(2)); pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+        //        }
+
+        //        glEnd();
+      }
 
       img_view_display.Activate();
 
@@ -722,6 +869,12 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
 
       std::string img_name = line.substr(20, line.size() - 21);
 
+      // TODO PROJECT: store timestamp to timestamp_exist map
+      std::string s_timestamp = line.substr(0, 19);
+      std::cout << "load_data timestamp: " << s_timestamp << std::endl;
+      timestamp_exist[s_timestamp] = 1;
+      timestamp_frameid_map[s_timestamp] = id;
+
       // ensure that we actually read a new timestamp (and not e.g. just newline
       // at the end of the file)
       if (times.fail()) {
@@ -778,6 +931,98 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
   show_frame2.Meta().gui_changed = true;
 }
 
+// TODO PROJECT: help to split a string with a delimiter, return a vector of
+// string split by delimiter
+void split_with_delim(const std::string& input,
+                      std::vector<std::string>& output, char delim) {
+  std::size_t current, previous = 0;
+  current = input.find(delim);
+  while (current != std::string::npos) {
+    output.push_back(input.substr(previous, current - previous));
+    previous = current + 1;
+    current = input.find(delim, previous);
+  }
+}
+
+// TODO PROJECT: load ground truth camera pose
+void load_ground_truth_cam_pose(const std::string& dataset_path) {
+  const std::string timestamps_path =
+      dataset_path + "/state_groundtruth_estimate0/data.csv";
+
+  {
+    std::ifstream times(timestamps_path);
+
+    int64_t timestamp;
+
+    int id = 0;
+
+    std::cout << timestamp_exist.size() << std::endl;
+    while (times) {
+      std::string line;
+      std::vector<std::string> split_line;
+      std::getline(times, line);
+
+      //      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
+      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
+      // ensure that we actually read a new timestamp (and not e.g. just newline
+      // at the end of the file)
+      if (times.fail()) {
+        times.clear();
+        std::string temp;
+        times >> temp;
+        if (temp.size() > 0) {
+          std::cerr << "Skipping '" << temp << "' while reading times."
+                    << std::endl;
+        }
+        continue;
+      }
+
+      split_with_delim(line, split_line, ',');
+
+      // extract camera position
+      //      std::cout << split_line[0] << std::endl;
+      if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
+        timestamp_ground_truth[split_line[0]] = 1;
+        std::cout << split_line[0] << std::endl;
+        Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[2]),
+                             std::stod(split_line[3]));
+
+        ground_truth_cam_pos.conservativeResize(
+            3, ground_truth_cam_pos.cols() + 1);
+        ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
+        timestamp_gt_vec.push_back(split_line[0]);
+      } else {
+        continue;
+      }
+      id++;
+    }
+
+    int iter = 0;
+    int miss_num = 0;
+    for (const auto ts : timestamp_exist) {
+      std::cout << "iter: " << iter++ << std::endl;
+
+      if (timestamp_ground_truth.find(ts.first) !=
+          timestamp_ground_truth.end()) {
+        std::cout << ts.first << ", " << ts.first << ", "
+                  << timestamp_ground_truth[ts.first] << std::endl;
+      } else {
+        miss_num++;
+        std::cout << ts.first << ", " << std::endl;
+      }
+    }
+
+    std::cerr << "miss number: " << miss_num << std::endl;
+
+    std::cerr << timestamp_exist.size() << ", " << timestamp_ground_truth.size()
+              << std::endl;
+
+    std::cerr << "ground_truth_cam_pos col size: "
+              << ground_truth_cam_pos.cols() << std::endl;
+    std::cerr << "Loaded " << id << " ground truth positions. " << std::endl;
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Here the algorithmically interesting implementation begins
 ///////////////////////////////////////////////////////////////////////////////
@@ -789,6 +1034,10 @@ bool next_step() {
 
   const Sophus::SE3d T_0_1 = calib_cam.T_i_c[0].inverse() * calib_cam.T_i_c[1];
 
+  // TODO PROJECT: create variables to record time consumption
+  clock_t start, stop;
+  double duration;
+
   if (take_keyframe) {
     take_keyframe = false;
 
@@ -798,8 +1047,12 @@ bool next_step() {
         projected_points;
     std::vector<TrackId> projected_track_ids;
 
+    start = clock();
     project_landmarks(current_pose, calib_cam.intrinsics[0], landmarks,
                       cam_z_threshold, projected_points, projected_track_ids);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    landmark_projection_time += duration;
 
     std::cout << "KF Projected " << projected_track_ids.size() << " points."
               << std::endl;
@@ -810,19 +1063,27 @@ bool next_step() {
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
     pangolin::ManagedImage<uint8_t> imgr = pangolin::LoadImage(images[tcidr]);
 
+    start = clock();
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
     detectKeypointsAndDescriptors(imgr, kdr, num_features_per_image,
                                   rotate_features);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    detect_time += duration;
 
     md_stereo.T_i_j = T_0_1;
 
     Eigen::Matrix3d E;
     computeEssential(T_0_1, E);
 
+    start = clock();
     matchDescriptors(kdl.corner_descriptors, kdr.corner_descriptors,
                      md_stereo.matches, feature_match_max_dist,
                      feature_match_test_next_best);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    stereo_match_time += duration;
 
     findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
                          calib_cam.intrinsics[1], E, 1e-3, md_stereo);
@@ -836,30 +1097,51 @@ bool next_step() {
 
     MatchData md;
 
+    start = clock();
     find_matches_landmarks(kdl, landmarks, feature_corners, projected_points,
                            projected_track_ids, match_max_dist_2d,
                            feature_match_max_dist, feature_match_test_next_best,
                            md);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    landmark_match_time += duration;
 
     std::cout << "KF Found " << md.matches.size() << " matches." << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
+
+    start = clock();
     localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
                     reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
                     inliers);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    localization_time += duration;
 
     current_pose = T_w_c;
+
+    estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+    estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
 
     cameras[tcidl].T_w_c = current_pose;
     cameras[tcidr].T_w_c = current_pose * T_0_1;
 
+    start = clock();
     add_new_landmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
                       md_stereo, md, landmarks, next_landmark_id);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    add_landmark_time += duration;
 
     remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks, old_landmarks,
                          kf_frames);
+
+    start = clock();
     optimize();
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    optimization_time += duration;
 
     current_pose = cameras[tcidl].T_w_c;
 
@@ -878,8 +1160,12 @@ bool next_step() {
         projected_points;
     std::vector<TrackId> projected_track_ids;
 
+    start = clock();
     project_landmarks(current_pose, calib_cam.intrinsics[0], landmarks,
                       cam_z_threshold, projected_points, projected_track_ids);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    landmark_projection_time += duration;
 
     std::cout << "Projected " << projected_track_ids.size() << " points."
               << std::endl;
@@ -888,27 +1174,43 @@ bool next_step() {
 
     pangolin::ManagedImage<uint8_t> imgl = pangolin::LoadImage(images[tcidl]);
 
+    start = clock();
     detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
                                   rotate_features);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    detect_time += duration;
 
     feature_corners[tcidl] = kdl;
 
     MatchData md;
+
+    start = clock();
     find_matches_landmarks(kdl, landmarks, feature_corners, projected_points,
                            projected_track_ids, match_max_dist_2d,
                            feature_match_max_dist, feature_match_test_next_best,
                            md);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    landmark_match_time += duration;
 
     std::cout << "Found " << md.matches.size() << " matches." << std::endl;
 
     Sophus::SE3d T_w_c;
     std::vector<int> inliers;
 
+    start = clock();
     localize_camera(calib_cam.intrinsics[0], kdl, landmarks,
                     reprojection_error_pnp_inlier_threshold_pixel, md, T_w_c,
                     inliers);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    localization_time += duration;
 
     current_pose = T_w_c;
+
+    estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
+    estimated_cam_pos.col(estimated_cam_pos.cols() - 1) = T_w_c.translation();
 
     if (int(inliers.size()) < new_kf_min_inliers && !opt_running &&
         !opt_finished) {
@@ -916,7 +1218,7 @@ bool next_step() {
     }
 
     if (!opt_running && opt_finished) {
-      opt_thread->join();
+      //      opt_thread->join();
       landmarks = landmarks_opt;
       cameras = cameras_opt;
       calib_cam = calib_cam_opt;
@@ -994,6 +1296,9 @@ void optimize() {
             << landmarks.size() << " points and " << num_obs << " observations."
             << std::endl;
 
+  num_total_opt_landmarks += landmarks.size();
+  num_total_opt_obs += num_obs;
+
   // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole second
   // camera constant is a bit suboptimal, since we only need 1 DoF, but it's
   // simple and the initial poses should be good from calibration.
@@ -1014,15 +1319,15 @@ void optimize() {
 
   opt_running = true;
 
-  opt_thread.reset(new std::thread([fid, ba_options] {
-    std::set<TimeCamId> fixed_cameras = {{fid, 0}, {fid, 1}};
+  //  opt_thread.reset(new std::thread([fid, ba_options] {
+  std::set<TimeCamId> fixed_cameras = {{fid, 0}, {fid, 1}};
 
-    bundle_adjustment(feature_corners, ba_options, fixed_cameras, calib_cam_opt,
-                      cameras_opt, landmarks_opt);
+  bundle_adjustment(feature_corners, ba_options, fixed_cameras, calib_cam_opt,
+                    cameras_opt, landmarks_opt);
 
-    opt_finished = true;
-    opt_running = false;
-  }));
+  opt_finished = true;
+  opt_running = false;
+  //  }));
 
   // Update project info cache
   compute_projections();
