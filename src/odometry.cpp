@@ -404,20 +404,21 @@ int main(int argc, char** argv) {
         glEnd();
 
         // plot estimated points used for alignment
-        glPointSize(7.0);
-        const u_int8_t color[3]{0, 0, 255};
-        glColor3ubv(color);
-        glBegin(GL_POINTS);
-        Eigen::Index max_cols = estimated_cam_pos.cols();
-        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
-          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
-          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
-          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
-          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
-          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
-        }
+        //        glPointSize(7.0);
+        //        const u_int8_t color[3]{0, 0, 255};
+        //        glColor3ubv(color);
+        //        glBegin(GL_POINTS);
+        //        Eigen::Index max_cols = estimated_cam_pos.cols();
+        //        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
+        //          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i -
+        //          1); Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+        //          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1),
+        //          p1(2));
+        //          //          pangolin::glVertex(p0);  //(p0(0), p0(1),
+        //          p0(2)); pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+        //        }
 
-        glEnd();
+        //        glEnd();
       }
 
       img_view_display.Activate();
@@ -1533,7 +1534,7 @@ bool next_step() {
     }
 
     if (!opt_running && opt_finished) {
-      opt_thread->join();
+      //      opt_thread->join();
       landmarks = landmarks_opt;
       cameras = cameras_opt;
       calib_cam = calib_cam_opt;
@@ -1637,15 +1638,15 @@ void optimize() {
 
   opt_running = true;
 
-  opt_thread.reset(new std::thread([fid, ba_options] {
-    std::set<TimeCamId> fixed_cameras = {{fid, 0}, {fid, 1}};
+  //  opt_thread.reset(new std::thread([fid, ba_options] {
+  std::set<TimeCamId> fixed_cameras = {{fid, 0}, {fid, 1}};
 
-    bundle_adjustment(feature_corners, ba_options, fixed_cameras, calib_cam_opt,
-                      cameras_opt, landmarks_opt);
+  bundle_adjustment(feature_corners, ba_options, fixed_cameras, calib_cam_opt,
+                    cameras_opt, landmarks_opt);
 
-    opt_finished = true;
-    opt_running = false;
-  }));
+  opt_finished = true;
+  opt_running = false;
+  //  }));
 
   // Update project info cache
   compute_projections();
