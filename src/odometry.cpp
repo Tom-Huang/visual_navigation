@@ -35,7 +35,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <chrono>
 #include <iostream>
 #include <thread>
-
+// Project
+#include <sstream>
+// project_END
 #include <sophus/se3.hpp>
 
 #include <tbb/concurrent_unordered_map.h>
@@ -74,7 +76,12 @@ void draw_image_overlay(pangolin::View& v, size_t cam_id);
 void change_display_to_image(const TimeCamId& tcid);
 void draw_scene();
 void load_data(const std::string& path, const std::string& calib_path);
+//***********Project: visualization
+void load_matches(const std::string dataset_path,
+                  std::vector<std::pair<int, int>>& matches);
 void load_ground_truth_cam_pose(const std::string& dataset_path);
+// ************Project_END
+
 bool next_step();
 void optimize();
 void compute_projections();
@@ -156,6 +163,9 @@ Mat3X estimated_cam_pos;
 Mat3X ground_truth_transformed;
 ErrorMetricValue* ate;
 Mat3X corresponding_est_cam_pos;
+
+// Project: match between estimated poses and groundtruth
+std::vector<std::pair<int, int>> matches;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -262,8 +272,11 @@ int main(int argc, char** argv) {
   }
 
   load_data(dataset_path, cam_calib);
+  //****************Project: visualisation
+  load_matches(dataset_path, matches);
   load_ground_truth_cam_pose(dataset_path);
   std::cout << "timestamp_gt_vec size" << timestamp_gt_vec.size() << std::endl;
+  //***************Project_END
 
   if (show_gui) {
     pangolin::CreateWindowAndBind("Main", 1800, 1000);
@@ -339,11 +352,9 @@ int main(int argc, char** argv) {
         glBegin(GL_POINTS);
         Eigen::Index max_cols = estimated_cam_pos.cols();
         for (Eigen::Index i = 0; i < max_cols; i++) {
-          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
           Eigen::Vector3d p1 = estimated_cam_pos.col(i);
-          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
-          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
-          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+
+          pangolin::glVertex(p1);
         }
 
         glEnd();
@@ -351,66 +362,46 @@ int main(int argc, char** argv) {
       // visualization of the ground truth
       std::cout << "estimated_cam_pos.cols()" << estimated_cam_pos.cols()
                 << std::endl;
-      if (estimated_cam_pos.cols() >= 2700) {  // 146 keyframes
-        std::cout << "now bigger than 2700" << std::endl;
-        Eigen::Index truncate_begin =
-            estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
-        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
-            0, truncate_begin, 3, ground_truth_cam_pos.cols());
+      std::cout << "ground_truth_cam_pos.cols()" << ground_truth_cam_pos.cols()
+                << std::endl;
 
-        if (corresponding_est_cam_pos.cols() == 0) {
-          for (const auto ts_gt : timestamp_gt_vec) {
-            FrameId frameid = timestamp_frameid_map.at(ts_gt);
-            corresponding_est_cam_pos.conservativeResize(
-                3, corresponding_est_cam_pos.cols() + 1);
-            corresponding_est_cam_pos.col(corresponding_est_cam_pos.cols() -
-                                          1) = estimated_cam_pos.col(frameid);
-          }
-          std::cout << "corresponding cam pos size: "
-                    << corresponding_est_cam_pos.cols() << std::endl;
-          std::cout << "ground truth cam pos size: "
-                    << ground_truth_cam_pos.cols() << std::endl;
+      if (estimated_cam_pos.cols() > 2700) {  // 146 keyframes
+
+        Mat3X truncated_estimate_cam_pos;
+        Mat3X truncated_ground_truth_cam_pos;
+        truncated_estimate_cam_pos.conservativeResize(3, matches.size());
+        truncated_ground_truth_cam_pos.conservativeResize(3, matches.size());
+
+        int i = 0;
+
+        for (auto match : matches) {
+          truncated_estimate_cam_pos.col(i) =
+              estimated_cam_pos.col(match.first);
+          // ground truth file is already sorted to have 2297 rows
+          truncated_ground_truth_cam_pos.col(i) = ground_truth_cam_pos.col(i);
+          i++;
         }
 
-        if (ground_truth_transformed.cols() == 0) {
-          align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
-                            ground_truth_transformed, ate);
-          //          std::cout << "rmse: " << ate->rmse << std::endl;
-          //          std::cout << "mean: " << ate->mean << std::endl;
-          //          std::cout << "min: " << ate->min << std::endl;
-          //          std::cout << "max: " << ate->max << std::endl;
-          //          std::cout << "count: " << ate->count << std::endl;
-        }
+        std::cout << "corresponding cam pos size: "
+                  << truncated_estimate_cam_pos.cols() << std::endl;
+        std::cout << "ground truth cam pos size: "
+                  << truncated_ground_truth_cam_pos.cols() << std::endl;
+
+        align_points_sim3(truncated_estimate_cam_pos,
+                          truncated_ground_truth_cam_pos,
+                          ground_truth_transformed, ate);
+
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
         glColor3ubv(color_gt);
         glBegin(GL_POINTS);
         Eigen::Index max_cols_gt = ground_truth_transformed.cols();
         for (Eigen::Index i = 0; i < max_cols_gt; i++) {
-          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+          Eigen::Vector3d p = ground_truth_transformed.col(i);
 
-          Eigen::Vector3d p =
-              ground_truth_transformed.col(i);  // ground_truth_cam_pos
+          // std::cout << "gt trensformed p potision: " << p << std::endl;
 
-          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
-          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
-          pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
-        }
-
-        glEnd();
-
-        // plot estimated points used for alignment
-        glPointSize(7.0);
-        const u_int8_t color[3]{0, 0, 255};
-        glColor3ubv(color);
-        glBegin(GL_POINTS);
-        Eigen::Index max_cols = estimated_cam_pos.cols();
-        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
-          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
-          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
-          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
-          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
-          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+          pangolin::glVertex(p);
         }
 
         glEnd();
@@ -833,7 +824,7 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
 
       // ************Project: store timestamp to timestamp_exist map
       std::string s_timestamp = line.substr(0, 19);
-      std::cout << "load_data timestamp: " << s_timestamp << std::endl;
+      // std::cout << "load_data timestamp: " << s_timestamp << std::endl;
       timestamp_exist[s_timestamp] = 1;
       timestamp_frameid_map[s_timestamp] = id;
       // *************Project_END
@@ -910,75 +901,65 @@ void split_with_delim(const std::string& input,
 // Project: load ground truth camera pose
 void load_ground_truth_cam_pose(const std::string& dataset_path) {
   const std::string timestamps_path =
-      dataset_path + "/state_groundtruth_estimate0/data.csv";
+      dataset_path + "/state_groundtruth_estimate0/cleaned_gt_full.csv";
 
-  {
-    std::ifstream times(timestamps_path);
+  std::ifstream times(timestamps_path);
+  int id = 0;
+  std::string line;
 
-    int id = 0;
+  while (times) {
+    std::vector<std::string> split_line;
+    split_line.clear();
 
-    std::cout << timestamp_exist.size() << std::endl;
-    while (times) {
-      std::string line;
-      std::vector<std::string> split_line;
-      std::getline(times, line);
+    std::getline(times, line);
+    if (line.size() < 20) continue;
 
-      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
-      // ensure that we actually read a new timestamp (and not e.g. just newline
-      // at the end of the file)
-      if (times.fail()) {
-        times.clear();
-        std::string temp;
-        times >> temp;
-        if (temp.size() > 0) {
-          std::cerr << "Skipping '" << temp << "' while reading times."
-                    << std::endl;
-        }
-        continue;
-      }
+    // std::cout << line << std::endl;
+    split_with_delim(line, split_line, ',');
 
-      split_with_delim(line, split_line, ',');
+    //      double num1, num2, num3;
+    //      std::stringstream(line.substr(20, 8)) >> num1;
+    //      std::stringstream(line.substr(29, 8)) >> num2;
+    //      std::stringstream(line.substr(38, 8)) >> num3;
+    //      Eigen::Vector3d p_3d(num1, num2, num3);
 
-      if (timestamp_exist.find(split_line[0]) != timestamp_exist.end()) {
-        timestamp_ground_truth[split_line[0]] = 1;
-        std::cout << split_line[0] << std::endl;
-        Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[2]),
-                             std::stod(split_line[3]));
+    Eigen::Vector3d p_3d(std::stod(split_line[1]), std::stod(split_line[2]),
+                         std::stod(split_line[3]));
 
-        ground_truth_cam_pos.conservativeResize(
-            3, ground_truth_cam_pos.cols() + 1);
-        ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
-        timestamp_gt_vec.push_back(split_line[0]);
-      } else {
-        continue;
-      }
-      id++;
-    }
+    // std::cout << "p3d_ground truth" << p_3d << std::endl;
 
-    int iter = 0;
-    int miss_num = 0;
-    for (const auto ts : timestamp_exist) {
-      std::cout << "iter: " << iter++ << std::endl;
-
-      if (timestamp_ground_truth.find(ts.first) !=
-          timestamp_ground_truth.end()) {
-        std::cout << ts.first << ", " << ts.first << ", "
-                  << timestamp_ground_truth[ts.first] << std::endl;
-      } else {
-        miss_num++;
-        std::cout << ts.first << ", " << std::endl;
-      }
-    }
-
-    std::cerr << "miss number: " << miss_num << std::endl;
-
-    std::cerr << timestamp_exist.size() << ", " << timestamp_ground_truth.size()
-              << std::endl;
-
-    std::cerr << "ground_truth_cam_pos col size: "
-              << ground_truth_cam_pos.cols() << std::endl;
-    std::cerr << "Loaded " << id << " ground truth positions. " << std::endl;
+    ground_truth_cam_pos.conservativeResize(3, ground_truth_cam_pos.cols() + 1);
+    ground_truth_cam_pos.col(ground_truth_cam_pos.cols() - 1) = p_3d;
+    id++;
   }
+
+  std::cerr << "ground_truth_cam_pos col size: " << ground_truth_cam_pos.cols()
+            << std::endl;
+  std::cerr << "Loaded " << id << " ground truth positions. " << std::endl;
+}
+
+void load_matches(const std::string dataset_path,
+                  std::vector<std::pair<int, int>>& matches) {
+  const std::string match_path =
+      dataset_path + "/state_groundtruth_estimate0/match.csv";
+  std::ifstream est_gt(match_path);
+
+  while (est_gt) {
+    std::string line;
+    std::vector<std::string> split_line;
+    std::getline(est_gt, line);
+
+    split_with_delim(line, split_line, ',');
+    // std::cout << "split_line: " << split_line[0] << std::endl;
+
+    int num1 = stoi(split_line[0]);
+    int num2 = stoi(split_line[0]);  // the second element is not used..
+    std::pair<int, int> match_pair = std::make_pair(num1, num2);
+    matches.push_back(match_pair);
+    if (num1 > 2700) break;
+  }
+  std::cout << "successfully loaded " << matches.size()
+            << " picture(cam0)-groundtruth matches" << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1138,6 +1119,11 @@ bool next_step() {
     // update image views
     change_display_to_image(tcidl);
     change_display_to_image(tcidr);
+
+    // save my computer!
+    while (opt_running) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
 
     current_frame++;
     return true;

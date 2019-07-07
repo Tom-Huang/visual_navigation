@@ -355,6 +355,7 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
               << " and ground truth size: " << model.size() << " doesn't match!"
               << std::endl;
   }
+
   // 0. Centroids
   const Vec3 centroid_data = data.rowwise().mean();
   const Vec3 centroid_model = model.rowwise().mean();
@@ -380,7 +381,7 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
 
   const Mat3X model_rotated = R * model_centered;
 
-  std::cout << "rotation succeeds." << std::endl;
+  std::cout << "rotation :" << R << std::endl;
 
   //  // 2. Scale (regular, non-symmetric variant)
 
@@ -396,7 +397,11 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
   // 3. Translation
   const Vec3 t = centroid_data - R * centroid_model;
 
-  std::cout << "translation succeeds." << std::endl;
+  std::cout << "centroid_data: " << centroid_data
+            << "centroid_model: " << centroid_model << std::endl;
+  std::cout << "translation: " << t << std::endl;
+
+  // model_transformed = (R * model).colwise() + t;
 
   model_transformed = (R * model).colwise() + t;
 
@@ -416,6 +421,8 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
     ate->count = errors.rows();
   }
   std::cout << "ate calculation succeeds." << std::endl;
+  // model_transformed = Sophus::Sim3d(Sophus::RxSO3d(1, R), t);
+
   return Sophus::Sim3d(Sophus::RxSO3d(1, R), t);
 }
 //******************Project_END
