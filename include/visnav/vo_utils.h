@@ -1028,7 +1028,7 @@ struct ErrorMetricValue {
 /// http://graphics.stanford.edu/~smr/ICP/comparison/eggert_comparison_mva97.pdf
 Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
                                 Mat3X& model_transformed,
-                                ErrorMetricValue* ate) {
+                                ErrorMetricValue ate) {
   // 0. Centroids
   const Vec3 centroid_data = data.rowwise().mean();
   const Vec3 centroid_model = model.rowwise().mean();
@@ -1076,18 +1076,18 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
 
   std::cout << "model transformation succeeds." << std::endl;
   // 4. Translational error
-  if (ate) {
+  if (ate.count == 0) {
     // static_assert(ArrX::ColsAtCompileTime == 1);
 
     //    const Mat3X diff = data - ((s * R * model).colwise() + t);
     const Mat3X diff = data - ((R * model).colwise() + t);
     const ArrX errors = diff.colwise().norm().transpose();
     //  auto& ref = *ate;
-    ate->rmse = std::sqrt(errors.square().sum() / errors.rows());
-    ate->mean = errors.mean();
-    ate->min = errors.minCoeff();
-    ate->max = errors.maxCoeff();
-    ate->count = errors.rows();
+    ate.rmse = std::sqrt(errors.square().sum() / errors.rows());
+    ate.mean = errors.mean();
+    ate.min = errors.minCoeff();
+    ate.max = errors.maxCoeff();
+    ate.count = errors.rows();
   }
   std::cout << "ate calculation succeeds." << std::endl;
   return Sophus::Sim3d(Sophus::RxSO3d(1, R), t);

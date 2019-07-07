@@ -157,7 +157,7 @@ std::map<std::string, FrameId> timestamp_frameid_map;
 // TODO PROJECT: estimated camera position of all timestamp
 Mat3X estimated_cam_pos;
 Mat3X ground_truth_transformed;
-ErrorMetricValue* ate;
+ErrorMetricValue ate;
 Mat3X corresponding_est_cam_pos;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -374,13 +374,16 @@ int main(int argc, char** argv) {
         }
 
         if (ground_truth_transformed.cols() == 0) {
-          align_points_sim3(truncated_estimate_cam_pos, ground_truth_cam_pos,
+          //          align_points_sim3(truncated_estimate_cam_pos,
+          //          ground_truth_cam_pos,
+          //                            ground_truth_transformed, ate);
+          align_points_sim3(corresponding_est_cam_pos, ground_truth_cam_pos,
                             ground_truth_transformed, ate);
-          //          std::cout << "rmse: " << ate->rmse << std::endl;
-          //          std::cout << "mean: " << ate->mean << std::endl;
-          //          std::cout << "min: " << ate->min << std::endl;
-          //          std::cout << "max: " << ate->max << std::endl;
-          //          std::cout << "count: " << ate->count << std::endl;
+          std::cout << "rmse: " << ate.rmse << std::endl;
+          std::cout << "mean: " << ate.mean << std::endl;
+          std::cout << "min: " << ate.min << std::endl;
+          std::cout << "max: " << ate.max << std::endl;
+          std::cout << "count: " << ate.count << std::endl;
         }
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
