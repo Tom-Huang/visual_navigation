@@ -561,7 +561,7 @@ void add_new_keypoints_from_empty_cells(
     if (top_cell == 0 && bottom_cell == 0 && left_cell == 0 &&
         right_cell == 0) {
       detectKeypoints_optical_flow_version(
-          subimage, kd_new, 5,
+          subimage, kd_new, 1,
           cell_newly_added_num_kp);  // -1 means no limit on maximum
                                      // num of detected features.
     }
@@ -1028,7 +1028,7 @@ struct ErrorMetricValue {
 /// http://graphics.stanford.edu/~smr/ICP/comparison/eggert_comparison_mva97.pdf
 Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
                                 Mat3X& model_transformed,
-                                ErrorMetricValue ate) {
+                                ErrorMetricValue& ate) {
   // 0. Centroids
   const Vec3 centroid_data = data.rowwise().mean();
   const Vec3 centroid_model = model.rowwise().mean();
@@ -1076,12 +1076,14 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
 
   std::cout << "model transformation succeeds." << std::endl;
   // 4. Translational error
-  if (ate.count == 0) {
+  if (1) {  // ate.count == 0) {
     // static_assert(ArrX::ColsAtCompileTime == 1);
 
     //    const Mat3X diff = data - ((s * R * model).colwise() + t);
     const Mat3X diff = data - ((R * model).colwise() + t);
     const ArrX errors = diff.colwise().norm().transpose();
+    std::cout << diff << std::endl;
+    std::cout << errors << std::endl;
     //  auto& ref = *ate;
     ate.rmse = std::sqrt(errors.square().sum() / errors.rows());
     ate.mean = errors.mean();

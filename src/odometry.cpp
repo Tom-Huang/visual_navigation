@@ -65,6 +65,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <visnav/serialization.h>
 
+// TODO PROJECT: include chrono
+#include <time.h>
+
 using namespace visnav;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -159,6 +162,14 @@ Mat3X estimated_cam_pos;
 Mat3X ground_truth_transformed;
 ErrorMetricValue ate;
 Mat3X corresponding_est_cam_pos;
+
+// TODO PROJECT: time
+double detect_time = 0;  // detect key points and add new key points time
+double stereo_match_time = 0;
+double frame2frame_match_time = 0;
+double localization_time = 0;
+double add_landmark_time = 0;
+double optimization_time = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -384,6 +395,19 @@ int main(int argc, char** argv) {
           std::cout << "min: " << ate.min << std::endl;
           std::cout << "max: " << ate.max << std::endl;
           std::cout << "count: " << ate.count << std::endl;
+
+          std::cout << "detection time: " << detect_time << " seconds."
+                    << std::endl;
+          std::cout << "stereo match time: " << stereo_match_time << " seconds."
+                    << std::endl;
+          std::cout << "frame to frame match time: " << frame2frame_match_time
+                    << " seconds." << std::endl;
+          std::cout << "localization time: " << localization_time << " seconds."
+                    << std::endl;
+          std::cout << "add landmark time: " << add_landmark_time << " seconds."
+                    << std::endl;
+          std::cout << "optimization time: " << optimization_time << " seconds."
+                    << std::endl;
         }
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
@@ -997,6 +1021,11 @@ bool next_step() {
   if (current_frame >= int(images.size()) / NUM_CAMS) return false;
 
   const Sophus::SE3d T_0_1 = calib_cam.T_i_c[0].inverse() * calib_cam.T_i_c[1];
+  MatchData md_feat2track_left;
+
+  // TODO PROJECT: create variables to record time consumption
+  clock_t start, stop;
+  double duration;
 
   if (take_keyframe) {
     take_keyframe = false;
@@ -1038,15 +1067,24 @@ bool next_step() {
 
     //}//vo_utils.h, HUANG_DONE
 
-    MatchData md_feat2track_left;
-
     if (current_frame == 0) {
       //      detectKeypointsAndDescriptors(imgl, kdl, num_features_per_image,
       //                                    rotate_features);
-      detectKeypoints(imgl, kdl, num_features_per_image);
 
+      start = clock();
+      detectKeypoints(imgl, kdl, num_features_per_image);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      detect_time += duration;
+
+      std::cout << "time duration: " << detect_time << std::endl;
+
+      start = clock();
       OpticalFlowFirstStereoPair_opencv_version(current_frame, imgl, imgr, kdl,
                                                 kdr, landmarks, md_stereo);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      stereo_match_time += duration;
 
       md_stereo.T_i_j = T_0_1;
 
@@ -1082,10 +1120,15 @@ bool next_step() {
       std::vector<int> inliers;
       MatchData md_feat2track_left_recorded;  // feature that can be found in
                                               // landmarks
+      start = clock();
       localize_camera_optical_flow(
           calib_cam.intrinsics[0], kdl, landmarks,
           reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
           md_feat2track_left_recorded, T_w_c, inliers);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      localization_time += duration;
+
       current_pose = T_w_c;
 
       estimated_cam_pos.conservativeResize(3, estimated_cam_pos.cols() + 1);
@@ -1093,8 +1136,14 @@ bool next_step() {
 
       cameras[tcidl].T_w_c = current_pose;
       cameras[tcidr].T_w_c = current_pose * T_0_1;
+
+      start = clock();
       initializeLandmarks(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, md_stereo,
                           landmarks, next_landmark_id);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      add_landmark_time += duration;
+
       kdl.trackids.clear();
       for (int i = 0; i < kdl.corners.size(); i++) {
         TrackId trackid = findTrackId(tcidl, landmarks, i);
@@ -1120,6 +1169,7 @@ bool next_step() {
           pangolin::LoadImage(images[tcidl_last]);
       KeypointsData kdl_last = feature_corners.at(tcidl_last);
 
+      start = clock();
       OpticalFlowBetweenFrame_opencv_version(
           current_frame, last_key_frame, imgl_last, imgl, kdl_last, kdl,
           landmarks,
@@ -1127,6 +1177,10 @@ bool next_step() {
                                 // md_feat2track_left.matches stores the
                                 // current frame's feat2track match,
                                 //注意此处的featureid对每张不同的图都是从0开始的
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      frame2frame_match_time += duration;
+
       // add these points to observation of landmarks  left camera
       // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
       // current_frame, ){
@@ -1166,10 +1220,19 @@ bool next_step() {
 
       //      if (kdl.corners.size() < threshold || num_of_empty_cells >
       //      threshold2) {
+
+      start = clock();
+      add_new_keypoints_from_empty_cells(empty_indexes,
+                                         num_newly_added_keypoints, imgl, kdl,
+                                         cells, cellw, cellh, rnum, cnum);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      detect_time += duration;
+
       // add new keypoints;
-      add_new_keypoints_from_empty_cells_v2(
-          empty_indexes, num_newly_added_keypoints, imgl, kdl,
-          num_features_per_image, cells, cellw, cellh, rnum, cnum);
+      //      add_new_keypoints_from_empty_cells_v2(
+      //          empty_indexes, num_newly_added_keypoints, imgl, kdl,
+      //          num_features_per_image, cells, cellw, cellh, rnum, cnum);
 
       std::cout << "KF Found " << num_newly_added_keypoints << " keypoints"
                 << std::endl;
@@ -1185,11 +1248,16 @@ bool next_step() {
                                 // md_stereo_new contains only new matches
       // optical flow to calc keypoints in right camera using new keypoints
       // set of left.
+
+      start = clock();
       OpticalFlowToRightFrame_opencv_version(
           current_frame, imgl, imgr, kdl, kdr, landmarks, md_feat2track_right,
           md_stereo, md_stereo_new,
           num_newly_added_keypoints);  // fill kdr according to kdl, fill
                                        // md_stereo
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      stereo_match_time += duration;
 
       std::cout << md_feat2track_right.matches.size() << ", "
                 << kdr.corners.size() - num_newly_added_keypoints << std::endl;
@@ -1295,10 +1363,14 @@ bool next_step() {
       std::vector<int> inliers;
       MatchData md_feat2track_left_recorded;  // feature that can be found in
                                               // landmarks
+      start = clock();
       localize_camera_optical_flow(
           calib_cam.intrinsics[0], kdl, landmarks,
           reprojection_error_pnp_inlier_threshold_pixel, md_feat2track_left,
           md_feat2track_left_recorded, T_w_c, inliers);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      localization_time += duration;
 
       current_pose = T_w_c;
 
@@ -1308,6 +1380,7 @@ bool next_step() {
       cameras[tcidl].T_w_c = current_pose;
       cameras[tcidr].T_w_c = current_pose * T_0_1;
 
+      start = clock();
       add_new_landmarks_optical_flow_version(
           tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers, md_stereo,
           md_feat2track_left_recorded, landmarks, next_landmark_id);
@@ -1316,6 +1389,9 @@ bool next_step() {
       triangulate_new_part(tcidl, tcidr, kdl, kdr, T_w_c, calib_cam, inliers,
                            md_stereo_new, md_feat2track_left, landmarks,
                            next_landmark_id);
+      stop = clock();
+      duration = double(stop - start) / double(CLOCKS_PER_SEC);
+      add_landmark_time += duration;
 
       kdl.trackids.clear();
       kdr.trackids.clear();
@@ -1340,7 +1416,12 @@ bool next_step() {
     change_display_to_image(tcidl);
     change_display_to_image(tcidr);
 
+    start = clock();
     optimize();
+    stop = clock();
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    optimization_time += duration;
 
     current_pose = cameras[tcidl].T_w_c;
 
@@ -1385,11 +1466,17 @@ bool next_step() {
     KeypointsData kdl_last = feature_corners.at(tcidl_last);
 
     MatchData md_feat2track_left;
+
+    start = clock();
     OpticalFlowBetweenFrame_opencv_version(current_frame, last_key_frame,
                                            imgl_last, imgl, kdl_last, kdl,
                                            landmarks, md_feat2track_left);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    frame2frame_match_time += duration;
 
-    //    add_points_to_landmark_obs_left(md_feat2track_left, kdl, landmarks,
+    //    add_points_to_landmark_obs_left(md_feat2track_left, kdl,
+    //    landmarks,
     //                                    current_frame);
     //    OpticalFlowBetweenFrame_opencv_version(image of currentframge - 1,
     //                                           kdl of currentframe - 1,
@@ -1401,7 +1488,7 @@ bool next_step() {
 
     // 2. calculate num of points, and sparsity
     std::vector<Cell> cells;
-    int h = 752, w = 480, rnum = 16,
+    int h = 480, w = 752, rnum = 16,
         cnum = 16;         // TODO: give them a number!!
     int cellh = h / rnum;  // they are for later use, not for makecells
     int cellw = w / cnum;
@@ -1509,10 +1596,14 @@ bool next_step() {
     MatchData md_feat2track_left_recorded;  // feature that can be found in
                                             // landmarks
 
+    start = clock();
     localize_camera_optical_flow(calib_cam.intrinsics[0], kdl, landmarks,
                                  reprojection_error_pnp_inlier_threshold_pixel,
                                  md_feat2track_left,
                                  md_feat2track_left_recorded, T_w_c, inliers);
+    stop = clock();
+    duration = double(stop - start) / double(CLOCKS_PER_SEC);
+    localization_time += duration;
 
     for (int i = 0; i < inliers.size(); i++) {
       kdl.corners_inliers.push_back(kdl.corners[inliers[i]]);
