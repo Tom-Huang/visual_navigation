@@ -211,7 +211,7 @@ void OpticalFlowBetweenFrame_opencv_version(
   TimeCamId tcidl_last_key = std::make_pair(last_key_frame, 0);
   for (int i = 0; i < points1.size(); i++) {
     float distance = norm(points0[i] - points0_back[i]);
-    if (status[i] && status_back[i] && distance < 1) {
+    if (status[i] && status_back[i] && distance < 0.1) {
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -295,7 +295,7 @@ void OpticalFlowToRightFrame_opencv_version(
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
     // pointsr should be the same size as pointsl and kdl.corners
     float distance = norm(pointsl[i] - pointsl_back[i]);
-    if (status[i] && status_back[i] && distance < 1) {
+    if (status[i] && status_back[i] && distance < 0.1) {
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -388,7 +388,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
 
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
     float distance = norm(pointsl[i] - pointsl_back[i]);
-    if (status[i] && status_back[i] && distance < 1) {
+    if (status[i] && status_back[i] && distance < 0.1) {
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -561,7 +561,7 @@ void add_new_keypoints_from_empty_cells(
     if (top_cell == 0 && bottom_cell == 0 && left_cell == 0 &&
         right_cell == 0) {
       detectKeypoints_optical_flow_version(
-          subimage, kd_new, 5,
+          subimage, kd_new, 1,
           cell_newly_added_num_kp);  // -1 means no limit on maximum
                                      // num of detected features.
     }

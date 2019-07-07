@@ -400,21 +400,22 @@ int main(int argc, char** argv) {
 
         glEnd();
 
-        // plot estimated points used for alignment
-        glPointSize(7.0);
-        const u_int8_t color[3]{0, 0, 255};
-        glColor3ubv(color);
-        glBegin(GL_POINTS);
-        Eigen::Index max_cols = estimated_cam_pos.cols();
-        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
-          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
-          Eigen::Vector3d p1 = estimated_cam_pos.col(i);
-          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
-          //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
-          pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
-        }
+        //        // plot estimated points used for alignment
+        //        glPointSize(7.0);
+        //        const u_int8_t color[3]{0, 0, 255};
+        //        glColor3ubv(color);
+        //        glBegin(GL_POINTS);
+        //        Eigen::Index max_cols = estimated_cam_pos.cols();
+        //        for (Eigen::Index i = truncate_begin; i < max_cols; i++) {
+        //          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i -
+        //          1); Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+        //          // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1),
+        //          p1(2));
+        //          //          pangolin::glVertex(p0);  //(p0(0), p0(1),
+        //          p0(2)); pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+        //        }
 
-        glEnd();
+        //        glEnd();
       }
 
       img_view_display.Activate();
@@ -1145,8 +1146,8 @@ bool next_step() {
       // TODO: kdl is in what corrdinate?
       //} TAN_DONE
 
-      int h = 480, w = 752, rnum = 16,
-          cnum = 16;         // TODO: give them a number!!
+      int h = 480, w = 752, rnum = 30,
+          cnum = 47;         // TODO: give them a number!!
       int cellh = h / rnum;  // they are for later use, not for makecells
       int cellw = w / cnum;
       makeCells(h, w, rnum, cnum, cells);
@@ -1163,9 +1164,18 @@ bool next_step() {
       //      if (kdl.corners.size() < threshold || num_of_empty_cells >
       //      threshold2) {
       // add new keypoints;
-      add_new_keypoints_from_empty_cells_v2(
-          empty_indexes, num_newly_added_keypoints, imgl, kdl,
-          num_features_per_image, cells, cellw, cellh, rnum, cnum);
+
+      // add new keypoints from every empty cell
+      add_new_keypoints_from_empty_cells(empty_indexes,
+                                         num_newly_added_keypoints, imgl, kdl,
+                                         cells, cellw, cellh, rnum, cnum);
+
+      // // add new keypoints from whole image and then remove those points in
+      // non
+      // // empty cells
+      //      add_new_keypoints_from_empty_cells_v2(
+      //          empty_indexes, num_newly_added_keypoints, imgl, kdl,
+      //          num_features_per_image, cells, cellw, cellh, rnum, cnum);
 
       std::cout << "KF Found " << num_newly_added_keypoints << " keypoints"
                 << std::endl;
@@ -1397,8 +1407,8 @@ bool next_step() {
 
     // 2. calculate num of points, and sparsity
     std::vector<Cell> cells;
-    int h = 752, w = 480, rnum = 16,
-        cnum = 16;         // TODO: give them a number!!
+    int h = 480, w = 752, rnum = 30,
+        cnum = 47;         // TODO: give them a number!!
     int cellh = h / rnum;  // they are for later use, not for makecells
     int cellw = w / cnum;
     makeCells(h, w, rnum, cnum, cells);
@@ -1538,7 +1548,7 @@ bool next_step() {
       opt_finished = false;
     }
 
-    if (kdl.corners.size() < 150 && opt_running) {
+    if (kdl.corners.size() < 350 && opt_running) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
