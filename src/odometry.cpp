@@ -1495,8 +1495,8 @@ bool next_step() {
 
     // 2. calculate num of points, and sparsity
     std::vector<Cell> cells;
-    int h = 480, w = 752, rnum = 30,
-        cnum = 47;         // TODO: give them a number!!
+    int h = 480, w = 752, rnum = 16,
+        cnum = 16;         // TODO: give them a number!!
     int cellh = h / rnum;  // they are for later use, not for makecells
     int cellw = w / cnum;
     makeCells(h, w, rnum, cnum, cells);
@@ -1510,7 +1510,7 @@ bool next_step() {
 
     int num_of_empty_cells = sparsity(cells, empty_indexes);
     int threshold = 200;  // threshold for minimum num of points
-    int threshold2 = 1200;
+    int threshold2 = 105;
     // 110  // 30;  //  threshold for maximum num of empty cells
     int num_newly_added_keypoints = 0;
 
