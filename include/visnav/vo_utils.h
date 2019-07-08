@@ -1029,13 +1029,28 @@ struct ErrorMetricValue {
 Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
                                 Mat3X& model_transformed,
                                 ErrorMetricValue& ate) {
+  // 0.0 Transform from imu to cam
+  Mat3 R_c_i;
+  Vec3 t_c_i;
+  std::cout << "assign value to R_c_i" << std::endl;
+  R_c_i << 0.0148655429818, -0.999880929698, 0.00414029679422, 0.999557249008,
+      0.0149672133247, 0.025715529948, -0.0257744366974, 0.00375618835797,
+      0.999660727178;
+  t_c_i << -0.0216401454975, -0.064676986768, 0.00981073058949;
+
+  std::cout << "Successfully assign value to R_c_i" << std::endl;
+
+  Mat3X model_wrt_camframe = (R_c_i * model).colwise() + t_c_i;
+
+  std::cout << "Successfully calculate model_wrt_camframe" << std::endl;
+
   // 0. Centroids
   const Vec3 centroid_data = data.rowwise().mean();
-  const Vec3 centroid_model = model.rowwise().mean();
+  const Vec3 centroid_model = model_wrt_camframe.rowwise().mean();
 
   // center both clouds to 0 centroid
   const Mat3X data_centered = data.colwise() - centroid_data;
-  const Mat3X model_centered = model.colwise() - centroid_model;
+  const Mat3X model_centered = model_wrt_camframe.colwise() - centroid_model;
   std::cout << "centralization succeeds." << std::endl;
 
   // 1. Rotation
@@ -1072,7 +1087,7 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
 
   std::cout << "translation succeeds." << std::endl;
 
-  model_transformed = (R * model).colwise() + t;
+  model_transformed = (R * model_wrt_camframe).colwise() + t;
 
   std::cout << "model transformation succeeds." << std::endl;
   // 4. Translational error
@@ -1080,15 +1095,15 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
     // static_assert(ArrX::ColsAtCompileTime == 1);
 
     //    const Mat3X diff = data - ((s * R * model).colwise() + t);
-    const Mat3X diff = data - ((R * model).colwise() + t);
+    const Mat3X diff = data - ((R * model_wrt_camframe).colwise() + t);
     const ArrX errors = diff.colwise().norm().transpose();
 
     //  auto& ref = *ate;
-    ate.rmse = std::sqrt(errors.square().sum() / errors.rows());
+    ate.rmse = std::sqrt(errors.square().sum() / errors.cols());
     ate.mean = errors.mean();
     ate.min = errors.minCoeff();
     ate.max = errors.maxCoeff();
-    ate.count = errors.rows();
+    ate.count = errors.cols();
   }
   std::cout << "ate calculation succeeds." << std::endl;
   return Sophus::Sim3d(Sophus::RxSO3d(1, R), t);

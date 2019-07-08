@@ -371,8 +371,8 @@ int main(int argc, char** argv) {
       if (estimated_cam_pos.cols() > 2700) {
         Eigen::Index truncate_begin =
             estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
-        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
-            0, truncate_begin, 3, ground_truth_cam_pos.cols());
+        //        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
+        //            0, truncate_begin, 3, ground_truth_cam_pos.cols());
 
         if (corresponding_est_cam_pos.cols() == 0) {
           for (const auto ts_gt : timestamp_gt_vec) {
