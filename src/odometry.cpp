@@ -64,8 +64,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <visnav/serialization.h>
 
-// TODO PROJECT: include time.h
+// TODO PROJECT:
 #include <time.h>
+#include <fstream>
 
 using namespace visnav;
 
@@ -369,10 +370,11 @@ int main(int argc, char** argv) {
 
       // TODO PROJECT: visualize the trajectory of ground truth camera pose
       if (estimated_cam_pos.cols() > 2700) {
-        Eigen::Index truncate_begin =
-            estimated_cam_pos.cols() - ground_truth_cam_pos.cols() - 1;
-        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
-            0, truncate_begin, 3, ground_truth_cam_pos.cols());
+        //        Eigen::Index truncate_begin =
+        //            estimated_cam_pos.cols() - ground_truth_cam_pos.cols() -
+        //            1;
+        //        Mat3X truncated_estimate_cam_pos = estimated_cam_pos.block(
+        //            0, truncate_begin, 3, ground_truth_cam_pos.cols());
 
         if (corresponding_est_cam_pos.cols() == 0) {
           for (const auto ts_gt : timestamp_gt_vec) {
@@ -394,6 +396,25 @@ int main(int argc, char** argv) {
           //                            ground_truth_transformed, ate);
           align_points_sim3(corresponding_est_cam_pos, ground_truth_cam_pos,
                             ground_truth_transformed, ate);
+          // Project: output the estimated poses.
+          std::ofstream est_pose;
+          est_pose.open("est_pose.csv");
+          for (int pos = 0; pos < estimated_cam_pos.cols(); pos++) {
+            est_pose << estimated_cam_pos(pos, 0) << ","
+                     << estimated_cam_pos(pos, 1) << ","
+                     << estimated_cam_pos(pos, 2) << ",\n";
+          }
+          est_pose.close();
+          // output transformed groundtruth
+          std::ofstream gt_trans_pose;
+          gt_trans_pose.open("gt_trans_pose.csv");
+          for (int pos = 0; pos < ground_truth_transformed.cols(); pos++) {
+            gt_trans_pose << ground_truth_transformed(pos, 0) << ","
+                          << ground_truth_transformed(pos, 1) << ","
+                          << ground_truth_transformed(pos, 2) << ",\n";
+          }
+          gt_trans_pose.close();
+
           std::cout << "rmse: " << ate.rmse << std::endl;
           std::cout << "mean: " << ate.mean << std::endl;
           std::cout << "min: " << ate.min << std::endl;
@@ -425,7 +446,8 @@ int main(int argc, char** argv) {
         glBegin(GL_POINTS);
         Eigen::Index max_cols_gt = ground_truth_transformed.cols();
         for (Eigen::Index i = 0; i < max_cols_gt; i++) {
-          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i -
+          //          1);
 
           Eigen::Vector3d p =
               ground_truth_transformed.col(i);  // ground_truth_cam_pos
@@ -875,8 +897,8 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
       timestamp_exist[s_timestamp] = 1;
       timestamp_frameid_map[s_timestamp] = id;
 
-      // ensure that we actually read a new timestamp (and not e.g. just newline
-      // at the end of the file)
+      // ensure that we actually read a new timestamp (and not e.g. just
+      // newline at the end of the file)
       if (times.fail()) {
         times.clear();
         std::string temp;
@@ -894,9 +916,10 @@ void load_data(const std::string& dataset_path, const std::string& calib_path) {
         TimeCamId tcid(id, i);
 
         //        std::stringstream ss;
-        //        ss << dataset_path << "/" << timestamp << "_" << i << ".jpg";
-        //        pangolin::TypedImage img = pangolin::LoadImage(ss.str());
-        //        images[tcid] = std::move(img);
+        //        ss << dataset_path << "/" << timestamp << "_" << i <<
+        //        ".jpg"; pangolin::TypedImage img =
+        //        pangolin::LoadImage(ss.str()); images[tcid] =
+        //        std::move(img);
 
         std::stringstream ss;
         ss << dataset_path << "/cam" << i << "/data/" << img_name;
@@ -964,8 +987,8 @@ void load_ground_truth_cam_pose(const std::string& dataset_path) {
 
       //      if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
       if (line.size() < 20 || line[0] == '#' || id > 2700) continue;
-      // ensure that we actually read a new timestamp (and not e.g. just newline
-      // at the end of the file)
+      // ensure that we actually read a new timestamp (and not e.g. just
+      // newline at the end of the file)
       if (times.fail()) {
         times.clear();
         std::string temp;
@@ -1299,9 +1322,9 @@ void optimize() {
   num_total_opt_landmarks += landmarks.size();
   num_total_opt_obs += num_obs;
 
-  // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole second
-  // camera constant is a bit suboptimal, since we only need 1 DoF, but it's
-  // simple and the initial poses should be good from calibration.
+  // Fix oldest two cameras to fix SE3 and scale gauge. Making the whole
+  // second camera constant is a bit suboptimal, since we only need 1 DoF, but
+  // it's simple and the initial poses should be good from calibration.
   FrameId fid = *(kf_frames.begin());
   // std::cout << "fid " << fid << std::endl;
 
