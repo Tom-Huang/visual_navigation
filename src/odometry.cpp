@@ -1222,7 +1222,7 @@ bool next_step() {
           kdl, cells);  //-> num_of_points; std::vector<Cell> cells
 
       int num_of_empty_cells = sparsity(cells, empty_indexes);
-      int threshold = 200;   // threshold for minimum num of points
+      int threshold = 100;   // threshold for minimum num of points
       int threshold2 = 600;  //  threshold for maximum num of empty cells
       int num_newly_added_keypoints = 0;
 
@@ -1230,13 +1230,14 @@ bool next_step() {
       //      threshold2) {
 
       start = clock();
-      add_new_keypoints_from_empty_cells(empty_indexes,
-                                         num_newly_added_keypoints, imgl, kdl,
-                                         cells, cellw, cellh, rnum, cnum);
+      //      add_new_keypoints_from_empty_cells(empty_indexes,
+      //                                         num_newly_added_keypoints,
+      //                                         imgl, kdl, cells, cellw, cellh,
+      //                                         rnum, cnum);
       // add new keypoints;
-      //      add_new_keypoints_from_empty_cells_v2(
-      //          empty_indexes, num_newly_added_keypoints, imgl, kdl,
-      //          num_features_per_image, cells, cellw, cellh, rnum, cnum);
+      add_new_keypoints_from_empty_cells_v2(
+          empty_indexes, num_newly_added_keypoints, imgl, kdl,
+          num_features_per_image, cells, cellw, cellh, rnum, cnum);
       stop = clock();
       duration = double(stop - start) / double(CLOCKS_PER_SEC);
       detect_time += duration;
