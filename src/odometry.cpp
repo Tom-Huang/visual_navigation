@@ -1211,8 +1211,8 @@ bool next_step() {
       // TODO: kdl is in what corrdinate?
       //} TAN_DONE
 
-      int h = 480, w = 752, rnum = 16,
-          cnum = 16;         // TODO: give them a number!!
+      int h = 480, w = 752, rnum = 32,
+          cnum = 32;         // TODO: give them a number!!
       int cellh = h / rnum;  // they are for later use, not for makecells
       int cellw = w / cnum;
       makeCells(h, w, rnum, cnum, cells);
@@ -1222,8 +1222,8 @@ bool next_step() {
           kdl, cells);  //-> num_of_points; std::vector<Cell> cells
 
       int num_of_empty_cells = sparsity(cells, empty_indexes);
-      int threshold = 100;   // threshold for minimum num of points
-      int threshold2 = 100;  //  threshold for maximum num of empty cells
+      int threshold = 200;   // threshold for minimum num of points
+      int threshold2 = 600;  //  threshold for maximum num of empty cells
       int num_newly_added_keypoints = 0;
 
       //      if (kdl.corners.size() < threshold || num_of_empty_cells >
