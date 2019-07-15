@@ -190,19 +190,26 @@ void OpticalFlowBetweenFrame_opencv_version(
   std::vector<float> errors;
   std::vector<float> errors_back;
 
-  cv::Size winSize(31, 31);
+  cv::Size winSize(21, 21);  //(31, 31);
 
   // convert double vector to float vector in cv
+  int start = clock();
   for (const auto p_2dl : kdlt0.corners) {
     cv::Point2f p_2d;
     p_2d.x = float(p_2dl(0));
     p_2d.y = float(p_2dl(1));
     points0.push_back(p_2d);
   }
+  int stop = clock();
+
+  start = clock();
   cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
-                           errors, winSize, 4);
+                           errors);  //, winSize, 5);
   cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
-                           status_back, errors_back, winSize, 4);
+                           status_back, errors_back);  //, winSize, 5);
+  stop = clock();
+  double duration = double(stop - start) / double(CLOCKS_PER_SEC);
+  std::cout << "optical flow time: " << duration << std::endl;
 
   kdlt1.corners.clear();
   kdlt1.trackids.clear();
@@ -210,8 +217,8 @@ void OpticalFlowBetweenFrame_opencv_version(
   TimeCamId tcidl = std::make_pair(current_frame, 0);
   TimeCamId tcidl_last_key = std::make_pair(last_key_frame, 0);
   for (int i = 0; i < points1.size(); i++) {
-    float distance = norm(points0[i] - points0_back[i]);
-    if (status[i] && status_back[i] && distance < 1) {
+    if (status[i] && status_back[i]) {
+      float distance = norm(points0[i] - points0_back[i]);
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -221,7 +228,7 @@ void OpticalFlowBetweenFrame_opencv_version(
       //                               p_backward_tar, status_backward,
       //                               errors_backward);
       //      float distance = norm(points1[i] - p_backward_tar[0]);
-      if (1) {  // status_backward[0] == 1 && distance < 1) {
+      if (distance < 1) {  // status_backward[0] == 1 && distance < 1) {
         kdlt1.corners.emplace_back(points1[i].x, points1[i].y);
         TrackId trackid =
             kdlt0.trackids[i];  // findTrackId(tcidl_last_key, landmarks, i);
@@ -281,10 +288,11 @@ void OpticalFlowToRightFrame_opencv_version(
     p_2d.y = float(p_2dl(1));
     pointsl.push_back(p_2d);
   }
-  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors,
-                           winSize, 4);  // winSize, 4
+  cv::calcOpticalFlowPyrLK(
+      imgl_cv, imgr_cv, pointsl, pointsr, status,
+      errors);  //                           winSize, 4);  // winSize, 4
   cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                           errors_back, winSize, 4);  // backward check
+                           errors_back);  //, winSize, 4);  // backward check
 
   kdr.corners.clear();
   md_feat2track_right.matches.clear();
@@ -294,8 +302,9 @@ void OpticalFlowToRightFrame_opencv_version(
 
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
     // pointsr should be the same size as pointsl and kdl.corners
-    float distance = norm(pointsl[i] - pointsl_back[i]);
-    if (status[i] && status_back[i] && distance < 1) {
+
+    if (status[i] && status_back[i]) {
+      float distance = norm(pointsl[i] - pointsl_back[i]);
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -305,7 +314,7 @@ void OpticalFlowToRightFrame_opencv_version(
       //      p_backward_tar,
       //                               status_backward, errors_backward);
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
-      if (1) {  // status_backward[0] == 1 && distance < 1) {
+      if (distance < 1) {  // status_backward[0] == 1 && distance < 1) {
         kdr.corners.emplace_back(pointsr[i].x, pointsr[i].y);
 
         // we link the feature id of right frame to trackid
@@ -379,16 +388,17 @@ void OpticalFlowFirstStereoPair_opencv_version(
     p_2d.y = float(p_2dl(1));
     pointsl.push_back(p_2d);
   }
-  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors,
-                           winSize, 4);  // winSize, 4
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  // winSize, 4);  // winSize, 4
   cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                           errors_back, winSize, 4);  // backward check
+                           errors_back);  //, winSize, 4);  // backward check
   kdr.corners.clear();
   int j = 0;
 
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
-    float distance = norm(pointsl[i] - pointsl_back[i]);
-    if (status[i] && status_back[i] && distance < 1) {
+
+    if (status[i] && status_back[i]) {
+      float distance = norm(pointsl[i] - pointsl_back[i]);
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -399,7 +409,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
       //                               status_backward, errors_backward);
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
       //      std::cout << pointsl[i] << ", " << p_backward_tar[0] << std::endl;
-      if (1) {  // status_backward[0] == 1 && distance < 1) {
+      if (distance < 1) {  // status_backward[0] == 1 && distance < 1) {
         kdr.corners.emplace_back(pointsr[i].x, pointsr[i].y);
         md_stereo.matches.push_back(std::make_pair(i, j));
         md_stereo.inliers.push_back(std::make_pair(i, j));

@@ -93,10 +93,13 @@ constexpr int NUM_CAMS = 2;
 ///////////////////////////////////////////////////////////////////////////////
 /// Variables
 ///////////////////////////////////////////////////////////////////////////////
-int rnum = 16;
-int cnum = 16;
-int threshold = 100;   // threshold for minimum num of points
-int threshold2 = 110;  //  threshold for maximum num of empty cells
+int rnum = 15;
+int cnum = 23;
+int threshold = 100;  // threshold for minimum num of points
+double empty_cells_percentage_threshold = 0.43;
+int threshold2 = int(
+    rnum * cnum * empty_cells_percentage_threshold);  //  threshold for maximum
+                                                      //  num of empty cells
 
 int current_frame = 0;
 int last_key_frame = 0;
