@@ -1431,7 +1431,6 @@ bool next_step() {
     start = clock();
     optimize();
     stop = clock();
-    stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     optimization_time += duration;
 
