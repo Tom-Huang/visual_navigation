@@ -204,9 +204,10 @@ void OpticalFlowBetweenFrame_opencv_version(
 
   start = clock();
   cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
-                           errors);  //, winSize, 5);
+                           errors, winSize, 5);  //, winSize, 5);
   cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
-                           status_back, errors_back);  //, winSize, 5);
+                           status_back, errors_back, winSize,
+                           5);  //, winSize, 5);
   stop = clock();
   double duration = double(stop - start) / double(CLOCKS_PER_SEC);
   std::cout << "optical flow keypoints num: " << points0.size() << std::endl;
