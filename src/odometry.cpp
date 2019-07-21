@@ -89,6 +89,7 @@ void compute_projections();
 
 constexpr int UI_WIDTH = 200;
 constexpr int NUM_CAMS = 2;
+int num_keyframe = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Variables
@@ -439,6 +440,7 @@ int main(int argc, char** argv) {
                     << num_total_opt_landmarks << std::endl;
           std::cout << "total optimization observations number: "
                     << num_total_opt_obs << std::endl;
+          std::cout << "num of key frames: " << num_keyframe << std::endl;
         }
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
@@ -1063,6 +1065,7 @@ bool next_step() {
 
   if (take_keyframe) {
     take_keyframe = false;
+    num_keyframe++;
 
     TimeCamId tcidl(current_frame, 0), tcidr(current_frame, 1);
 
