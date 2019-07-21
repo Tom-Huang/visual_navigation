@@ -138,7 +138,7 @@ void detectKeypoints_optical_flow_version(
   cv::Mat image(img_raw.h, img_raw.w, CV_8U, img_raw.ptr);
 
   std::vector<cv::Point2f> points;
-  goodFeaturesToTrack(image, points, num_features, 0.001, 8);
+  goodFeaturesToTrack(image, points, num_features, 0.01, 8);
 
   kd.corners.clear();
   kd.corner_angles.clear();

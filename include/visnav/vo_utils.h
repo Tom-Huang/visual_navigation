@@ -204,11 +204,13 @@ void OpticalFlowBetweenFrame_opencv_version(
 
   start = clock();
   cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
-                           errors);  //, winSize, 5);
+                           errors, winSize, 5);  //, winSize, 5);
   cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
-                           status_back, errors_back);  //, winSize, 5);
+                           status_back, errors_back, winSize,
+                           5);  //, winSize, 5);
   stop = clock();
   double duration = double(stop - start) / double(CLOCKS_PER_SEC);
+  std::cout << "optical flow keypoints num: " << points0.size() << std::endl;
   std::cout << "optical flow time: " << duration << std::endl;
 
   kdlt1.corners.clear();
@@ -216,6 +218,7 @@ void OpticalFlowBetweenFrame_opencv_version(
   int j = 0;
   TimeCamId tcidl = std::make_pair(current_frame, 0);
   TimeCamId tcidl_last_key = std::make_pair(last_key_frame, 0);
+  start = clock();
   for (int i = 0; i < points1.size(); i++) {
     if (status[i] && status_back[i]) {
       float distance = norm(points0[i] - points0_back[i]);
@@ -243,6 +246,9 @@ void OpticalFlowBetweenFrame_opencv_version(
       }
     }
   }
+  stop = clock();
+  duration = double(stop - start) / double(CLOCKS_PER_SEC);
+  std::cout << "optical flow push back time: " << duration << std::endl;
   //  for (int i = 0; i < points0.size(); i++) {  // ever input point in left
   //  cam
   //    for (int j = 0; j < points1.size();

@@ -93,10 +93,12 @@ constexpr int NUM_CAMS = 2;
 ///////////////////////////////////////////////////////////////////////////////
 /// Variables
 ///////////////////////////////////////////////////////////////////////////////
-int rnum = 15;
-int cnum = 23;
+int rnum = 15;        // 15
+int cnum = 23;        // 23
 int threshold = 100;  // threshold for minimum num of points
-double empty_cells_percentage_threshold = 0.45;
+
+double empty_cells_percentage_threshold = 0.49;  // 0.43;
+
 int threshold2 = int(
     rnum * cnum * empty_cells_percentage_threshold);  //  threshold for maximum
                                                       //  num of empty cells
@@ -1242,6 +1244,7 @@ bool next_step() {
       //      add_new_keypoints_from_empty_cells_v2(
       //          empty_indexes, num_newly_added_keypoints, imgl, kdl,
       //          num_features_per_image, cells, cellw, cellh, rnum, cnum);
+
       stop = clock();
       duration = double(stop - start) / double(CLOCKS_PER_SEC);
       detect_time += duration;
@@ -1431,7 +1434,6 @@ bool next_step() {
     start = clock();
     optimize();
     stop = clock();
-    stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     optimization_time += duration;
 
@@ -1608,7 +1610,9 @@ bool next_step() {
     std::vector<int> inliers;
     MatchData md_feat2track_left_recorded;  // feature that can be found in
                                             // landmarks
-
+    if (kdl.corners.size() < 200 && opt_running) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
     start = clock();
     localize_camera_optical_flow(calib_cam.intrinsics[0], kdl, landmarks,
                                  reprojection_error_pnp_inlier_threshold_pixel,
@@ -1631,6 +1635,7 @@ bool next_step() {
 
     feature_corners[tcidl] = kdl;
 
+    //|| num_of_empty_cells > threshold2
     if ((int(inliers.size()) < new_kf_min_inliers ||
          kdl.corners.size() < threshold || num_of_empty_cells > threshold2) &&
         !opt_running && !opt_finished) {
@@ -1644,10 +1649,6 @@ bool next_step() {
       calib_cam = calib_cam_opt;
 
       opt_finished = false;
-    }
-
-    if (kdl.corners.size() < 200 && opt_running) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     // update image views
