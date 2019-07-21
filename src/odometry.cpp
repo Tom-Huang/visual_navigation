@@ -89,7 +89,7 @@ void compute_projections();
 
 constexpr int UI_WIDTH = 200;
 constexpr int NUM_CAMS = 2;
-
+int num_keyframe = 0;
 ///////////////////////////////////////////////////////////////////////////////
 /// Variables
 ///////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ int rnum = 15;        // 15
 int cnum = 23;        // 23
 int threshold = 100;  // threshold for minimum num of points
 
-double empty_cells_percentage_threshold = 0.49;  // 0.43;
+double empty_cells_percentage_threshold = 0.42;  // 0.43;
 
 int threshold2 = int(
     rnum * cnum * empty_cells_percentage_threshold);  //  threshold for maximum
@@ -425,6 +425,7 @@ int main(int argc, char** argv) {
                     << num_total_opt_landmarks << std::endl;
           std::cout << "total optimization observations number: "
                     << num_total_opt_obs << std::endl;
+          std::cout << "num of key framge" << num_keyframe << std::endl;
         }
         glPointSize(5.0);
         const u_int8_t color_gt[3]{0, 255, 0};
@@ -1045,6 +1046,7 @@ bool next_step() {
   double duration;
 
   if (take_keyframe) {
+    num_keyframe++;
     take_keyframe = false;
 
     TimeCamId tcidl(current_frame, 0), tcidr(current_frame, 1);
