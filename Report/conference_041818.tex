@@ -1,0 +1,81 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage[]{algorithm2e}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Indirect Visual Odometry with Optical Flow}
+
+
+\author{\IEEEauthorblockN{Chenguang Huang, Andong Tan}
+\IEEEauthorblockA{\textit{Department of Mathematics and Informatics} \\
+\textit{Technical University of Munich}\\
+Munich, Germany \\
+chenguang.huang@tum.de, andong.tan@tum.de\\
+}
+}
+
+\maketitle
+
+\begin{abstract}
+   With the increasing need of robotics application in industry...
+		
+\end{abstract}
+
+\begin{IEEEkeywords}
+Optical Flow, Visual Odometry, Computer Vision
+\end{IEEEkeywords}
+
+
+\section{Introduction}
+Computer vision related tasks in robotics are attracting more and more attention. One typical task is the visual odometry. It is used widely in applications which require the depth information of objects without directly relying on distance measurement sensors like Lidar. Besides, many applications uses visual odometry to help with the motion planning of some specific agent. Therefore, this function could cause critical problems if it is not reliable. To ensure the safety of the agent, a common choice is to use mathematically provable methods to realize the function rather than using currently unexplainable techniques like deep learning. Thus it worths looking into the implementation details of visual odometry using traditional explainable methods.
+
+To estimate the depth of some specific object, at least two images are needed if there is no prior assumption in how the world is constructed. However, before estimating the depth through triangulation, corresponding point in two images which describes the same 3D point should be found. The first way to achieve this is through key point detection in both images, and find the matching point pairs through similarity comparison. The second way to achieve this is through optical flow, which computes an estimated position of a pixel in the second image according its position in the first image. The above two ways are also suitable to find the point matching pairs between consecutive frames. 
+
+This paper mainly compares the above two methods. 
+
+The following sections are structured as below: Section II presents some basic concepts used in the two methods. Section III describes the pipeline of the two methods. Section IV shows the implementation details. Section V evaluates the difference between these two methods, and Section VI concludes the work.
+
+
+\section{Basic Concepts}
+To understand the methods better, some basic concepts are summarized in this section.
+
+\itemize 
+
+\item Optical Flow: 
+The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel in two consecutive frames. Two main types of optical flow calculation include the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method). 
+
+These two methods have different assumptions: in Lukas \& Kanade method, it assumes that (i) the motion is constant in a local neighborhood (ii) the brightness of a specific pixel is constant in different frames. Under the above assumptions, the Lukas \& Kanade method is formulated as follows:
+
+$E(v) = \int_{W(x)}^{} |\Delta I(x', t)^Tv + I_t(x',t) |^2dx' $
+
+The best velocity $v$ is calculated via the minimization of the above energy function. 
+
+
+
+\item Visual Odometry
+
+\item key point detection BRIEF, SURF descriptor
+
+
+\section{Structure Design}
+P1
+\section{Implementation}
+P4
+
+
+\section{Evaluation}
+P4
+
+\section{Conclusion}
+P1
+
+\end{document}
