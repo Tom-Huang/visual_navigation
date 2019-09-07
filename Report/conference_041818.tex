@@ -48,22 +48,42 @@ The following sections are structured as below: Section II presents some basic c
 \section{Basic Concepts}
 To understand the methods better, some basic concepts are summarized in this section.
 
-\itemize 
+\subsection{Visual Odometry}
+Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus help to build a map in real time around the robot to support the navigation.
 
-\item Optical Flow: 
-The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel in two consecutive frames. Two main types of optical flow calculation include the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method). 
+\subsection{Optical Flow} The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel between two consecutive frames. Two main types of optical flow calculation are the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method). These two methods have different assumptions but both calculates the optical flow through an optimization process.
 
-These two methods have different assumptions: in Lukas \& Kanade method, it assumes that (i) the motion is constant in a local neighborhood (ii) the brightness of a specific pixel is constant in different frames. Under the above assumptions, the Lukas \& Kanade method is formulated as follows:
+In Lukas \& Kanade method, it assumes that (i) the motion is constant in a local neighborhood (ii) the brightness of a specific pixel is constant in different frames. Under the above assumptions, the energy function in the Lukas \& Kanade method is formulated as follows:
 
-$E(v) = \int_{W(x)}^{} |\Delta I(x', t)^Tv + I_t(x',t) |^2dx' $
+\begin{equation}
+	E(v) = \int_{W(x)} |\Delta I(x', t)^Tv + I_t(x',t) |^2dx'
+\end{equation}
 
-The best velocity $v$ is calculated via the minimization of the above energy function. 
+where $I(x',t)$ denotes the brightness of position $x'$ at time $t$ in the image, $I_t$ denotes the derivative of brightness with respect to the time $t$, and $W(x)$ denotes the neighborhood of pixel $x'$. The optical flow $v$ is calculated via the minimization of the above energy function. It generates sparse flow vectors.
+
+In contrast, the Horn \& Schunck method assumes (i) the brightness of a specific pixel is a constant in different frames (ii) the motions are spatially smooth. This method generates dense flow vectors. The energy function of this method is:
+
+\begin{equation}
+	E(u,v) = \int\int[(I_xu + I_yv + I_t)^2+\alpha^2(||\Delta u ||^2 + ||\Delta v ||^2)]dxdy
+\end{equation} 
+
+where $I_x$ and $T_y$ are the derivatives of brightness with respect to x and y axis, respectively. $u$ and $v$ are velocity in vertical and parallel directions. In the end, optical flow is obtained through solving for $u$ and $v$ variable.		
+
+\subsection{Key Point Detection}
+The environment is continuous and complex. To successfully navigate in such en environment, some key information is more important than the other information. In the image, one kind of typical key information is the corner point. 
+
+One usual method to detect such corner points is through the analysis of the gradient of the image \cite{gradient}. Typical methods include Foerstner and Harris detector \cite{detector}. More recently, detectors like BRIEF, SURF, FAST, and Shi-Tomasi are quite popular, and have many extended versions. In our experiment, key point detection is used to extract important information from the image frames to build the map.
+
+\subsection{Point Matching}
+To construct a 3D map, the matching relationship of points between frames are important, otherwise it will cause big error in the triangulation and possibly make the optimization process in determining the 3D position of a landmark unable to converge.
+
+Finding matches between point in consecutive frames are typically done through the comparison of descriptors of two points. If the similarity between two descriptors is high enough, the two corresponding points are considered to be different projections of the same real world point. 
 
 
+ORB BRIEF 
 
-\item Visual Odometry
+RANSAC
 
-\item key point detection BRIEF, SURF descriptor
 
 
 \section{Structure Design}
@@ -77,5 +97,19 @@ P4
 
 \section{Conclusion}
 P1
+
+
+\begin{thebibliography}{00}
+
+\bibitem{gradient} H. Wang and M. Brady, “Real-time corner detection algorithm for
+motion estimation,” Image and vision computing, vol. 13, no. 9, pp. 695–
+703, 1995.
+
+\bibitem{detector} Rodehorst, V.; Koschan, A. Comparison and evaluation of feature point detectors. In Proceedings
+of 5th International Symposium Turkish-German Joint Geodetic Days, Technical University of
+Berlin, Germany, March, 2006; ISBN 3-9809030-4-4.
+
+
+\end{thebibliography}
 
 \end{document}
