@@ -50,6 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <visnav/keypoints.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/video.hpp>
 
@@ -150,6 +151,324 @@ void find_matches_landmarks(
             second_best_dist_for_kpl)
       md.matches.push_back(std::make_pair(i, best_trackid_for_kpl));
   }
+}
+
+float bilinear_interpolate(cv::Mat img, float x, float y) {
+  if (x < 0 || x >= img.size().width || y < 0 || y >= img.size().height) {
+    // std::cout << "x, y out of range!" << std::endl;
+    return 0;
+  }
+  float result;
+  float topleft, topright, bottomleft, bottomright;
+  int x_floor = int(x);
+  int y_floor = int(y);
+  topleft = img.at<float>(y_floor, x_floor);
+  topright = img.at<float>(y_floor + 1, x_floor);
+  bottomleft = img.at<float>(y_floor, x_floor + 1);
+  bottomright = img.at<float>(y_floor + 1, x_floor + 1);
+  result = (y - y_floor) *
+               ((x_floor + 1 - x) * bottomleft + (x - x_floor) * bottomright) +
+           (y_floor + 1 - y) *
+               ((x_floor + 1 - x) * topleft + (x - x_floor) * topright);
+  return result;
+}
+
+void cv_gradient_x(const cv::Mat& img, cv::Mat& gradient_x) {
+  float k1[3] = {-0.5, 0, 0.5};
+  cv::Mat ker = cv::Mat(1, 3, CV_32FC1, k1);
+  cv::filter2D(img, gradient_x, img.depth(), ker);
+}
+
+void cv_gradient_y(const cv::Mat& img, cv::Mat& gradient_y) {
+  float k1[3][1] = {-0.5, 0, 0.5};
+  cv::Mat ker = cv::Mat(3, 1, CV_32FC1, k1);
+  cv::filter2D(img, gradient_y, img.depth(), ker);
+}
+
+// TODO PROJECT: Manual implementation of optical flow method
+void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
+                   std::vector<cv::Point2f>& points0,
+                   std::vector<cv::Point2f>& points1,
+                   std::vector<unsigned char>& status,
+                   std::vector<float>& errors,
+                   cv::Size winSize = cv::Size(11, 11), int maxLevel = 5) {
+  cv::Mat img0, img1;
+  img0_uchar.convertTo(img0, CV_32FC1);
+  img1_uchar.convertTo(img1, CV_32FC1);
+  cv::Mat gradient_x, gradient_y, gradient_t;
+  //  cv_gradient_x(img0, gradient_x);
+  //  cv_gradient_y(img0, gradient_y);
+  std::cout << "gradient calculation success!" << std::endl;
+  gradient_t = img1 - img0;
+
+  //  std::cout << "gradient reading!" << std::endl;
+  //  std::cout << "original image at(1,1): " << img0.at<float>(1, 1) <<
+  //  std::endl; std::cout << "gradient: " << gradient_x << std::endl;
+  //  cv::imshow("original_image", img0);
+  //  cv::imshow("gradient_x", gradient_x);
+  //  cv::waitKey();
+  //  std::cout << "gradient_x at (1,1): " << gradient_x.at<float>(1, 1)
+  //            << std::endl;
+
+  // create different layers
+  std::vector<cv::Mat> layers0;
+  std::vector<cv::Mat> layers1;
+  layers0.push_back(img0);
+  layers1.push_back(img1);
+
+  for (int l = 0; l < maxLevel - 1; l++) {
+    cv::Mat tmp0, tmp1;
+    cv::pyrDown(layers0[l], tmp0);
+    cv::pyrDown(layers1[l], tmp1);
+    layers0.push_back(tmp0);
+    layers1.push_back(tmp1);
+  }
+
+  // iterate over points
+  std::cout << "points num: " << points0.size() << std::endl;
+  for (const auto point : points0) {
+    const float BOUNDARY = 2;
+    Eigen::Vector2f motion = Eigen::Vector2f::Zero();
+    Eigen::Vector2f motion_old;
+    Eigen::Vector2f dmotion = Eigen::Vector2f::Zero();
+    float error;
+    cv::Point2f new_point;
+    int out_flag = 0;
+
+    for (int l = maxLevel; l > 0; l--) {
+      int w = int(winSize.width / pow(2, l - 1)),
+          h = int(winSize.height / pow(2, l - 1));
+
+      // judge whether height and width of winSize are odd number
+      // if not, add 1 to them
+      if (w % 2 == 0) {
+        w++;
+      }
+      if (h % 2 == 0) {
+        h++;
+      }
+
+      const int WINDOW_SIZE = w * h;
+
+      Eigen::Matrix<float, 2, 2> hessian = Eigen::Matrix2f::Zero();
+
+      Eigen::MatrixXf gradient0(WINDOW_SIZE, 2);
+      Eigen::MatrixXf position0(WINDOW_SIZE, 2);
+      Eigen::MatrixXf intensity0(WINDOW_SIZE, 1);
+      Eigen::MatrixXf position1(WINDOW_SIZE, 2);
+      Eigen::MatrixXf intensity1(WINDOW_SIZE, 1);
+      Eigen::Vector2f grad_sum0;
+      float sum0 = 0;
+      float sum1 = 0;
+      float mean0 = 0;
+      float mean1 = 0;
+      int valid_num0 = 0;
+      int valid_num1 = 0;
+      int i = 0;
+
+      // initialize input output image at layer l
+      img0 = layers0[l - 1];
+      img1 = layers1[l - 1];
+      cv_gradient_x(img0, gradient_x);
+      cv_gradient_y(img1, gradient_y);
+      std::cout << "image size: " << img0.size() << std::endl;
+
+      i = 0;
+      sum0 = 0;
+
+      mean0 = 0;
+
+      valid_num0 = 0;
+
+      grad_sum0.setZero();
+
+      // calculate hessian, mean0 and mean1 in the neighborhood of point
+      for (float r = point.y / pow(2, l - 1) - int(h / 2);
+           r <= point.y / pow(2, l - 1) + int(h / 2); r++) {
+        for (float c = point.x / pow(2, l - 1) - int(w / 2);
+             c <= point.x / pow(2, l - 1) + int(w / 2); c++) {
+          if (r >= BOUNDARY && r < img0.size().height - BOUNDARY &&
+              c >= BOUNDARY && c < img0.size().width - BOUNDARY) {
+            float gx = bilinear_interpolate(gradient_x, c, r);
+            float gy = bilinear_interpolate(gradient_y, c, r);
+            gradient0.row(i) = Eigen::Vector2f(gx, gy);
+            grad_sum0 += gradient0.row(i);
+
+            //            hessian(0, 0) += gx * gx;
+            //            hessian(0, 1) += gx * gy;
+            //            hessian(1, 0) = hessian(0, 1);
+            //            hessian(1, 1) += gy * gy;
+            intensity0(i) = bilinear_interpolate(img0, c, r);
+            sum0 += intensity0(i);  // img0.at<float>(r, c);
+            valid_num0++;
+
+          } else {
+            intensity0(i) = -1;
+          }
+
+          position0.row(i) = Eigen::Vector2f(r, c);
+
+          i++;
+        }
+      }
+      mean0 = sum0 / valid_num0;
+
+      // hessian = hessian / (mean0 * mean0);
+
+      for (int i = 0; i < WINDOW_SIZE; i++) {
+        if (intensity0(i) >= 0) {
+          Eigen::Vector2f gradient_i = gradient0.row(i);
+          intensity0(i) /= mean0;
+          Eigen::Vector2f tmp0 = grad_sum0 * intensity0(i);
+          Eigen::Vector2f tmp1 = gradient_i * sum0;
+          Eigen::Vector2f tmp = (tmp1 - tmp0);
+          gradient0.row(i) = valid_num0 * tmp / (sum0 * sum0);
+        } else {
+          gradient0.row(i).setZero();
+        }
+      }
+      hessian = gradient0.transpose() * gradient0;
+      Eigen::Matrix2f hessian_inv = hessian.inverse();
+      Eigen::MatrixXf hessian_inv_gradient_trans =
+          hessian_inv * gradient0.transpose();
+
+      // start iteration
+      for (int iter_num = 0; iter_num < 30; iter_num++) {
+        //      std::cout << "point: " << point << std::endl;
+        sum1 = 0;
+        mean1 = 0;
+        valid_num1 = 0;
+        for (int i = 0; i < WINDOW_SIZE; i++) {
+          float r = position0(i, 0);
+          float c = position0(i, 1);
+          position1.row(i) = Eigen::Vector2f(r + motion(1), c + motion(0));
+          if (r + motion(1) >= BOUNDARY &&
+              r + motion(1) < img0.size().height - BOUNDARY &&
+              c + motion(0) >= BOUNDARY &&
+              c + motion(0) < img0.size().width - BOUNDARY) {
+            intensity1(i) =
+                bilinear_interpolate(img1, c + motion(0), r + motion(1));
+            sum1 += intensity1(i);
+            valid_num1++;
+          } else {
+            intensity1(i) = -1;
+          }
+        }
+        mean1 = sum1 / valid_num1;
+        //      std::cout << "hessian and mean calculation success!" <<
+        //      std::endl;
+        Eigen::MatrixXf res(WINDOW_SIZE, 1);
+        // calculate dmotion
+        for (int i = 0; i < WINDOW_SIZE; i++) {
+          if (intensity0(i) >= 0 && intensity1(i) >= 0) {
+            intensity1(i) /= mean1;
+            res(i) = intensity1(i) - intensity0(i);
+          } else {
+            res(i) = 0;
+          }
+        }
+
+        //        for (float r = point.y / pow(2, l - 1) - int(winSize.height /
+        //        2);
+        //             r <= point.y / pow(2, l - 1) + int(winSize.height / 2);
+        //             r++) {
+        //          for (float c = point.x / pow(2, l - 1) - int(winSize.width /
+        //          2);
+        //               c <= point.x / pow(2, l - 1) + int(winSize.width / 2);
+        //               c++) {
+        //            if (r >= 0 && r < img0.size().height && c >= 0 &&
+        //                c < img0.size().width) {
+        //              Eigen::Vector2f gradient_transpose;
+        //              gradient_transpose(0) = bilinear_interpolate(gradient_x,
+        //              c, r); gradient_transpose(1) =
+        //              bilinear_interpolate(gradient_y, c, r);
+        //              //            std::cout << "read gradient success!" <<
+        //              std::endl; float img_diff = 0; if (r + motion(1) >= 0 &&
+        //              r + motion(1) < img0.size().height &&
+        //                  c + motion(0) >= 0 && c + motion(0) <
+        //                  img0.size().width) {
+        //                img_diff =
+        //                    bilinear_interpolate(img0, c, r) / mean0 -
+        //                    bilinear_interpolate(img1, c + motion(0), r +
+        //                    motion(1)) /
+        //                        mean1;
+        //              }
+
+        //              //            std::cout << "diff calculation success!"
+        //              <<
+        //              //            std::endl; std::cout << "hessian: " <<
+        //              hessian <<
+        //              //            std::endl; std::cout << "hessian inverse:
+        //              " <<
+        //              //            hessian_inv << std::endl; std::cout <<
+        //              //            "gradient_transpose: " <<
+        //              gradient_transpose
+        //              //                      << std::endl;
+        //              //            std::cout << "img_diff: " << img_diff <<
+        //              std::endl; dmotion -= gradient_transpose * img_diff;
+        //              //            std::cout << "dmotion calculation
+        //              success!" <<
+        //              //            std::endl; std::cout << "dmotion: " <<
+        //              dmotion <<
+        //              //            std::endl;
+        //            }
+        //          }
+        //        }
+        dmotion = -hessian_inv_gradient_trans * res;
+
+        //      std::cout << "dmotion calculation success!" << std::endl;
+
+        // multiply motion by 2 for lower layer
+        motion_old = motion;
+        motion = (motion + dmotion);
+        std::cout << "Image size: " << img0.size() << std::endl;
+        std::cout << "Point: " << point / pow(2, l - 1) << std::endl;
+        std::cout << "Motion: " << motion.transpose() << std::endl;
+        std::cout << "Transformed point: ["
+                  << point.x / pow(2, l - 1) + motion(0) << ", "
+                  << point.y / pow(2, l - 1) + motion(1) << "]" << std::endl;
+        std::cout << "Layer: " << l << std::endl;
+        std::cout << "Iter: " << iter_num << ", motion: " << motion
+                  << std::endl;
+        //      std::cout << "motion calculation success!" << std::endl;
+
+        // break iteration if error is small enough
+        if ((motion - motion_old).norm() < 1 * pow(2, l - 1)) {
+          break;
+        }
+
+        // break iteration if motion out of range of lower layer
+        if (motion(0) + point.x / pow(2, l - 1) < 0 ||
+            motion(0) + point.x / pow(2, l - 1) >= w ||
+            motion(1) + point.y / pow(2, l - 1) < 0 ||
+            motion(1) + point.y / pow(2, l - 1) >= h) {
+          out_flag = 1;
+          std::cout << "out of range!" << std::endl;
+          break;
+        }
+      }  // end of iteration loop
+      if (out_flag == 1) {
+        break;
+      }
+      motion_old *= 2;
+      motion *= 2;
+    }  // end of layer loop
+
+    // push back error, status and destination points
+    error = (motion - motion_old).norm();
+    new_point.x = point.x + motion(0);
+    new_point.y = point.y + motion(1);
+    std::cout << "new point calculation success!" << std::endl;
+    points1.push_back(new_point);
+    errors.push_back(error);
+    if (error < 1 && out_flag == 0) {
+      status.push_back(1);
+
+    } else {
+      status.push_back(0);
+    }
+    std::cout << "point motion calculation success!" << std::endl;
+  }  // end of point loop
 }
 
 // TODO PROJECT: find trackid corresponding to featureid in current frame and
@@ -394,17 +713,26 @@ void OpticalFlowFirstStereoPair_opencv_version(
     p_2d.y = float(p_2dl(1));
     pointsl.push_back(p_2d);
   }
-  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  //  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
+  //  errors);
+
+  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
   // winSize, 4);  // winSize, 4
-  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                           errors_back);  //, winSize, 4);  // backward check
+  //  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back,
+  //  status_back,
+  //                           errors_back);
+  //, winSize, 4); backward check
+
+  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                errors_back);
   kdr.corners.clear();
   int j = 0;
 
   for (int i = 0; i < pointsr.size(); i++) {  // ever input point in left cam
 
-    if (status[i] && status_back[i]) {
+    if (int(status[i]) && int(status_back[i])) {
       float distance = norm(pointsl[i] - pointsl_back[i]);
+
       //      std::vector<cv::Point2f> p_backward_src;
       //      std::vector<cv::Point2f> p_backward_tar;
       //      std::vector<unsigned char> status_backward;
@@ -414,38 +742,42 @@ void OpticalFlowFirstStereoPair_opencv_version(
       //      p_backward_tar,
       //                               status_backward, errors_backward);
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
-      //      std::cout << pointsl[i] << ", " << p_backward_tar[0] << std::endl;
-      if (distance < 1) {  // status_backward[0] == 1 && distance < 1) {
+      //      std::cout << pointsl[i] << ", " << p_backward_tar[0] <<
+      //      std::endl;
+      if (1) {  // distance < 1) {  // status_backward[0] == 1 && distance < 1)
+                // {
+        std::cout << "distance of point " << i << " :" << pointsl[i] << ", "
+                  << pointsr[i] << " , distance: " << distance
+                  << ", status: " << int(status[i]) << ", "
+                  << int(status_back[i]) << std::endl;
         kdr.corners.emplace_back(pointsr[i].x, pointsr[i].y);
         md_stereo.matches.push_back(std::make_pair(i, j));
         md_stereo.inliers.push_back(std::make_pair(i, j));
         // for visualization in opencv to check bugs
-        //        cv::Point left;
-        //        cv::Point right;
-        //        left.x = int(pointsl[i].x);
-        //        left.y = int(pointsl[i].y);
-        //        right.x = int(pointsr[j].x);
-        //        right.y = int(pointsr[j].y);
-        //        cv::circle(imgl_cv, left, 5, (255, 0, 0));
-        //        cv::putText(imgl_cv, std::to_string(i), left,
-        //        cv::FONT_HERSHEY_SIMPLEX,
-        //                    1, (255, 255, 255), 2);
-        //        cv::circle(imgr_cv, right, 5, (255, 0, 0));
-        //        cv::putText(imgr_cv, std::to_string(i), right,
-        //        cv::FONT_HERSHEY_SIMPLEX,
-        //                    1, (255, 255, 255), 2);
+        cv::Point left;
+        cv::Point right;
+        left.x = int(pointsl[i].x);
+        left.y = int(pointsl[i].y);
+        right.x = int(pointsr[i].x);
+        right.y = int(pointsr[i].y);
+        cv::circle(imgl_cv, left, 5, (255, 0, 0));
+        cv::putText(imgl_cv, std::to_string(i), left, cv::FONT_HERSHEY_SIMPLEX,
+                    1, (255, 255, 255), 2);
+        cv::circle(imgr_cv, right, 5, (255, 0, 0));
+        cv::putText(imgr_cv, std::to_string(i), right, cv::FONT_HERSHEY_SIMPLEX,
+                    1, (255, 255, 255), 2);
 
         j++;
-        //        if (j == 20) break;
+        if (j == 5) break;
       }
     }
   }
-  //  cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
-  //  cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
-  //  cv::imshow("left", imgl_cv);
-  //  cv::imshow("right", imgr_cv);
-  //  cv::waitKey();
-}
+  cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
+  cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
+  cv::imshow("left", imgl_cv);
+  cv::imshow("right", imgr_cv);
+  cv::waitKey();
+}  // namespace visnav
 
 // TODO PROJECT: make grid in the image and store the top left corner and bottom
 // right corner of each cell in a Cell object. The rnum and cnum should be

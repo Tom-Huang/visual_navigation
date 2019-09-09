@@ -1613,7 +1613,7 @@ bool next_step() {
     MatchData md_feat2track_left_recorded;  // feature that can be found in
                                             // landmarks
     if (kdl.corners.size() < 200 && opt_running) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
     start = clock();
     localize_camera_optical_flow(calib_cam.intrinsics[0], kdl, landmarks,
@@ -1645,7 +1645,7 @@ bool next_step() {
     }
 
     if (!opt_running && opt_finished) {
-      //      opt_thread->join();
+      // opt_thread->join();
       landmarks = landmarks_opt;
       cameras = cameras_opt;
       calib_cam = calib_cam_opt;
@@ -1748,7 +1748,7 @@ void optimize() {
 
   opt_running = true;
 
-  //  opt_thread.reset(new std::thread([fid, ba_options] {
+  // opt_thread.reset(new std::thread([fid, ba_options] {
   std::set<TimeCamId> fixed_cameras = {{fid, 0}, {fid, 1}};
 
   bundle_adjustment(feature_corners, ba_options, fixed_cameras, calib_cam_opt,
@@ -1756,7 +1756,7 @@ void optimize() {
 
   opt_finished = true;
   opt_running = false;
-  //  }));
+  //}));
 
   // Update project info cache
   compute_projections();
