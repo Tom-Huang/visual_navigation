@@ -82,9 +82,50 @@ Finding matches between point in consecutive frames are typically done through t
 One method to compute the descriptor is called the ORB descriptor \cite{orb}. ORB descriptor uses the BRIEF descriptor \cite{brief} and the orientation of the detected key points to represent the feature of a corner point. According to a set of principles, the correspondence of points between frames will be calculated.
   
 \section{Structure Design}
-P1
+Our pipeline assumes that the stereo cameras have already been calibrated, which means intrinsic matrix and relative transformation between two camera are already known. The structure of our pipeline is different in three cases. Given the stereo images of each time frame, we decide whether this frame is key frame or not. If this frame is key frame, the pipeline is also different according to whether this frame is the first frame. Therefore, the pipeline should adapt to three circumstances. So we will demonstrate our pipeline structure in these three cases. The criteria of deciding whether a certain frame is key frame will also be discussed later.\\
+
+If this frame is key frame and the first frame, we firstly use Shi-Tomasi method to detect key points in the left image and use optical flow to acquire the corresponding key points in the right image. To increase the correctness of the result of optical flow, we perform optical flow backward and see whether the result key points are adequately close to input key points in the left image. Moreover, to filter out more outliers, we use the relative transformation acquired from calibration to calculate the essential matrix and perform epipolar constraint check. In the next step, we localize the camera by initializing the first pose of left camera with identity matrix. Finally, we use triangulation rule to calculate landmarks, the 3 dimensional position of key points in world coordinate frame. \\
+
+If this frame is key frame and the second or later frame, we firstly use optical flow to acquire corresponding key points from last left image to current left image. Also a backward check is performed. Later we make a grid on the current left image and detect empty cells in the grid which do not contain key points. In the next step, we use Shi-Tomasi method to detect new key points inside these empty cells. In this period, we have two kinds of key points in the left image. The one is key points acquired with optical flow from last frame, which we will call old key points. The other is newly detected key points with Shi-Tomasi method in empty cells, which we will call new key points. Given these key points in the left image, we perform optical flow from left image to right image and backward check. And then we use epipolar constraint to find inliers. Later on we use RANSAC to localize camera with only inliers of old key points in the left image. Finally we use triangulation to calculate new landmarks with new key points and add observations of old key points to old landmarks.\\
+
+If this frame is not key frame, we firstly perform frame to frame optical flow and make grid as in the second case above. But instead of detecting key points in empty cells, here we only count the empty cells number which we will use as one of key frame determination criteria. Later we localize camera with RANSAC.\\
+
+Basically the pipeline of three circumstances is shown in the figure below.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.5\textwidth]{img/flowchart.png}
+\caption{Pipeline structure}
+\label{fig:pipeline structure}
+\end{figure}
+
 \section{Implementation}
-P4
+\subsection{Key framing strategies}
+The criteria of key framing is of significant importance. It will affect the accuracy and efficiency of our pipeline. On the one hand, if one frame can be easily regarded as a key frame, the interval between key frames will become very small. So the optimization will be limited in a small range, focusing too much on local features instead of a global view. In the meantime, more key frames means more optimization time, which makes the algorithm inefficient. On the other hand, if the key framing criterion is too strict so that only very few frames can be selected as key frames, the pipeline is more likely to collapse during the run. This is because we only detect new key points in key frames and if the interval between key frames is too big, the the base line is too large for optical flow to find correspondences that flow through all the frames. Once there are not enough correspondences, the camera localization will become very unstable and the algorithm will fail.\\
+
+In our pipeline we use two criteria to decide whether next frame is key frame. The first criterion is inliers number. One necessary step in each time frame is camera localization. By using RANSAC method, a certain number of inliers are selected for determining the pose of camera. To guarantee there are enough key points for localization, we set a threshold for the number of inliers. If the number of inliers is lower than the threshold, we will treat next frame as key frame. The second criterion is empty cells number. As stated in above section, for every non-keyframe a grid is made on the left image and the number of empty cells will be recorded. A large empty cells number means the feature points calculated by optical flow gather in a small area of the image, indicating that the existing landmarks are leaving observation view. Once the empty cells number exceeds a threshold, we must set the next frame as key frame to detect new key points. In this way, the key points in the image will be adjust to distribute uniformly from time to time, making localization more stable.
+
+\subsection{Key points detection strategies}
+In every key frame, we have to detect key points in empty cells. We try two different implementations of key points detection in our pipeline. In the first method, we detect key points in the whole image and then only keep key points in empty cells. In the second method, we extract empty cells as a series of subimages and detect key points in each subimage separately. The maximum limit key points detection in the first method is set to 1500 per image. In the second method, it is set to 1 per subimage. The difference of key points detection is shown as below. We can easily see that the detected key points number in the second method is larger than in the first method. More importantly, the distribution of key points in the second method is more uniform. To quantify the influence of key point detection methods, we run the whole pipeline on euroc dataset and compare the root mean square error of camera trajectories. Finally, we find that the second method performs slightly better than the first method.
+
+
+\begin{figure}[h!]
+
+\centering
+\includegraphics[width=0.5\textwidth]{img/subimage_keypoint_detection_129.png}
+\caption{detect key points in subimage}
+\label{fig:subimage}
+\end{figure}
+
+\begin{figure}[h!]
+
+\centering
+\includegraphics[width=0.5\textwidth]{img/whole_image_keypoints_detection_129.png}
+
+\caption{detect key points in whole image}
+\label{fig:whole image}
+\end{figure}
+
 
 
 \section{Evaluation}
