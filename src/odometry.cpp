@@ -96,6 +96,7 @@ int num_keyframe = 0;
 ///////////////////////////////////////////////////////////////////////////////
 
 int current_frame = 0;
+std::list<int> keyframes_list;
 Sophus::SE3d current_pose;
 bool take_keyframe = true;
 TrackId next_landmark_id = 0;
@@ -175,6 +176,9 @@ double optimization_time = 0;
 // TODO PROJECT: total optimized landmark number
 long num_total_opt_landmarks = 0;
 long num_total_opt_obs = 0;
+
+// TODO PROJECT: total match number
+long num_total_match_pts = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
@@ -430,6 +434,11 @@ int main(int argc, char** argv) {
                     << std::endl;
           std::cout << "landmark match time: " << landmark_match_time
                     << " seconds." << std::endl;
+          std::cout << "average detection and match time per point: "
+                    << (detect_time + landmark_projection_time +
+                        stereo_match_time + landmark_match_time) /
+                           num_total_match_pts
+                    << std::endl;
           std::cout << "localization time: " << localization_time << " seconds."
                     << std::endl;
           std::cout << "add landmark time: " << add_landmark_time << " seconds."
@@ -1110,6 +1119,7 @@ bool next_step() {
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     stereo_match_time += duration;
+    num_total_match_pts += kdl.corner_descriptors.size();
 
     findInliersEssential(kdl, kdr, calib_cam.intrinsics[0],
                          calib_cam.intrinsics[1], E, 1e-3, md_stereo);
@@ -1131,6 +1141,7 @@ bool next_step() {
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     landmark_match_time += duration;
+    num_total_match_pts += kdl.corners.size();
 
     std::cout << "KF Found " << md.matches.size() << " matches." << std::endl;
 
@@ -1168,6 +1179,16 @@ bool next_step() {
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     optimization_time += duration;
+
+    keyframes_list.push_back(current_frame);
+    if (keyframes_list.size() > max_num_kfs) {
+      keyframes_list.pop_front();
+    }
+
+    for (const int frameid : keyframes_list) {
+      TimeCamId tcid_tmp(frameid, 0);
+      estimated_cam_pos.col(frameid) = cameras.at(tcid_tmp).T_w_c.translation();
+    }
 
     current_pose = cameras[tcidl].T_w_c;
 
@@ -1219,6 +1240,7 @@ bool next_step() {
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     landmark_match_time += duration;
+    num_total_match_pts += projected_points.size();
 
     std::cout << "Found " << md.matches.size() << " matches." << std::endl;
 
