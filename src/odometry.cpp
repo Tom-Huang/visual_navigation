@@ -167,6 +167,7 @@ std::vector<std::string> timestamp_gt_vec;
 std::map<std::string, FrameId> timestamp_frameid_map;
 
 // TODO PROJECT: estimated camera position of all timestamp
+std::list<int> keyframes_list;
 Mat3X estimated_cam_pos;
 Mat3X ground_truth_transformed;
 ErrorMetricValue ate;
@@ -372,7 +373,21 @@ int main(int argc, char** argv) {
           //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
           pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
         }
+        glEnd();
 
+        glPointSize(10.0);
+        const u_int8_t color2[3]{255, 0, 255};
+        glColor3ubv(color2);
+        glBegin(GL_POINTS);
+        for (Eigen::Index i = 0; i < max_cols; i++) {
+          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
+          if (i % 100 == 0) {
+            Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+            // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+            //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+            pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+          }
+        }
         glEnd();
       }
 
@@ -441,6 +456,37 @@ int main(int argc, char** argv) {
           // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
           //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
           pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+        }
+
+        glEnd();
+
+        glPointSize(10.0);
+        const u_int8_t color_gt2[3]{0, 0, 255};
+        glColor3ubv(color_gt2);
+        glBegin(GL_POINTS);
+        Eigen::Index max_cols_gt2 = ground_truth_transformed.cols();
+
+        for (Eigen::Index i = 0; i < max_cols_gt; i++) {
+          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+          if (i % 100 == 0) {
+            Eigen::Vector3d p =
+                ground_truth_transformed.col(i);  // ground_truth_cam_pos
+
+            // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+            //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+            pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+          }
+        }
+        for (Eigen::Index i = 0; i < corresponding_est_cam_pos.size(); i++) {
+          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+          if (i % 100 == 0) {
+            Eigen::Vector3d p =
+                corresponding_est_cam_pos.col(i);  // ground_truth_cam_pos
+
+            // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+            //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+            pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+          }
         }
 
         glEnd();
@@ -1428,7 +1474,7 @@ bool next_step() {
 
       remove_old_keyframes(tcidl, max_num_kfs, cameras, landmarks,
                            old_landmarks, kf_frames);
-    }
+    }  // end of second and later frame
     // update image views
     change_display_to_image(tcidl);
     change_display_to_image(tcidr);
@@ -1438,6 +1484,24 @@ bool next_step() {
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     optimization_time += duration;
+
+    keyframes_list.push_back(current_frame);
+
+    if (keyframes_list.size() > max_num_kfs) {
+      keyframes_list.pop_front();
+    }
+
+    for (const int frameid : keyframes_list) {
+      TimeCamId tcid_tmp(frameid, 0);
+      std::cout << "current frame: " << current_frame << std::endl;
+      for (const int fid : keyframes_list) {
+        std::cout << " " << fid;
+      }
+      std::cout << std::endl << estimated_cam_pos.col(frameid) << std::endl;
+      std::cout << std::endl
+                << cameras.at(tcid_tmp).T_w_c.translation() << std::endl;
+      estimated_cam_pos.col(frameid) = cameras.at(tcid_tmp).T_w_c.translation();
+    }
 
     current_pose = cameras[tcidl].T_w_c;
 

@@ -713,18 +713,16 @@ void OpticalFlowFirstStereoPair_opencv_version(
     p_2d.y = float(p_2dl(1));
     pointsl.push_back(p_2d);
   }
-  //  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
-  //  errors);
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
 
-  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  //  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
   // winSize, 4);  // winSize, 4
-  //  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back,
-  //  status_back,
-  //                           errors_back);
+  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                           errors_back);
   //, winSize, 4); backward check
 
-  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                errors_back);
+  //  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+  //                errors_back);
   kdr.corners.clear();
   int j = 0;
 
