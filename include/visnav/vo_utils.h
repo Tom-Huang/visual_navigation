@@ -239,8 +239,8 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
       int w = int(winSize.width / pow(2, l - 1)),
           h = int(winSize.height / pow(2, l - 1));
 
-      // judge whether height and width of winSize are odd number
-      // if not, add 1 to them
+      // judge whether height and width of winSize at this layer
+      // are odd number. If not, add 1 to them
       if (w % 2 == 0) {
         w++;
       }

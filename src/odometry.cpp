@@ -185,6 +185,10 @@ double optimization_time = 0;
 long num_total_opt_landmarks = 0;
 long num_total_opt_obs = 0;
 
+// TODO PROJECT: total optical flow points number
+long num_total_optical_flow_pts = 0;
+long num_total_match_pts = 0;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// GUI parameters
 ///////////////////////////////////////////////////////////////////////////////
@@ -386,9 +390,20 @@ int main(int argc, char** argv) {
             // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
             //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
             pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+            pangolin::GlFont::I().Text("%d", i).Draw(p1[0], p1[1], p1[2]);
           }
         }
         glEnd();
+        for (Eigen::Index i = 0; i < max_cols; i++) {
+          //          Eigen::Vector3d p0 = estimated_cam_pos.col(i - 1);
+          if (i % 100 == 0) {
+            Eigen::Vector3d p1 = estimated_cam_pos.col(i);
+            // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+            //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+            // pangolin::glVertex(p1);  //(p1(0), p1(1), p1(2));
+            pangolin::GlFont::I().Text("%d", i).Draw(p1[0], p1[1], p1[2]);
+          }
+        }
       }
 
       // TODO PROJECT: visualize the trajectory of ground truth camera pose
@@ -405,6 +420,17 @@ int main(int argc, char** argv) {
                 3, corresponding_est_cam_pos.cols() + 1);
             corresponding_est_cam_pos.col(corresponding_est_cam_pos.cols() -
                                           1) = estimated_cam_pos.col(frameid);
+
+            std::cout << "frameid: " << frameid << std::endl;
+            std::cout << corresponding_est_cam_pos(
+                             0, corresponding_est_cam_pos.cols() - 1)
+                      << ", "
+                      << corresponding_est_cam_pos(
+                             1, corresponding_est_cam_pos.cols() - 1)
+                      << ", "
+                      << corresponding_est_cam_pos(
+                             2, corresponding_est_cam_pos.cols() - 1)
+                      << std::endl;
           }
           std::cout << "corresponding cam pos size: "
                     << corresponding_est_cam_pos.cols() << std::endl;
@@ -430,6 +456,10 @@ int main(int argc, char** argv) {
                     << std::endl;
           std::cout << "frame to frame match time: " << frame2frame_match_time
                     << " seconds." << std::endl;
+          std::cout << "average match time per point: "
+                    << (frame2frame_match_time + stereo_match_time) /
+                           num_total_optical_flow_pts
+                    << std::endl;
           std::cout << "localization time: " << localization_time << " seconds."
                     << std::endl;
           std::cout << "add landmark time: " << add_landmark_time << " seconds."
@@ -475,9 +505,17 @@ int main(int argc, char** argv) {
             // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
             //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
             pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+            pangolin::GlFont::I().Text("%d", i).Draw(p[0], p[1], p[2]);
           }
         }
-        for (Eigen::Index i = 0; i < corresponding_est_cam_pos.size(); i++) {
+
+        glEnd();
+
+        glPointSize(10.0);
+        const u_int8_t color_es[3]{0, 0, 255};
+        glColor3ubv(color_es);
+        glBegin(GL_POINTS);
+        for (Eigen::Index i = 0; i < corresponding_est_cam_pos.cols(); i++) {
           //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
           if (i % 100 == 0) {
             Eigen::Vector3d p =
@@ -486,10 +524,23 @@ int main(int argc, char** argv) {
             // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
             //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
             pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+            pangolin::GlFont::I().Text("%d", i).Draw(p[0], p[1], p[2]);
           }
         }
-
         glEnd();
+
+        for (Eigen::Index i = 0; i < corresponding_est_cam_pos.cols(); i++) {
+          //          Eigen::Vector3d p0 = ground_truth_transformed.col(i - 1);
+          if (i % 100 == 0) {
+            Eigen::Vector3d p =
+                corresponding_est_cam_pos.col(i);  // ground_truth_cam_pos
+
+            // pangolin::glDrawLine(p0(0), p0(1), p0(2), p1(0), p1(1), p1(2));
+            //          pangolin::glVertex(p0);  //(p0(0), p0(1), p0(2));
+            // pangolin::glVertex(p);  //(p1(0), p1(1), p1(2));
+            pangolin::GlFont::I().Text("%d", i).Draw(p[0], p[1], p[2]);
+          }
+        }
 
         // plot estimated points used for alignment
         //        glPointSize(7.0);
@@ -1150,6 +1201,7 @@ bool next_step() {
       stop = clock();
       duration = double(stop - start) / double(CLOCKS_PER_SEC);
       stereo_match_time += duration;
+      num_total_optical_flow_pts += kdl.corners.size();
 
       md_stereo.T_i_j = T_0_1;
 
@@ -1245,6 +1297,7 @@ bool next_step() {
       stop = clock();
       duration = double(stop - start) / double(CLOCKS_PER_SEC);
       frame2frame_match_time += duration;
+      num_total_optical_flow_pts += kdl_last.corners.size();
 
       // add these points to observation of landmarks  left camera
       // add_points_to_landmarks_obs_left(md.matches, landmarks, kdl,
@@ -1554,6 +1607,7 @@ bool next_step() {
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     frame2frame_match_time += duration;
+    num_total_optical_flow_pts += kdl_last.corners.size();
 
     //    add_points_to_landmark_obs_left(md_feat2track_left, kdl,
     //    landmarks,
