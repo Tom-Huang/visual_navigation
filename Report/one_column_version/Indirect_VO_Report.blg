@@ -1,0 +1,13 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: Indirect_VO_Report.aux
+The style file: plain.bst
+I couldn't open database file easychair.bib
+---line 86 of file Indirect_VO_Report.aux
+ : \bibdata{easychair
+ :                   }
+I'm skipping whatever remains of this command
+I found no database files---while reading file Indirect_VO_Report.aux
+Warning--I didn't find a database entry for "gradient"
+Warning--I didn't find a database entry for "detector"
+Warning--I didn't find a database entry for "orb"
+Warning--I didn't find a database entry for "brief"
+(There were 2 error messages)
