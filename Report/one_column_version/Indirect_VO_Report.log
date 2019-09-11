@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.5.23)  11 SEP 2019 00:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.5.23)  11 SEP 2019 23:24
 entering extended mode
 **./Indirect_VO_Report.tex
 (Indirect_VO_Report.tex
@@ -1395,160 +1395,155 @@ Non-PDF special ignored!
 <special> header=psfrag.pro
 
 {C:/Users/anton/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
-Underfull \hbox (badness 10000) in paragraph at lines 177--178
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 179--180
-
- []
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 181--182
 
  []
 
-[3]
+
 Underfull \hbox (badness 10000) in paragraph at lines 183--184
 
  []
 
-<img/flowchart.png, id=143, 596.2275pt x 760.8425pt>
-File: img/flowchart.png Graphic file (type png)
-<use img/flowchart.png>
-Package pdftex.def Info: img/flowchart.png  used on input line 189.
-(pdftex.def)             Requested size: 206.28247pt x 263.23395pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 196--197
+[3]
+Underfull \hbox (badness 10000) in paragraph at lines 185--186
 
  []
 
-[4 <./img/flowchart.png>]
-<img/subimage_keypoint_detection_129.png, id=151, 805.0075pt x 511.9125pt>
+
+Underfull \hbox (badness 10000) in paragraph at lines 187--188
+
+ []
+
+<img/flowchart.png, id=144, 596.2275pt x 760.8425pt>
+File: img/flowchart.png Graphic file (type png)
+<use img/flowchart.png>
+Package pdftex.def Info: img/flowchart.png  used on input line 193.
+(pdftex.def)             Requested size: 288.7942pt x 368.53218pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 206--207
+
+ []
+
+[4]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [5 <./img/flowchart.png>]
+<img/subimage_keypoint_detection_129.png, id=158, 805.0075pt x 511.9125pt>
 File: img/subimage_keypoint_detection_129.png Graphic file (type png)
 <use img/subimage_keypoint_detection_129.png>
 Package pdftex.def Info: img/subimage_keypoint_detection_129.png  used on input
- line 207.
+ line 218.
 (pdftex.def)             Requested size: 206.28247pt x 131.17256pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-<img/whole_image_keypoints_detection_129.png, id=152, 803.0pt x 511.9125pt>
+<img/whole_image_keypoints_detection_129.png, id=159, 803.0pt x 511.9125pt>
 File: img/whole_image_keypoints_detection_129.png Graphic file (type png)
 <use img/whole_image_keypoints_detection_129.png>
 Package pdftex.def Info: img/whole_image_keypoints_detection_129.png  used on i
-nput line 215.
+nput line 226.
 (pdftex.def)             Requested size: 206.28247pt x 131.50063pt.
+ [6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_de
+tection_129.png>]
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Overfull \hbox (95.49107pt too wide) in paragraph at lines 233--240
- [] 
- []
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[5]
-
-Package caption Warning: \label without proper reference on input line 274.
+Package caption Warning: \label without proper reference on input line 285.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:max_empty_cell' on page 6 undefined on input line
- 271.
+LaTeX Warning: Reference `fig:max_empty_cell' on page 7 undefined on input line
+ 282.
 
-[6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_det
-ection_129.png>]
 <img/max_num_empty_cell1.png, id=168, 462.09pt x 346.02pt>
 File: img/max_num_empty_cell1.png Graphic file (type png)
 <use img/max_num_empty_cell1.png>
-Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 276.
-(pdftex.def)             Requested size: 206.28247pt x 154.4668pt.
- [7 <./img/max_num_empty_cell1.png>] [8]
+Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 287.
+(pdftex.def)             Requested size: 288.7942pt x 216.26196pt.
+[7] [8 <./img/max_num_empty_cell1.png>] [9]
 
-Package caption Warning: \label without proper reference on input line 354.
+Package caption Warning: \label without proper reference on input line 365.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:optical_flow_global' on page 9 undefined on input
- line 348.
+LaTeX Warning: Reference `fig:optical_flow_global' on page 10 undefined on inpu
+t line 359.
 
 
-Package caption Warning: \label without proper reference on input line 361.
+Package caption Warning: \label without proper reference on input line 372.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:key_point_global' on page 9 undefined on input li
-ne 348.
+LaTeX Warning: Reference `fig:key_point_global' on page 10 undefined on input l
+ine 359.
 
 
-Package caption Warning: \label without proper reference on input line 368.
+Package caption Warning: \label without proper reference on input line 379.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:optical_flow_desk' on page 9 undefined on input l
-ine 350.
+LaTeX Warning: Reference `fig:optical_flow_desk' on page 10 undefined on input 
+line 361.
 
 
-Package caption Warning: \label without proper reference on input line 375.
+Package caption Warning: \label without proper reference on input line 386.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:key_point_desk' on page 9 undefined on input line
- 350.
+LaTeX Warning: Reference `fig:key_point_desk' on page 10 undefined on input lin
+e 361.
 
 
-Package caption Warning: \label without proper reference on input line 368.
+Package caption Warning: \label without proper reference on input line 379.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:optical_flow_desk' on page 9 undefined on input l
-ine 350.
+LaTeX Warning: Reference `fig:optical_flow_desk' on page 10 undefined on input 
+line 361.
 
 
-Package caption Warning: \label without proper reference on input line 375.
+Package caption Warning: \label without proper reference on input line 386.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:key_point_desk' on page 9 undefined on input line
- 350.
+LaTeX Warning: Reference `fig:key_point_desk' on page 10 undefined on input lin
+e 361.
 
 
-Package caption Warning: \label without proper reference on input line 383.
+Package caption Warning: \label without proper reference on input line 394.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:desk' on page 9 undefined on input line 351.
+LaTeX Warning: Reference `fig:desk' on page 10 undefined on input line 362.
 
-<img/optical_flow_global.png, id=194, 518.6878pt x 324.46219pt>
+<img/optical_flow_global.png, id=203, 518.6878pt x 324.46219pt>
 File: img/optical_flow_global.png Graphic file (type png)
 <use img/optical_flow_global.png>
-Package pdftex.def Info: img/optical_flow_global.png  used on input line 356.
+Package pdftex.def Info: img/optical_flow_global.png  used on input line 367.
 (pdftex.def)             Requested size: 206.28247pt x 129.03993pt.
-<img/key_point_global.png, id=195, 465.23813pt x 298.86656pt>
+<img/key_point_global.png, id=204, 465.23813pt x 298.86656pt>
 File: img/key_point_global.png Graphic file (type png)
 <use img/key_point_global.png>
-Package pdftex.def Info: img/key_point_global.png  used on input line 363.
+Package pdftex.def Info: img/key_point_global.png  used on input line 374.
 (pdftex.def)             Requested size: 206.28247pt x 132.51407pt.
-<img/optical_flow_desk.png, id=196, 347.04657pt x 281.55188pt>
+<img/optical_flow_desk.png, id=205, 347.04657pt x 281.55188pt>
 File: img/optical_flow_desk.png Graphic file (type png)
 <use img/optical_flow_desk.png>
-Package pdftex.def Info: img/optical_flow_desk.png  used on input line 370.
+Package pdftex.def Info: img/optical_flow_desk.png  used on input line 381.
 (pdftex.def)             Requested size: 206.28247pt x 167.35574pt.
-<img/key_point_desk.png, id=197, 350.81062pt x 278.54062pt>
+<img/key_point_desk.png, id=206, 350.81062pt x 278.54062pt>
 File: img/key_point_desk.png Graphic file (type png)
 <use img/key_point_desk.png>
-Package pdftex.def Info: img/key_point_desk.png  used on input line 377.
+Package pdftex.def Info: img/key_point_desk.png  used on input line 388.
 (pdftex.def)             Requested size: 206.28247pt x 163.78926pt.
-<img/desk.png, id=198, 536.0025pt x 341.77687pt>
+<img/desk.png, id=207, 536.0025pt x 341.77687pt>
 File: img/desk.png Graphic file (type png)
 <use img/desk.png>
-Package pdftex.def Info: img/desk.png  used on input line 385.
+Package pdftex.def Info: img/desk.png  used on input line 396.
 (pdftex.def)             Requested size: 206.28247pt x 131.52974pt.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [10 <./img/optical_flow_global.png> <./img/key_point_global.png>] [11 <./img/o
+ptical_flow_desk.png> <./img/key_point_desk.png> <./img/desk.png>]
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
@@ -1558,8 +1553,6 @@ Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
-[9 <./img/optical_flow_global.png>] [10 <./img/key_point_global.png> <./img/opt
-ical_flow_desk.png> <./img/key_point_desk.png>]
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
@@ -1572,28 +1565,28 @@ Missing character: There is no � in font cmr9!
 
 
 AED: lastpage setting LastPage
-[11 <./img/desk.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 421.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 421.
+[12]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 436.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 436.
  (Indirect_VO_Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 421.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 421.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 436.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 436.
 Package rerunfilecheck Info: File `Indirect_VO_Report.out' has not changed.
-(rerunfilecheck)             Checksum: F940C9C3458A1EEE71934F673E2A4449;897.
+(rerunfilecheck)             Checksum: E3EC86142FAA1C528CE8AE630578602A;897.
 
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 421.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 436.
  ) 
 Here is how much of TeX's memory you used:
- 37699 strings out of 493305
- 746873 string characters out of 3136742
- 787794 words of memory out of 3000000
+ 37700 strings out of 493305
+ 746880 string characters out of 3136742
+ 788795 words of memory out of 3000000
  40672 multiletter control sequences out of 15000+200000
  543133 words of font info for 69 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 48i,14n,81p,1121b,909s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 48i,14n,81p,1168b,767s stack positions out of 5000i,500n,10000p,200000b,50000s
 <D:/应用程序/TexStudio/MikTex/fonts/type1/public/amsfonts/cm/cmbx10.pfb><
 D:/应用程序/TexStudio/MikTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><D:/
 应用程序/TexStudio/MikTex/fonts/type1/public/amsfonts/cm/cmbx9.pfb><D:/应�
@@ -1609,9 +1602,9 @@ type1/public/amsfonts/cm/cmr9.pfb><D:/应用程序/TexStudio/MikTex/fonts/type1
 /public/amsfonts/cm/cmsy10.pfb><D:/应用程序/TexStudio/MikTex/fonts/type1/pu
 blic/amsfonts/cm/cmsy7.pfb><D:/应用程序/TexStudio/MikTex/fonts/type1/public
 /amsfonts/cm/cmtt9.pfb>
-Output written on Indirect_VO_Report.pdf (11 pages, 1308742 bytes).
+Output written on Indirect_VO_Report.pdf (12 pages, 1313903 bytes).
 PDF statistics:
- 285 PDF objects out of 1000 (max. 8388607)
- 52 named destinations out of 1000 (max. 500000)
+ 292 PDF objects out of 1000 (max. 8388607)
+ 53 named destinations out of 1000 (max. 500000)
  274 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -95,7 +95,8 @@ Chenguang Huang
 \maketitle
 
 	\begin{abstract}
-		   With the increasing need of robotics application in industry...
+		   With the increasing need of robotics application in many different domains like autonomous driving and factory cooperative robots, the navigation becomes an important topic. The camera, at the same time, is nowadays a type of cheap sensor, which is powerful in extracting useful information from visual input. Therefore, vision based navigation turns out to be an effective solution. In vision based navigation, visual odometry is an important module. This paper presents the implementation details of visual odometry using the method of optical flow. The novel point of this implementation is that we segment the image using grids and use the number of empty cells to decide key frames. Besides, we evaluate the influence of this parameter and compare this implementation with another implementation which fully depends on descriptor based key point matching in visual odometry.
+		    
 	\end{abstract}
 
 % The table of contents below is added for your convenience. Please do not use
@@ -174,31 +175,41 @@ Finding matches between point in consecutive frames are typically done through t
 One method to compute the descriptor is called the ORB descriptor \cite{orb}. ORB descriptor uses the BRIEF descriptor \cite{brief} and the orientation of the detected key points to represent the feature of a corner point. According to a set of principles, the correspondence of points between frames will be calculated.
 
 \section{Structure Design}
+%我感觉这里不能默认读者已经知道了exercise 5 在干什么，直接说our pipelie is different in 3cases. 不然paper看起来很奇怪，还是得大概介绍一下区别 
+
+
 Our pipeline assumes that the stereo cameras have already been calibrated, which means intrinsic matrix and relative transformation between two camera are already known. The structure of our pipeline is different in three cases. Given the stereo images of each time frame, we decide whether this frame is key frame or not. If this frame is key frame, the pipeline is also different according to whether this frame is the first frame. Therefore, the pipeline should adapt to three circumstances. So we will demonstrate our pipeline structure in these three cases. The criteria of deciding whether a certain frame is key frame will also be discussed later.\\
 
 If this frame is key frame and the first frame, we firstly use Shi-Tomasi method to detect key points in the left image and use optical flow to acquire the corresponding key points in the right image. To increase the correctness of the result of optical flow, we perform optical flow backward and see whether the result key points are adequately close to input key points in the left image. Moreover, to filter out more outliers, we use the relative transformation acquired from calibration to calculate the essential matrix and perform epipolar constraint check. In the next step, we localize the camera by initializing the first pose of left camera with identity matrix. Finally, we use triangulation rule to calculate landmarks, the 3 dimensional position of key points in world coordinate frame. \\
 
-If this frame is key frame and the second or later frame, we firstly use optical flow to acquire corresponding key points from last left image to current left image. Also a backward check is performed. Later we make a grid on the current left image and detect empty cells in the grid which do not contain key points. In the next step, we use Shi-Tomasi method to detect new key points inside these empty cells. In this period, we have two kinds of key points in the left image. The one is key points acquired with optical flow from last frame, which we will call old key points. The other is newly detected key points with Shi-Tomasi method in empty cells, which we will call new key points. Given these key points in the left image, we perform optical flow from left image to right image and backward check. And then we use epipolar constraint to find inliers. Later on we use RANSAC to localize camera with only inliers of old key points in the left image. Finally we use triangulation to calculate new landmarks with new key points and add observations of old key points to old landmarks.\\
+If this frame is key frame and the second or later frame, we firstly use optical flow to acquire corresponding key points from last left image to current left image. Also a backward check is performed. Later we make a grid on the current left image and detect empty cells in the grid which do not contain key points. In the next step, we use Shi-Tomasi method to detect new key points inside these empty cells. In this period, we have two kinds of key points in the left image. One type includes key points acquired with optical flow from last frame, which we will call old key points. The other type includes newly detected key points with Shi-Tomasi method in empty cells, which we will call new key points. Given these key points in the left image, we perform optical flow from left image to right image and backward check. And then we use epipolar constraint to find inliers. Later on we use RANSAC to localize camera with only inliers of old key points in the left image. Finally we use triangulation to calculate new landmarks with new key points and add observations of old key points to old landmarks.\\
 
-If this frame is not key frame, we firstly perform frame to frame optical flow and make grid as in the second case above. But instead of detecting key points in empty cells, here we only count the empty cells number which we will use as one of key frame determination criteria. Later we localize camera with RANSAC.\\
+If this frame is not key frame, we firstly perform frame to frame optical flow and make grid as in the second case above. But instead of detecting key points in empty cells, here we only count the number of empty cells which we will use as one of key frame determination criteria. Later we localize camera with RANSAC.\\
 
-Basically the pipeline of three circumstances is shown in the figure below.
+Basically the pipeline of three circumstances is shown in the Figure \ref{fig:pipeline structure}.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.5\textwidth]{img/flowchart.png}
+	\includegraphics[width=0.7\textwidth]{img/flowchart.png}
 	\caption{Pipeline structure}
 	\label{fig:pipeline structure}
 \end{figure}
 
 \section{Implementation}
-\subsection{Key framing strategies}
-The criteria of key framing is of significant importance. It will affect the accuracy and efficiency of our pipeline. On the one hand, if one frame can be easily regarded as a key frame, the interval between key frames will become very small. So the optimization will be limited in a small range, focusing too much on local features instead of a global view. In the meantime, more key frames means more optimization time, which makes the algorithm inefficient. On the other hand, if the key framing criterion is too strict so that only very few frames can be selected as key frames, the pipeline is more likely to collapse during the run. This is because we only detect new key points in key frames and if the interval between key frames is too big, the the base line is too large for optical flow to find correspondences that flow through all the frames. Once there are not enough correspondences, the camera localization will become very unstable and the algorithm will fail.\\
+This section describes the implementation details of indirect visual odometry with optical flow. As the main difference between optical flow based method and fully key point descriptor matching based method is in the key point matching process and key frame choosing process, these two aspects are highlighted in the rest of this section.
 
-In our pipeline we use two criteria to decide whether next frame is key frame. The first criterion is inliers number. One necessary step in each time frame is camera localization. By using RANSAC method, a certain number of inliers are selected for determining the pose of camera. To guarantee there are enough key points for localization, we set a threshold for the number of inliers. If the number of inliers is lower than the threshold, we will treat next frame as key frame. The second criterion is empty cells number. As stated in above section, for every non-keyframe a grid is made on the left image and the number of empty cells will be recorded. A large empty cells number means the feature points calculated by optical flow gather in a small area of the image, indicating that the existing landmarks are leaving observation view. Once the empty cells number exceeds a threshold, we must set the next frame as key frame to detect new key points. In this way, the key points in the image will be adjust to distribute uniformly from time to time, making localization more stable.
+%另外最好有一个关于optical flow 怎么实现的段落？比如我们调了opencv 的包，用了0.01的参数，之类的？毕竟标题是visual odometry with optical flow, 一直没有提optical flow 怎么实现的，implementaion里应该提一下
 
-\subsection{Key points detection strategies}
-In every key frame, we have to detect key points in empty cells. We try two different implementations of key points detection in our pipeline. In the first method, we detect key points in the whole image and then only keep key points in empty cells. In the second method, we extract empty cells as a series of subimages and detect key points in each subimage separately. The maximum limit key points detection in the first method is set to 1500 per image. In the second method, it is set to 1 per subimage. The difference of key points detection is shown as below. We can easily see that the detected key points number in the second method is larger than in the first method. More importantly, the distribution of key points in the second method is more uniform. To quantify the influence of key point detection methods, we run the whole pipeline on euroc dataset and compare the root mean square error of camera trajectories. Finally, we find that the second method performs slightly better than the first method.
+
+
+\subsection{Key Framing Strategies}
+The criteria of key framing is of significant importance. It will affect the accuracy and efficiency of our pipeline. On the one hand, if one frame can be easily regarded as a key frame, the interval between key frames will become very small. So the optimization will be limited in a small range, focusing too much on local features instead of a global view. In the meantime, more key frames means more optimization time, which makes the algorithm inefficient. On the other hand, if the key framing criterion is too strict so that only very few frames can be selected as key frames, the pipeline is more likely to collapse during the run. This is because we only detect new key points in key frames and if the interval between key frames is too big, the base line will be too large for optical flow to find correspondences through all the frames. Once there are not enough correspondences, the camera localization will become very unstable and the algorithm will fail.\\
+
+In our pipeline we use two criteria to decide whether next frame is key frame. The first criterion is the number of inliers. One necessary step in each time frame is the camera localization. By using RANSAC method, a certain number of inliers are selected for determining the pose of camera. To guarantee there are enough key points for localization, we set a threshold for the number of inliers. If the number of inliers is lower than the threshold, we will treat next frame as key frame. The second criterion is the number of empty cells. As stated in above section, for every non-keyframe a grid is made on the image recorded by the left camera and the number of empty cells will be recorded. A large empty cells number means the feature points calculated by optical flow gather in a small area of the image, indicating that the existing landmarks are leaving observation view. Once the empty cells number exceeds a threshold, we must set the next frame as key frame to detect new key points. In this way, the key points in the image will be adjusted from time to time to distribute relatively uniformly, making localization more stable.
+
+\subsection{Key Points Detection Strategies}
+In every key frame, we have to detect key points in empty cells. We try two different implementations of key points detection in our pipeline. In the first method, we detect key points in the whole image, choose the best key points (max. 1500) and then only keep key points in empty cells. In the second method, we extract empty cells as a series of subimages and detect the best one key point (if at least one key point is detected) in each sub-image separately. %The maximum limit key points detection in the first method is set to 1500 per image. In the second method, it is set to 1 per subimage. 
+The difference between these two key point detection methods is shown in Figure \ref{fig:subimage} and Figure \ref{fig:whole image}. We can easily see that the number of detected key points in the second method is larger than the first method. More importantly, the distribution of key points in the second method is more uniform. To quantify the influence of key point detection methods, we run the whole pipeline on euroc dataset and compare the root mean square error of camera trajectories. Finally, we find that the second method performs slightly better than the first method.
 
 
 \begin{figure}[h!]
@@ -228,11 +239,11 @@ As described in the previous section, we use a grid to segment the image frame a
 
 \begin{table}[h!]
 	\begin{center}
-		\caption{Basic set of parameters}
+		\caption{\textbf{Basic set of parameters (unit: pixel)}}
 		\label{tab:basicset}
 		\begin{tabular}{llll} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
-			\textbf{Image height (pixel)} & \textbf{Image width (pixel)} & \textbf{Grid size (pixel $\times$ pixel)}& \textbf{Min. number of key points}\\
-			$h$ & $w$ & $s$ & $m$ \\
+			Image height & Image width & Grid size& Min. num. of key points\\
+			$h (pixel)$ & $w (pixel)$ & $s (pixel\times pixel)$ & $m$ \\
 			\hline
 			480 & 752 & 32 $\times$ 32 & 100 \\
 			
@@ -256,13 +267,13 @@ The grid size is designed to be so such that it's divisible by the image height 
 
 \begin{table}
 	\centering
-	\caption{RMSE precision under different number of Max. empty cells}
+	\caption{\textbf{RMSE precision under different number of Max. empty cells}}
 	\label{tab:precision}
 	\begin{tabular}{llllll}
-		Max. number of \\empty cells (\%)  & 0.35 & 0.4 & 0.42 & 0.44& 0.46 \begin{tabular}[c]{@{}l@{}}  \\\end{tabular}  \\
+		Max. number of \\empty cells (\%)  & 0.35 & 0.4 & 0.42 & 0.44& 0.46 \begin{tabular}[c]{@{}l@{}}  \\\end{tabular}  \\ \hline
 		RMSE  & 0.1303 & 0.1295 & 0.1099&0.1563&0.1304\\
-		& & & & &\\
-		Rmse using method \\without optical flow&0.1012 & & & &		                                                
+		& & & & &\\ 
+		Rmse using method \\without optical flow:&0.1012 & & & &		                                                
 	\end{tabular}
 \end{table}
 
@@ -273,7 +284,7 @@ From the table it is clear that when the maximum number of empty cells percentag
 \begin{figure}
 	\label{fig:max_empty_cell}
 	\centering
-	\includegraphics[width=0.5\textwidth]{img/max_num_empty_cell1.png}
+	\includegraphics[width=0.7\textwidth]{img/max_num_empty_cell1.png}
 	\caption{Visualized version of RMSE change with different parameter of max. number of empty cells percentage}
 \end{figure}
 
@@ -288,15 +299,15 @@ The table \ref{tab:detection} shows how detection time changes with change of ma
 
 \begin{table}
 	\centering
-	\caption{Detection time under different number of Max. empty cells percentage}
+	\caption{\textbf{Detection time under different number of Max. empty cells percentage}}
 	\label{tab:detection}
 	\begin{tabular}{llllll}
-		Max. number of \\empty cells (\%)  & 0.35 & 0.4 & 0.42 & 0.44& 0.46 \begin{tabular}[c]{@{}l@{}}  \\\end{tabular}  \\
+		Max. number of \\empty cells (\%)  & 0.35 & 0.4 & 0.42 & 0.44& 0.46 \begin{tabular}[c]{@{}l@{}}  \\\end{tabular}  \\ \hline
 		Detection time (s)  & 3.03643
 		& 2.73232
 		& 2.43286&2.62328&2.26326\\
 		& & & & &\\
-		Detection time using method \\without optical flow&44.0214 & & & &		                                                
+		Detection time using method \\without optical flow: &44.0214 & & & &		                                                
 	\end{tabular}
 \end{table}
 
@@ -314,10 +325,10 @@ The above reasons together leads to the difference in optimization time between 
 
 \begin{table}
 	\centering
-	\caption{Optimization time comparison}
+	\caption{\textbf{Optimization time comparison}}
 	\label{tab:optimization}
 	\begin{tabular}{lll}
-		& Max. number of empty cells(\%) = 0.42 & Method without optical flow   \\
+		& Max. number of empty cells(\%) = 0.42 & Method without optical flow   \\ \hline
 		Opt. time (s)  & 305.043 & 65.8619\\
 		Num. landmarks &290657 &221886\\
 		Num. observation & 1939460 & 559563 \\        
@@ -331,11 +342,11 @@ As a replacement of point descriptor comparison between frames, optical flow is 
 
 \begin{table}
 	\centering
-	\caption{Key point matching time comparison}
+	\caption{\textbf{Key point matching time comparison}}
 	\label{tab:matching}
 	\begin{tabular}{ll}
-		Point descriptor matching time (s) &5.79\\
-		Optical flow calculation (s) & 117.4~143.1   \\              
+		Point descriptor matching time (s): &5.79\\
+		Optical flow calculation (s): & 117.4~143.1   \\              
 	\end{tabular}
 \end{table}
 
@@ -390,7 +401,11 @@ In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there
 
 
 \section{Conclusion}
-P1
+Visual odometry is a very promising research direction, the applications of this technique is very useful in corresponding environment.
+
+This paper reviews some basic concepts in visual odometry, shows the implementation design and details for visual odometry. Specifically, it presents a novel criterion, which is segmenting image into sub-images and counting number of empty cells to choose key frames. The maximum number of empty cells is a parameter that highly influences the performance of the map construction. A too high or too low number will cause decrease in performance, which indicates that the number of key frames should be kept in a suitable number for a good performance. The strategy of key point detection according to sub-images offers more uniformly distributed key points than key point detection according to the whole image. The execution time is different parts are influenced by the difference between pipeline and the choice of parameter (e.g. max. number of empty cells) in optical flow based implementation.
+
+
 
 
 \begin{thebibliography}{00}

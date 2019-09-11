@@ -6,13 +6,13 @@
 \contentsline {subsection}{\numberline {2.4}Point Matching}{3}{subsection.2.4}
 \contentsline {section}{\numberline {3}Structure Design}{3}{section.3}
 \contentsline {section}{\numberline {4}Implementation}{4}{section.4}
-\contentsline {subsection}{\numberline {4.1}Key framing strategies}{4}{subsection.4.1}
-\contentsline {subsection}{\numberline {4.2}Key points detection strategies}{5}{subsection.4.2}
-\contentsline {section}{\numberline {5}Evaluation}{5}{section.5}
-\contentsline {subsection}{\numberline {5.1}Precision}{6}{subsection.5.1}
-\contentsline {subsection}{\numberline {5.2}Execution Time}{7}{subsection.5.2}
-\contentsline {subsubsection}{\numberline {5.2.1}Detection Time}{7}{subsubsection.5.2.1}
+\contentsline {subsection}{\numberline {4.1}Key Framing Strategies}{4}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Key Points Detection Strategies}{6}{subsection.4.2}
+\contentsline {section}{\numberline {5}Evaluation}{6}{section.5}
+\contentsline {subsection}{\numberline {5.1}Precision}{7}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Execution Time}{8}{subsection.5.2}
+\contentsline {subsubsection}{\numberline {5.2.1}Detection Time}{8}{subsubsection.5.2.1}
 \contentsline {subsubsection}{\numberline {5.2.2}Optimization time}{8}{subsubsection.5.2.2}
 \contentsline {subsubsection}{\numberline {5.2.3}Key Point Matching Time}{9}{subsubsection.5.2.3}
-\contentsline {subsection}{\numberline {5.3}Visualization}{9}{subsection.5.3}
-\contentsline {section}{\numberline {6}Conclusion}{9}{section.6}
+\contentsline {subsection}{\numberline {5.3}Visualization}{10}{subsection.5.3}
+\contentsline {section}{\numberline {6}Conclusion}{12}{section.6}
