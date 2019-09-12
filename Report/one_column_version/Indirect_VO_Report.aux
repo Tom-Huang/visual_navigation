@@ -16,7 +16,7 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Basic Concepts}{2}{section.2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Visual Odometry}{2}{subsection.2.1}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Optical Flow}{2}{subsection.2.2}}
@@ -27,64 +27,75 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Key Point Detection}{3}{subsection.2.3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Point Matching}{3}{subsection.2.4}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Structure Design}{3}{section.3}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Implementation}{4}{section.4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key Framing Strategies}{4}{subsection.4.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}First key frame}{4}{subsection.3.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Second or later key frames}{4}{subsection.3.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Non-keyframes}{4}{subsection.3.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Strategies}{4}{section.4}}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Pipeline structure\relax }}{5}{figure.caption.2}}
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:pipeline structure}{{1}{5}{Pipeline structure\relax }{figure.caption.2}{}}
 \newlabel{fig:pipeline structure@cref}{{[figure][1][]1}{[1][4][]5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key Framing Strategies}{5}{subsection.4.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces key points detection strategies\relax }}{6}{figure.caption.3}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {detect in subimage}}}{6}{subfigure.2.1}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {detect in whole image}}}{6}{subfigure.2.2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Key Points Detection Strategies}{6}{subsection.4.2}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces detect key points in subimage\relax }}{6}{figure.caption.3}}
-\newlabel{fig:subimage}{{2}{6}{detect key points in subimage\relax }{figure.caption.3}{}}
-\newlabel{fig:subimage@cref}{{[figure][2][]2}{[1][6][]6}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces detect key points in whole image\relax }}{6}{figure.caption.4}}
-\newlabel{fig:whole image}{{3}{6}{detect key points in whole image\relax }{figure.caption.4}{}}
-\newlabel{fig:whole image@cref}{{[figure][3][]3}{[1][6][]6}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Evaluation}{6}{section.5}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces \textbf  {Basic set of parameters (unit: pixel)}\relax }}{7}{table.caption.5}}
-\newlabel{tab:basicset}{{1}{7}{\textbf {Basic set of parameters (unit: pixel)}\relax }{table.caption.5}{}}
-\newlabel{tab:basicset@cref}{{[table][1][]1}{[1][7][]7}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Precision}{7}{subsection.5.1}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces \textbf  {RMSE precision under different number of Max. empty cells}\relax }}{7}{table.caption.6}}
-\newlabel{tab:precision}{{2}{7}{\textbf {RMSE precision under different number of Max. empty cells}\relax }{table.caption.6}{}}
-\newlabel{tab:precision@cref}{{[table][2][]2}{[1][7][]7}}
-\newlabel{fig:max_empty_cell}{{\caption@xref {fig:max_empty_cell}{ on input line 285}}{8}{Precision}{figure.caption.7}{}}
-\newlabel{fig:max_empty_cell@cref}{{[subsection][1][5]5.1}{[1][7][]8}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Visualized version of RMSE change with different parameter of max. number of empty cells percentage\relax }}{8}{figure.caption.7}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Execution Time}{8}{subsection.5.2}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Detection Time}{8}{subsubsection.5.2.1}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Optimization time}{8}{subsubsection.5.2.2}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \textbf  {Detection time under different number of Max. empty cells percentage}\relax }}{9}{table.caption.8}}
-\newlabel{tab:detection}{{3}{9}{\textbf {Detection time under different number of Max. empty cells percentage}\relax }{table.caption.8}{}}
-\newlabel{tab:detection@cref}{{[table][3][]3}{[1][8][]9}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \textbf  {Optimization time comparison}\relax }}{9}{table.caption.9}}
-\newlabel{tab:optimization}{{4}{9}{\textbf {Optimization time comparison}\relax }{table.caption.9}{}}
-\newlabel{tab:optimization@cref}{{[table][4][]4}{[1][9][]9}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.3}Key Point Matching Time}{9}{subsubsection.5.2.3}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces \textbf  {Key point matching time comparison}\relax }}{9}{table.caption.10}}
-\newlabel{tab:matching}{{5}{9}{\textbf {Key point matching time comparison}\relax }{table.caption.10}{}}
-\newlabel{tab:matching@cref}{{[table][5][]5}{[1][9][]9}}
-\newlabel{fig:optical_flow_global}{{\caption@xref {fig:optical_flow_global}{ on input line 365}}{10}{Visualization}{figure.caption.11}{}}
-\newlabel{fig:optical_flow_global@cref}{{[subsection][3][5]5.3}{[1][10][]10}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Ground truth path (red) and calculated path (green) using optical flow based method. Gray points represent detected key points.\relax }}{10}{figure.caption.11}}
-\newlabel{fig:key_point_global}{{\caption@xref {fig:key_point_global}{ on input line 372}}{10}{Visualization}{figure.caption.12}{}}
-\newlabel{fig:key_point_global@cref}{{[subsection][3][5]5.3}{[1][10][]10}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Ground truth path (red) and calculated path (green) using method without optical flow. Gray points represent detected key points.\relax }}{10}{figure.caption.12}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Visualization}{10}{subsection.5.3}}
-\newlabel{fig:optical_flow_desk}{{\caption@xref {fig:optical_flow_desk}{ on input line 379}}{11}{Visualization}{figure.caption.13}{}}
-\newlabel{fig:optical_flow_desk@cref}{{[subsection][3][5]5.3}{[1][10][]11}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Map constructed using optical flow based method. Gray points represent detected key points.\relax }}{11}{figure.caption.13}}
-\newlabel{fig:key_point_desk}{{\caption@xref {fig:key_point_desk}{ on input line 386}}{11}{Visualization}{figure.caption.14}{}}
-\newlabel{fig:key_point_desk@cref}{{[subsection][3][5]5.3}{[1][10][]11}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Map constructed using method without optical flow. Gray points represent detected key points.\relax }}{11}{figure.caption.14}}
-\newlabel{fig:desk}{{\caption@xref {fig:desk}{ on input line 394}}{11}{Visualization}{figure.caption.15}{}}
-\newlabel{fig:desk@cref}{{[subsection][3][5]5.3}{[1][10][]11}}
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces The desk image in real world.\relax }}{11}{figure.caption.15}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Implementation}{7}{section.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Lucas and Kanade optical flow with OpenCV}{7}{subsection.5.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Illumination invariant optical flow with manual implementation}{7}{subsection.5.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Cell and grid}{7}{subsection.5.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Key points detection}{7}{subsection.5.4}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Evaluation}{8}{section.6}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces \textbf  {Basic set of parameters (unit: pixel)}\relax }}{8}{table.caption.4}}
+\newlabel{tab:basicset}{{1}{8}{\textbf {Basic set of parameters (unit: pixel)}\relax }{table.caption.4}{}}
+\newlabel{tab:basicset@cref}{{[table][1][]1}{[1][8][]8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Precision}{8}{subsection.6.1}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces \textbf  {RMSE precision under different number of Max. empty cells}\relax }}{9}{table.caption.5}}
+\newlabel{tab:precision}{{2}{9}{\textbf {RMSE precision under different number of Max. empty cells}\relax }{table.caption.5}{}}
+\newlabel{tab:precision@cref}{{[table][2][]2}{[1][8][]9}}
+\newlabel{fig:max_empty_cell}{{\caption@xref {fig:max_empty_cell}{ on input line 315}}{9}{Precision}{figure.caption.6}{}}
+\newlabel{fig:max_empty_cell@cref}{{[subsection][1][6]6.1}{[1][9][]9}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Visualized version of RMSE change with different parameter of max. number of empty cells percentage\relax }}{9}{figure.caption.6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Execution Time}{9}{subsection.6.2}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \textbf  {Detection time under different number of Max. empty cells percentage}\relax }}{10}{table.caption.7}}
+\newlabel{tab:detection}{{3}{10}{\textbf {Detection time under different number of Max. empty cells percentage}\relax }{table.caption.7}{}}
+\newlabel{tab:detection@cref}{{[table][3][]3}{[1][10][]10}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Detection Time}{10}{subsubsection.6.2.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.2}Optimization time}{10}{subsubsection.6.2.2}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \textbf  {Optimization time comparison}\relax }}{10}{table.caption.8}}
+\newlabel{tab:optimization}{{4}{10}{\textbf {Optimization time comparison}\relax }{table.caption.8}{}}
+\newlabel{tab:optimization@cref}{{[table][4][]4}{[1][10][]10}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces \textbf  {Key point matching time comparison}\relax }}{11}{table.caption.9}}
+\newlabel{tab:matching}{{5}{11}{\textbf {Key point matching time comparison}\relax }{table.caption.9}{}}
+\newlabel{tab:matching@cref}{{[table][5][]5}{[1][11][]11}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.3}Key Point Matching Time}{11}{subsubsection.6.2.3}}
+\newlabel{fig:optical_flow_global}{{4a}{11}{Subfigure 4a}{subfigure.4.1}{}}
+\newlabel{sub@fig:optical_flow_global}{{(a)}{a}{Subfigure 4a\relax }{subfigure.4.1}{}}
+\newlabel{fig:optical_flow_global@cref}{{[subfigure][1][4]4a}{[1][11][]11}}
+\newlabel{fig:key_point_global}{{4b}{11}{Subfigure 4b}{subfigure.4.2}{}}
+\newlabel{sub@fig:key_point_global}{{(b)}{b}{Subfigure 4b\relax }{subfigure.4.2}{}}
+\newlabel{fig:key_point_global@cref}{{[subfigure][2][4]4b}{[1][11][]11}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Ground truth path (red) and calculated path (green) using optical flow and descriptor matching methods. Gray points represent detected key points.\relax }}{11}{figure.caption.10}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {Optical flow}}}{11}{subfigure.4.1}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {Descriptors matching}}}{11}{subfigure.4.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Visualization}{11}{subsection.6.3}}
+\newlabel{fig:optical_flow_desk}{{5a}{12}{Subfigure 5a}{subfigure.5.1}{}}
+\newlabel{sub@fig:optical_flow_desk}{{(a)}{a}{Subfigure 5a\relax }{subfigure.5.1}{}}
+\newlabel{fig:optical_flow_desk@cref}{{[subfigure][1][5]5a}{[1][12][]12}}
+\newlabel{fig:key_point_desk}{{5b}{12}{Subfigure 5b}{subfigure.5.2}{}}
+\newlabel{sub@fig:key_point_desk}{{(b)}{b}{Subfigure 5b\relax }{subfigure.5.2}{}}
+\newlabel{fig:key_point_desk@cref}{{[subfigure][2][5]5b}{[1][12][]12}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Map constructed using optical flow or descriptor matching. Gray points represent detected key points.\relax }}{12}{figure.caption.11}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {Optical flow}}}{12}{subfigure.5.1}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {Descriptors matching}}}{12}{subfigure.5.2}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{12}{section.7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces The desk image in real world.\relax }}{12}{figure.caption.12}}
+\newlabel{fig:desk}{{6}{12}{The desk image in real world.\relax }{figure.caption.12}{}}
+\newlabel{fig:desk@cref}{{[figure][6][]6}{[1][12][]12}}
 \bibcite{gradient}{1}
 \bibcite{detector}{2}
 \bibcite{orb}{3}
 \bibcite{brief}{4}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{12}{section.6}}
-\newlabel{LastPage}{{}{12}{}{page.12}{}}
-\xdef\lastpage@lastpage{12}
-\xdef\lastpage@lastpageHy{12}
+\newlabel{LastPage}{{}{13}{}{page.13}{}}
+\xdef\lastpage@lastpage{13}
+\xdef\lastpage@lastpageHy{13}
