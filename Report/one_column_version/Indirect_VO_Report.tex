@@ -246,7 +246,60 @@ To track the key points between different frames, we implement three functions: 
 
 Among these three functions, the difference lies in the correspondence map they establish. In \emph{OpticalFlowBetweenFrame\_opencv\_version}, we establish match data that match feature ID and track ID. In this way, the key points in current frame can have correspondence with key points of existing landmarks. In \emph{OpticalFlowToRightFrame\_opencv\_version}, we establish match between key points in the left and right images. Furthermore, we have to distinguish whether the optical flow result key points in the right image are from old key points or from newly detected key points. So we use two match data, one for matching between old key points in the left image and their resulting key points in the right image, one for newly detected key points in the left image and their correspondence in the right image. In \emph{OpticalFlowFirstStereoPair\_opencv\_version}, we only create stereo match data. Because this function is for stereo track in the first time step, we do not need to distinguish whether the key points are new or old.
 
-\subsection{Illumination invariant optical flow with manual implementation}
+\subsection{Light intensity invariant optical flow with manual implementation}
+The variation of light intensity of object overtime might fail Lucas and Kanade optical flow. Therefore, a more robust method of optical flow should be used to increase the stability of the pipeline. We manually implement an optical flow algorithm. In this implementation, we scale the patch intensity with the mean value, using only the local relative intensity of patch to track so that the influence of intensity variation is mitigated. The idea of the algorithm is to minimize such a residual function:\\
+
+\[{{r_i \left(  \xi  \left) \text{ }=\text{ }\frac{{\mathop{{I}}\nolimits_{{t+1}} \left( Tx\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t+1}}}}}\right. \right. }-\frac{{\mathop{{I}}\nolimits_{{t}} \left( x\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t}}}}}\text{ }\text{ } \forall x\mathop{{}}\nolimits_{{i}} \in  \Omega }\]
+
+The basic algorithm of illumination invariant optical flow is as \ref{alg:optf}.
+\begin{algorithm}[h]  
+  
+  \caption{Intensity invariant optical flow}  
+  \label{alg:optf}
+  \begin{algorithmic}[1]
+  	\State initialize pyramid\_src[0] with source image;
+  	\State initialize pyramid\_tar[0] with target image;
+    \For{each $i\in [1,maximum\ level-1]$}  
+      \State tmp\_src\ =\ downsample pyramid\_src[i-1];
+      \State tmp\_tar\ =\ downsample pyramid\_tar[i-1];
+      \State pyramid\_src.append(tmp\_src);
+      \State pyramid\_tar.append(tmp\_tar);
+    \EndFor
+    \ForAll {$point$ in $source\ points$}
+      \State point\_scale = point / pow(2, l);
+      \State initialize motion = [0,0].transpose();
+      \State initialize dmotion = [0,0].transpose();
+	  \For{$l=max\ level-1$; $i>=0$; $i--$ }
+      	\State img\_src = pyramid\_src[l];
+      	\State img\_tar = pyramid\_tar[l];
+      	\State intensity0 = intensity of source patch scaled by patch mean at img\_src;
+      	\State gradient0 = [gradient\_x, gradient\_y].transpose() of source patch at img\_src;
+      	\State hessian\_inverse = sum of hessian.inverse() of source patch at img\_src;
+		\For{$i=0$; $i<max\_iteration$; $i++$ }
+		  \State transformed source patch with motion;
+      	  \State intensity1 = intensity of transformed patch scaled by patch mean at img\_tar;
+      	  
+      	  \For {$j=0$; $j<patch\_size$; $j++$}
+      	  	\State residual = intensity1(j) - intensity0(j);
+      	  	\State tmp = gradient0.col(j)*residual;
+      	  	\State dmotion -= hessian\_inverse * tmp;
+      	  \EndFor
+      	  \State motion = motion + dmotion;
+      	  \State point\_scaled\_transformed = point\_scaled + motion;
+      	  \If {point\_scaled\_transformed\ out\ of\ range}
+      	  	\State terminate track for this point;
+      	  \EndIf
+      	  \If {dmotion.norm() < threshold}
+      	  	\State break iteration;
+      	  \EndIf
+      	\EndFor
+		\State motion *= 2;      
+      \EndFor 
+      \State output\_points.append(point + motion);
+    \EndFor 
+  \end{algorithmic}  
+  
+\end{algorithm}  
 
 
 \subsection{Cell and grid}

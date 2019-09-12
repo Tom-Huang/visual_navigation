@@ -13,7 +13,7 @@
 \BOOKMARK [2][-]{subsection.4.2}{Key Points Detection Strategies}{section.4}% 13
 \BOOKMARK [1][-]{section.5}{Implementation}{}% 14
 \BOOKMARK [2][-]{subsection.5.1}{Lucas and Kanade optical flow with OpenCV}{section.5}% 15
-\BOOKMARK [2][-]{subsection.5.2}{Illumination invariant optical flow with manual implementation}{section.5}% 16
+\BOOKMARK [2][-]{subsection.5.2}{Light intensity invariant optical flow with manual implementation}{section.5}% 16
 \BOOKMARK [2][-]{subsection.5.3}{Cell and grid}{section.5}% 17
 \BOOKMARK [2][-]{subsection.5.4}{Key points detection}{section.5}% 18
 \BOOKMARK [1][-]{section.6}{Evaluation}{}% 19

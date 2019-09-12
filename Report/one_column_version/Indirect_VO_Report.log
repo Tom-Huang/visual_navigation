@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  12 SEP 2019 19:41
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  12 SEP 2019 23:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1539,85 +1539,143 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_de
 tection_129.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 253--254
+Underfull \hbox (badness 10000) in paragraph at lines 250--251
+
+ []
+
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr7!
+Missing character: There is no € in font cmr7!
+Missing character: There is no ‰ in font cmr7!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ‰ in font cmr5!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr7!
+Missing character: There is no € in font cmr7!
+Missing character: There is no ‰ in font cmr7!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ‰ in font cmr5!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr7!
+Missing character: There is no € in font cmr7!
+Missing character: There is no ‰ in font cmr7!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ‰ in font cmr5!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr10!
+Missing character: There is no € in font cmr10!
+Missing character: There is no ‰ in font cmr10!
+Missing character: There is no â in font cmr7!
+Missing character: There is no € in font cmr7!
+Missing character: There is no ‰ in font cmr7!
+Missing character: There is no â in font cmr5!
+Missing character: There is no € in font cmr5!
+Missing character: There is no ‰ in font cmr5!
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 257.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 306--307
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 255--256
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 258--259
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 260--261
+Underfull \hbox (badness 10000) in paragraph at lines 308--309
 
  []
 
 [7]
-Underfull \hbox (badness 10000) in paragraph at lines 262--263
+Underfull \hbox (badness 10000) in paragraph at lines 311--312
 
  []
 
 
-Package caption Warning: \label without proper reference on input line 315.
+Underfull \vbox (badness 4954) has occurred while \output is active []
+
+ [8]
+Underfull \hbox (badness 10000) in paragraph at lines 313--314
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 315--316
+
+ []
+
+[9]
+
+Package caption Warning: \label without proper reference on input line 368.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `fig:max_empty_cell' on page 8 undefined on input line
- 312.
+LaTeX Warning: Reference `fig:max_empty_cell' on page 10 undefined on input lin
+e 365.
 
-[8]
-<img/max_num_empty_cell1.png, id=198, 462.09pt x 346.02pt>
+<img/max_num_empty_cell1.png, id=243, 462.09pt x 346.02pt>
 File: img/max_num_empty_cell1.png Graphic file (type png)
 <use img/max_num_empty_cell1.png>
-Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 317.
+Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 370.
 (pdftex.def)             Requested size: 288.7942pt x 216.26196pt.
-
-Underfull \vbox (badness 5359) has occurred while \output is active []
-
- [9 <./img/max_num_empty_cell1.png>] [10]
-<img/optical_flow_global.png, id=216, 518.6878pt x 324.46219pt>
+[10 <./img/max_num_empty_cell1.png>] [11]
+<img/optical_flow_global.png, id=261, 518.6878pt x 324.46219pt>
 File: img/optical_flow_global.png Graphic file (type png)
 <use img/optical_flow_global.png>
-Package pdftex.def Info: img/optical_flow_global.png  used on input line 397.
+Package pdftex.def Info: img/optical_flow_global.png  used on input line 450.
 (pdftex.def)             Requested size: 193.90594pt x 121.29668pt.
-<img/key_point_global.png, id=217, 465.23813pt x 298.86656pt>
+<img/key_point_global.png, id=262, 465.23813pt x 298.86656pt>
 File: img/key_point_global.png Graphic file (type png)
 <use img/key_point_global.png>
-Package pdftex.def Info: img/key_point_global.png  used on input line 405.
+Package pdftex.def Info: img/key_point_global.png  used on input line 458.
 (pdftex.def)             Requested size: 188.81795pt x 121.29668pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 397--406
+Overfull \hbox (11.75319pt too wide) in paragraph at lines 450--459
  [][][][] 
  []
 
-[11 <./img/optical_flow_global.png> <./img/key_point_global.png>]
-<img/optical_flow_desk.png, id=238, 347.04657pt x 281.55188pt>
+[12 <./img/optical_flow_global.png> <./img/key_point_global.png>]
+<img/optical_flow_desk.png, id=282, 347.04657pt x 281.55188pt>
 File: img/optical_flow_desk.png Graphic file (type png)
 <use img/optical_flow_desk.png>
-Package pdftex.def Info: img/optical_flow_desk.png  used on input line 428.
+Package pdftex.def Info: img/optical_flow_desk.png  used on input line 481.
 (pdftex.def)             Requested size: 174.42838pt x 141.51074pt.
-<img/key_point_desk.png, id=239, 350.81062pt x 278.54062pt>
+<img/key_point_desk.png, id=283, 350.81062pt x 278.54062pt>
 File: img/key_point_desk.png Graphic file (type png)
 <use img/key_point_desk.png>
-Package pdftex.def Info: img/key_point_desk.png  used on input line 435.
+Package pdftex.def Info: img/key_point_desk.png  used on input line 488.
 (pdftex.def)             Requested size: 178.23122pt x 141.51074pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 428--436
+Overfull \hbox (11.75319pt too wide) in paragraph at lines 481--489
  [][][][] 
  []
 
-<img/desk.png, id=240, 536.0025pt x 341.77687pt>
+<img/desk.png, id=284, 536.0025pt x 341.77687pt>
 File: img/desk.png Graphic file (type png)
 <use img/desk.png>
-Package pdftex.def Info: img/desk.png  used on input line 441.
+Package pdftex.def Info: img/desk.png  used on input line 494.
 (pdftex.def)             Requested size: 206.28247pt x 131.52974pt.
-[12 <./img/optical_flow_desk.png> <./img/key_point_desk.png> <./img/desk.png>]
+[13 <./img/optical_flow_desk.png> <./img/key_point_desk.png> <./img/desk.png>]
 Missing character: There is no â in font cmr9!
 Missing character: There is no € in font cmr9!
 Missing character: There is no œ in font cmr9!
@@ -1639,28 +1697,25 @@ Missing character: There is no “ in font cmr9!
 
 
 AED: lastpage setting LastPage
-[13]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 484.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 484.
+[14]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 537.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 537.
  (./Indirect_VO_Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 484.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 484.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 537.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 537.
 Package rerunfilecheck Info: File `Indirect_VO_Report.out' has not changed.
-(rerunfilecheck)             Checksum: 4899175C0131F6AA84714216D468FB29;1468.
+(rerunfilecheck)             Checksum: E2CF54069FF973CE34869202F05B8772;1471.
 
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 484.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 537.
  ) 
 Here is how much of TeX's memory you used:
- 36140 strings out of 494805
- 722283 string characters out of 6178000
- 765145 words of memory out of 5000000
- 38897 multiletter control sequences out of 15000+600000
+ 36221 strings out of 494805
+ 723334 string characters out of 6178000
+ 772145 words of memory out of 5000000
+ 38937 multiletter control sequences out of 15000+600000
  541413 words of font info for 68 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  48i,14n,87p,10388b,763s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1679,10 +1734,10 @@ usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/t
 exmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on Indirect_VO_Report.pdf (13 pages, 1302870 bytes).
+Output written on Indirect_VO_Report.pdf (14 pages, 1313782 bytes).
 PDF statistics:
- 324 PDF objects out of 1000 (max. 8388607)
- 274 compressed objects within 3 object streams
- 65 named destinations out of 1000 (max. 500000)
+ 378 PDF objects out of 1000 (max. 8388607)
+ 326 compressed objects within 4 object streams
+ 106 named destinations out of 1000 (max. 500000)
  242 words of extra memory for PDF output out of 10000 (max. 10000000)
 
