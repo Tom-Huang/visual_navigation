@@ -11,7 +11,7 @@
 %\documentclass[letterpaper]{easychair}
 
 \usepackage{doc}
-
+\usepackage{indentfirst}
 % Sample optional packages to use
 \usepackage{graphicx}
 \usepackage{amscd}
@@ -129,43 +129,41 @@ Chenguang Huang
 
 
 \section{Introduction}
-Computer vision related tasks in robotics are attracting more and more attention. One typical task is the visual odometry. It is used widely in applications which require the depth information of objects without directly relying on distance measurement sensors like Lidar. Besides, many applications uses visual odometry to help with the motion planning of some specific agent. Therefore, this function could cause critical problems if it is not reliable. To ensure the safety of the agent, a common choice is to use mathematically provable methods to realize the function rather than using currently unexplainable techniques like deep learning. Thus it worths looking into the implementation details of visual odometry using traditional explainable methods.
+Computer vision related tasks in robotics are attracting more and more attention. One typical task is the visual odometry. It is used widely in applications which require the depth information of objects without directly relying on distance measurement sensors like Lidar. Besides, many applications use visual odometry to help with the motion planning of some specific agent. Therefore, this function could cause critical problems if it is not reliable. To ensure the safety of the agent, a common choice is to use mathematically provable methods to realize the function rather than using currently unexplainable techniques like deep learning. Thus it worths looking into the implementation details of visual odometry using traditional explainable methods.
 
-To estimate the depth of some specific object, at least two images are needed if there is no prior assumption in how the world is constructed. However, before estimating the depth through triangulation, corresponding point in two images which describes the same 3D point should be found. The first way to achieve this is through key point detection in both images, and find the matching point pairs through similarity comparison. The second way to achieve this is through optical flow, which computes an estimated position of a pixel in the second image according its position in the first image. The above two ways are also suitable to find the point matching pairs between consecutive frames. 
+To estimate the depth of some specific object, at least two images are needed if there is no prior assumption in how the world is constructed. However, before estimating the depth through triangulation, corresponding points in two images which describes the same 3D point should be found. The first way to achieve this is doing key point detection in both images, and finding the matching point pairs through key point descriptor similarity comparison. The second way to achieve this is the optical flow, which computes an estimated position of a pixel in the second image according its position in the first image. The above two ways are also suitable to find the point matching pairs between consecutive frames. 
 
-This paper mainly compares the above two methods. 
+This paper compares the above two methods. 
 
-The following sections are structured as below: Section II presents some basic concepts used in the two methods. Section III describes the pipeline of the two methods. Section IV shows the implementation details. Section V evaluates the difference between these two methods, and Section VI concludes the work.
+The following sections are structured as below: Section II presents some basic concepts used in the two methods. Section III describes the pipeline of the two methods. Different strategies used in the implementation are summarized in section IV. Section V shows the implementation details. The results are evaluated in Section VI, and Section VII concludes the work.
 
 
 \section{Basic Concepts}
-To understand the methods better, some basic concepts are summarized in this section.
+To understand the methods compared better, some basic concepts are summarized in this section.
 
 \subsection{Visual Odometry}
-Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus help to build a map in real time around the robot to support the navigation.
+Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus helps to build a map in real time around the robot to support the navigation.
 
-\subsection{Optical Flow} The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel between two consecutive frames. Two main types of optical flow calculation are the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method). These two methods have different assumptions but both calculates the optical flow through an optimization process.
+\subsection{Optical Flow} The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel between two consecutive frames. Two main types of optical flow calculation are the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method) \cite{lukas} \cite{horn}. These two methods have different assumptions but both calculates the optical flow through an optimization process.
 
 In Lukas \& Kanade method, it assumes that (i) the motion is constant in a local neighborhood (ii) the brightness of a specific pixel is constant in different frames. Under the above assumptions, the energy function in the Lukas \& Kanade method is formulated as follows:
 
 \begin{equation}
 E(v) = \int_{W(x)} |\Delta I(x', t)^Tv + I_t(x',t) |^2dx'
 \end{equation}
-
-where $I(x',t)$ denotes the brightness of position $x'$ at time $t$ in the image, $I_t$ denotes the derivative of brightness with respect to the time $t$, and $W(x)$ denotes the neighborhood of pixel $x'$. The optical flow $v$ is calculated via the minimization of the above energy function. It generates sparse flow vectors.
+\noindent
+where $I(x',t)$ denotes the brightness of position $x'$ at time $t$ in the image, $I_t$ denotes the derivative of brightness with respect to the time $t$, and $W(x)$ denotes the neighborhood of pixel $x'$. The optical flow $v$ is calculated via the minimization of the above energy function. It generates sparse flow vectors \cite{lukas}.
 
 In contrast, the Horn \& Schunck method assumes (i) the brightness of a specific pixel is a constant in different frames (ii) the motions are spatially smooth. This method generates dense flow vectors. The energy function of this method is:
 
 \begin{equation}
 E(u,v) = \int\int[(I_xu + I_yv + I_t)^2+\alpha^2(||\Delta u ||^2 + ||\Delta v ||^2)]dxdy
 \end{equation} 
-
-where $I_x$ and $T_y$ are the derivatives of brightness with respect to x and y axis, respectively. $u$ and $v$ are velocity in vertical and parallel directions. In the end, optical flow is obtained through solving for $u$ and $v$ variable.		
+\noindent
+where $I_x$ and $T_y$ are the derivatives of brightness with respect to x and y axis, respectively. $u$ and $v$ are velocity in vertical and parallel directions. In the end, optical flow is obtained through solving for $u$ and $v$ variable \cite{horn}.		
 
 \subsection{Key Point Detection}
-The environment is continuous and complex. To successfully navigate in such en environment, some key information is more important than the other information. In the image, one kind of typical key information is the corner point. 
-
-One usual method to detect such corner points is through the analysis of the gradient of the image \cite{gradient}. Typical methods include Foerstner and Harris detector \cite{detector}. More recently, detectors like BRIEF, SURF, FAST, and Shi-Tomasi are quite popular, and have many extended versions. In our experiment, key point detection is used to extract important information from the image frames to build the map.
+The real environment is continuous and complex. To successfully navigate in such en environment, some key information is more important than the other information. In the image, one kind of typical key information is the corner point. the gradient of the image \cite{gradient}. Typical methods include Foerstner and Harris detector \cite{detector}. More recently, detectors like BRIEF and Shi-Tomasi are quite popular \cite{brief} \cite{shitomasi}, and have many extended versions. In our experiment, key point detection is used to extract important information from the image frames to build the map.
 
 \subsection{Point Matching}
 To construct a 3D map, the matching relationship of points between frames are important, otherwise it will cause big error in the triangulation and possibly make the optimization process in determining the 3D position of a landmark unable to converge.
@@ -509,6 +507,18 @@ This paper reviews some basic concepts in visual odometry, shows the implementat
 
 \begin{thebibliography}{00}
 	
+	\bibitem{brief}M. Calonder, V. Lepetit, M. Ozuysal, T. Trzcinski, C. Strecha and P. Fua, "BRIEF: Computing a Local Binary Descriptor Very Fast," in IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 34, no. 7, pp. 1281-1298, July 2012.
+	
+	\bibitem{lukas} B. D. Lucas and T. Kanade. An iterative image registration technique
+	with an application to stereo vision, In Proceedings of the 7th International
+	Joint Conference on Artificial Intelligence - Volume 2, IJCAI81,
+	pages 674679, San Francisco, CA, USA, 1981. Morgan Kaufmann
+	Publishers Inc.
+	
+	\bibitem{horn} B.K.P Horn, B.G. Schunk. Determining optical flow, Artificial Intelligence,
+	vol. 17, pp. 185-203, 1981.
+	
+	
 	\bibitem{gradient} H. Wang and M. Brady, “Real-time corner detection algorithm for
 	motion estimation,” Image and vision computing, vol. 13, no. 9, pp. 695–
 	703, 1995.
@@ -520,7 +530,8 @@ This paper reviews some basic concepts in visual odometry, shows the implementat
 	\bibitem{orb} E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, “ORB: an efficientalternative  to  SIFT  or  SURF,”  inIEEE  International  Conference  onComputer Vision (ICCV), Barcelona, Spain, November 2011, pp. 2564–2571
 	
 	\bibitem{brief} E. Rublee, V. Rabaud, K. Konolige and G. Bradski, "ORB: An efficient alternative to SIFT or SURF," 2011 International Conference on Computer Vision, Barcelona, 2011, pp. 2564-2571.
-
+	
+	\bibitem{shitomasi} Jianbo Shi and Tomasi, "Good features to track," 1994 Proceedings of IEEE Conference on Computer Vision and Pattern Recognition, Seattle, WA, USA, 1994, pp. 593-600.
 	
 	
 	
