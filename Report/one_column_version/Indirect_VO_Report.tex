@@ -239,6 +239,8 @@ The difference between these two key point detection methods is shown in Figure 
 
 
 \section{Implementation}
+Our implementation lies all in repository under \emph{s0011}. Our implementation of optical flow visual odometry is in branch \emph{project\_eval}. Visual odometry with descriptor matching is in branch \emph{excise-05\_eval}. The report of this project is in branch \emph{report} in folder ./Report/one\_column\_version. The presentation slide is in branch \emph{project\_eval} root directory.
+
 \subsection{Lucas and Kanade optical flow with OpenCV}
 To track the key points between different frames, we implement three functions: \emph{OpticalFlowBetweenFrame\_opencv\_version}, \emph{OpticalFlowToRightFrame\_opencv\_version} and \emph{OpticalFlowFirstStereoPair\_opencv\_version}. All of these three functions need to input one source image, one target image, source key points data and target key points data. For the algorithm of optical flow, we use the Lucas and Kanade method implemented in OpenCV and use patch window size (21 x 21) and pyramid level 4. A backward checking using  optical flow is also performed to improve the robustness of tracking. Only when the distance between the backward result point and its corresponding input point is smaller than 1 pixel can the tracking result be regarded as valid. \\
 
@@ -249,7 +251,7 @@ The variation of light intensity of object overtime might fail Lucas and Kanade 
 
 \[{{r_i \left(  \xi  \left) \text{ }=\text{ }\frac{{\mathop{{I}}\nolimits_{{t+1}} \left( Tx\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t+1}}}}}\right. \right. }-\frac{{\mathop{{I}}\nolimits_{{t}} \left( x\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t}}}}}\text{ }\text{ } \forall x\mathop{{}}\nolimits_{{i}} \in  \Omega }\]
 
-The basic algorithm of illumination invariant optical flow is as \ref{alg:optf}. The implementation of this function is in \emph{project\_eval} branch. The function name is \emph{OpticalflowLK}.
+The basic algorithm of illumination invariant optical flow is as \ref{alg:optf}. The implementation of this function is in \emph{project\_eval} branch. The function name is \emph{OpticalFlowLK}.
 
 \begin{algorithm}[h]
   \caption{Intensity invariant optical flow}  
