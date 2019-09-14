@@ -163,8 +163,8 @@ float bilinear_interpolate(cv::Mat img, float x, float y) {
   int x_floor = int(x);
   int y_floor = int(y);
   topleft = img.at<float>(y_floor, x_floor);
-  topright = img.at<float>(y_floor + 1, x_floor);
-  bottomleft = img.at<float>(y_floor, x_floor + 1);
+  topright = img.at<float>(y_floor, x_floor + 1);
+  bottomleft = img.at<float>(y_floor + 1, x_floor);
   bottomright = img.at<float>(y_floor + 1, x_floor + 1);
   result = (y - y_floor) *
                ((x_floor + 1 - x) * bottomleft + (x - x_floor) * bottomright) +
@@ -191,7 +191,7 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
                    std::vector<cv::Point2f>& points1,
                    std::vector<unsigned char>& status,
                    std::vector<float>& errors,
-                   cv::Size winSize = cv::Size(11, 11), int maxLevel = 3) {
+                   cv::Size winSize = cv::Size(11, 11), int maxLevel = 5) {
   const int pattern[][2] = {
       {-3, 7},  {-1, 7},  {1, 7},   {3, 7},
 
@@ -222,11 +222,9 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
   cv::Mat gradient_x, gradient_y, gradient_t;
   cv_gradient_x(img00, gradient_x);
   cv_gradient_y(img00, gradient_y);
-  cv::imshow("gradient_x", gradient_x);
-  cv::imshow("gradient_y", gradient_y);
-  cv::waitKey();
-
-  std::cout << "gradient calculation success!" << std::endl;
+  //  cv::imshow("gradient_x", gradient_x);
+  //  cv::imshow("gradient_y", gradient_y);
+  //  cv::waitKey();
 
   // create different layers
   std::vector<cv::Mat> layers0;
@@ -246,7 +244,6 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
   }
 
   // iterate over points
-  std::cout << "points num: " << points0.size() << std::endl;
   for (const auto point : points0) {
     const float BOUNDARY = 2;
     Eigen::Vector2f motion = Eigen::Vector2f::Zero();
@@ -308,7 +305,7 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
       //      cv::imshow("gradient_y", gradient_y);
       //      cv::waitKey();
 
-      std::cout << "image size: " << img0.size() << std::endl;
+      //      std::cout << "image size: " << img0.size() << std::endl;
 
       i = 0;
       sum0 = 0;
@@ -415,7 +412,7 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
         }
 
         if (residual_num < (WINDOW_SIZE / 2)) {
-          std::cout << "50% of patch is out of range!" << std::endl;
+          //          std::cout << "50% of patch is out of range!" << std::endl;
           patch_out_flag = 1;
           break;
         }
@@ -427,16 +424,17 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
         // multiply motion by 2 for lower layer
         motion_old = motion;
         motion = (motion + dmotion);
-        std::cout << "Image size: " << img0.size() << std::endl;
-        std::cout << "Point: " << point / pow(2, l - 1) << std::endl;
-        std::cout << "Motion: " << motion.transpose() << std::endl;
-        std::cout << "residual number: " << residual_num << std::endl;
-        std::cout << "Transformed point: ["
-                  << point.x / pow(2, l - 1) + motion(0) << ", "
-                  << point.y / pow(2, l - 1) + motion(1) << "]" << std::endl;
-        std::cout << "Layer: " << l << std::endl;
-        std::cout << "Iter: " << iter_num << ", motion: " << motion
-                  << std::endl;
+        //        std::cout << "Image size: " << img0.size() << std::endl;
+        //        std::cout << "Point: " << point / pow(2, l - 1) << std::endl;
+        //        std::cout << "Motion: " << motion.transpose() << std::endl;
+        //        std::cout << "residual number: " << residual_num << std::endl;
+        //        std::cout << "Transformed point: ["
+        //                  << point.x / pow(2, l - 1) + motion(0) << ", "
+        //                  << point.y / pow(2, l - 1) + motion(1) << "]" <<
+        //                  std::endl;
+        //        std::cout << "Layer: " << l << std::endl;
+        //        std::cout << "Iter: " << iter_num << ", motion: " << motion
+        //                  << std::endl;
         //      std::cout << "motion calculation success!" << std::endl;
 
         //        cv::Point left;
@@ -464,7 +462,7 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
             motion(1) + point.y / pow(2, l - 1) < 0 ||
             motion(1) + point.y / pow(2, l - 1) >= img0.size().height) {
           out_flag = 1;
-          std::cout << "out of range!" << std::endl;
+          //          std::cout << "out of range!" << std::endl;
           break;
         }
       }  // end of iteration loop
@@ -474,15 +472,18 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
       if (patch_out_flag == 1) {
         break;
       }
-      motion_old *= 2;
-      motion *= 2;
+      if (l > 1) {
+        motion_old *= 2;
+        motion *= 2;
+      }
+
     }  // end of layer loop
 
     // push back error, status and destination points
     error = (motion - motion_old).norm();
     new_point.x = point.x + motion(0);
     new_point.y = point.y + motion(1);
-    std::cout << "new point calculation success!" << std::endl;
+    //    std::cout << "new point calculation success!" << std::endl;
     points1.push_back(new_point);
     errors.push_back(error);
     if (error < 1 && out_flag == 0) {
@@ -491,7 +492,7 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
     } else {
       status.push_back(0);
     }
-    std::cout << "point motion calculation success!" << std::endl;
+    //    std::cout << "point motion calculation success!" << std::endl;
   }  // end of point loop
 }  // namespace visnav
 
@@ -546,11 +547,15 @@ void OpticalFlowBetweenFrame_opencv_version(
   int stop = clock();
 
   start = clock();
-  cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
-                           errors, winSize, 5);  //, winSize, 5);
-  cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
-                           status_back, errors_back, winSize,
-                           5);  //, winSize, 5);
+  //  cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
+  //                           errors, winSize, 5);  //, winSize, 5);
+  //  cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
+  //                           status_back, errors_back, winSize,
+  //                           5);  //, winSize, 5);
+  OpticalFLowLK(imglt0_cv, imglt1_cv, points0, points1, status, errors, winSize,
+                5);
+  OpticalFLowLK(imglt1_cv, imglt0_cv, points1, points0_back, status_back,
+                errors_back, winSize, 5);
   stop = clock();
   double duration = double(stop - start) / double(CLOCKS_PER_SEC);
   std::cout << "optical flow keypoints num: " << points0.size() << std::endl;
@@ -637,11 +642,17 @@ void OpticalFlowToRightFrame_opencv_version(
     p_2d.y = float(p_2dl(1));
     pointsl.push_back(p_2d);
   }
-  cv::calcOpticalFlowPyrLK(
-      imgl_cv, imgr_cv, pointsl, pointsr, status,
-      errors);  //                           winSize, 4);  // winSize, 4
-  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                           errors_back);  //, winSize, 4);  // backward check
+  //  cv::calcOpticalFlowPyrLK(
+  //      imgl_cv, imgr_cv, pointsl, pointsr, status,
+  //      errors);  //                           winSize, 4);  // winSize, 4
+  //  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back,
+  //  status_back,
+  //                           errors_back);  //, winSize, 4);  // backward
+  //                           check
+
+  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                errors_back);
 
   kdr.corners.clear();
   md_feat2track_right.matches.clear();
@@ -768,8 +779,8 @@ void OpticalFlowFirstStereoPair_opencv_version(
       //      float distance = norm(pointsl[i] - p_backward_tar[0]);
       //      std::cout << pointsl[i] << ", " << p_backward_tar[0] <<
       //      std::endl;
-      if (1) {  // distance < 1) {  // status_backward[0] == 1 && distance < 1)
-                // {
+      if (distance < 1) {  // status_backward[0] == 1 && distance < 1)
+                           // {
         std::cout << "distance of point " << i << " :" << pointsl[i] << ", "
                   << pointsr[i] << " , distance: " << distance
                   << ", status: " << int(status[i]) << ", "
