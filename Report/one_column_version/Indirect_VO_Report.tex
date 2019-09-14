@@ -203,8 +203,6 @@ This section describes the detailed strategy used in the implementation of indir
 
 %(finished)另外最好有一个关于optical flow 怎么实现的段落？比如我们调了opencv 的包，用了0.01的参数，之类的？毕竟标题是visual odometry with optical flow, 一直没有提optical flow 怎么实现的，implementaion里应该提一下
 
-
-
 \subsection{Key Framing Strategies}
 The criteria of key framing is of significant importance. It will affect the accuracy and efficiency of our algorithm1. On one hand, if one frame can be easily regarded as a key frame, the interval between key frames will become very small. So the optimization will be limited in a small range, focusing too much on local features instead of a global view. In the meantime, more key frames means more optimization time, which makes the algorithm inefficient. On the other hand, if the key framing criterion is too strict so that only very few frames can be selected as key frames, the pipeline is more likely to collapse during the run. This is because we only detect new key points in key frames and if the interval between key frames is too big, the base line will be too large for optical flow to find correspondences through all the frames. Once there are not enough correspondences, the camera localization will become very unstable and the algorithm will fail.\\
 
@@ -239,15 +237,13 @@ The difference between these two key point detection methods is shown in Figure 
 
 
 \section{Implementation}
-Our implementation lies all in repository under \emph{s0011}. Our implementation of optical flow visual odometry is in branch \emph{project\_eval}. Visual odometry with descriptor matching is in branch \emph{excise-05\_eval}. The report of this project is in branch \emph{report} in folder ./Report/one\_column\_version. The presentation slide is in branch \emph{project\_eval} root directory.
-
 \subsection{Lucas and Kanade optical flow with OpenCV}
 To track the key points between different frames, we implement three functions: \emph{OpticalFlowBetweenFrame\_opencv\_version}, \emph{OpticalFlowToRightFrame\_opencv\_version} and \emph{OpticalFlowFirstStereoPair\_opencv\_version}. All of these three functions need to input one source image, one target image, source key points data and target key points data. For the algorithm of optical flow, we use the Lucas and Kanade method implemented in OpenCV and use patch window size (21 x 21) and pyramid level 4. A backward checking using  optical flow is also performed to improve the robustness of tracking. Only when the distance between the backward result point and its corresponding input point is smaller than 1 pixel can the tracking result be regarded as valid. \\
 
 Among these three functions, the difference lies in the correspondence map they establish. In \emph{OpticalFlowBetweenFrame\_opencv\_version}, we establish match data that match feature ID and track ID. In this way, the key points in current frame can have correspondence with key points of existing landmarks. In \emph{OpticalFlowToRightFrame\_opencv\_version}, we establish match between key points in the left and right images. Furthermore, we have to distinguish whether the optical flow result key points in the right image are from old key points or from newly detected key points. So we use two match data, one for matching between old key points in the left image and their resulting key points in the right image, one for newly detected key points in the left image and their correspondence in the right image. In \emph{OpticalFlowFirstStereoPair\_opencv\_version}, we only create stereo matching data. Because this function is for stereo track in the first time step, we do not need to distinguish whether the key points are new or old.
 
 \subsection{Light intensity invariant optical flow with manual implementation}
-The variation of light intensity of object overtime might fail Lucas and Kanade optical flow. Therefore, a more robust method of optical flow should be used to increase the stability of the pipeline. We manually implement an optical flow algorithm. In this implementation, we scale the patch intensity with the mean value, using only the local relative intensity of patch to track so that the influence of intensity variation is mitigated. The idea of the algorithm is to minimize such a residual function with Gauss-Newton method:\\
+The variation of light intensity of object overtime might fail Lucas and Kanade optical flow. Therefore, a more robust method of optical flow should be used to increase the stability of the pipeline. We manually implement an optical flow algorithm. In this implementation, we scale the patch intensity with the mean value, using only the local relative intensity of patch to track so that the influence of intensity variation is mitigated. The idea of the algorithm is to minimize such a residual function with Gauss-Newton method\cite{basalt}:\\
 
 \[{{r_i \left(  \xi  \left) \text{ }=\text{ }\frac{{\mathop{{I}}\nolimits_{{t+1}} \left( Tx\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t+1}}}}}\right. \right. }-\frac{{\mathop{{I}}\nolimits_{{t}} \left( x\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t}}}}}\text{ }\text{ } \forall x\mathop{{}}\nolimits_{{i}} \in  \Omega }\]
 
@@ -365,10 +361,12 @@ The table \ref{tab:precision} shows how precision measured as Root Mean Square E
 From the table it is clear that when the maximum number of empty cells percentage is too small or too large, the precision of the built map will decrease. This means, if we do new key points detection too frequently, we would construct the map using too many key points, which means too many noises, as the key point detection itself is also not 100\% precise. However, if we do key point detection too sparsely, we would have too less key points to construct the map, which indicates that even some small noises could cause a big error in map construction and thus cause an increased RMSE value. In the best case, the RMSE will reach a similar value as the method without using optical flow. Figure \ref{fig:max_empty_cell} shows more experiment data in a visualized way.
 
 \begin{figure}
-	\label{fig:max_empty_cell}
+	
 	\centering
 	\includegraphics[width=0.7\textwidth]{img/max_num_empty_cell1.png}
 	\caption{Visualized version of RMSE change with different parameter of max. number of empty cells percentage}
+	\label{fig:max_empty_cell}
+	
 \end{figure}
 
 
@@ -497,12 +495,15 @@ In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there
 \end{figure}
 
 
+\section{Project location}
+Our implementation lies all in repository under \emph{s0011}. Our implementation of optical flow visual odometry is in branch \emph{project\_eval}. Visual odometry with descriptor matching is in branch \emph{exercise-05\_eval}. The report of this project is in branch \emph{report} in folder ./Report/one\_column\_version. The presentation slide is in branch \emph{project\_eval} root directory.
 
 
 \section{Conclusion}
 Visual odometry is a very promising research direction, the applications of this technique is very useful in corresponding environment.
 
 This paper reviews some basic concepts in visual odometry, shows the implementation design and details for visual odometry. Specifically, it presents a novel criterion, which is segmenting image into sub-images and counting number of empty cells to choose key frames. The maximum number of empty cells is a parameter that highly influences the performance of the map construction. A too high or too low number will cause decrease in performance, which indicates that the number of key frames should be kept in a suitable number for a good performance. The strategy of key point detection according to sub-images offers more uniformly distributed key points than key point detection according to the whole image. The execution time of different parts are influenced by the difference between pipeline and the choice of parameter (e.g. max. number of empty cells) in optical flow based implementation.
+
 
 
 
@@ -534,6 +535,7 @@ This paper reviews some basic concepts in visual odometry, shows the implementat
 	\bibitem{brief} E. Rublee, V. Rabaud, K. Konolige and G. Bradski, "ORB: An efficient alternative to SIFT or SURF," 2011 International Conference on Computer Vision, Barcelona, 2011, pp. 2564-2571.
 	
 	\bibitem{shitomasi} Jianbo Shi and Tomasi, "Good features to track," 1994 Proceedings of IEEE Conference on Computer Vision and Pattern Recognition, Seattle, WA, USA, 1994, pp. 593-600.
+	\bibitem{basalt} V. Usenko, N. Demmel, D. Schubert, J. Stueckler and D. Cremers, Visual-Inertial Mapping with Non-Linear Factor Recovery, arXiv:1904.06504, 2019.
 	
 	
 	

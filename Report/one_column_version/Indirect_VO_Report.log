@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  14 SEP 2019 11:55
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  14 SEP 2019 12:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1497,7 +1497,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 188--189
 
  []
 
-<img/flowchart.png, id=165, 596.2275pt x 759.83875pt>
+<img/flowchart.png, id=176, 596.2275pt x 759.83875pt>
 File: img/flowchart.png Graphic file (type png)
 <use img/flowchart.png>
 Package pdftex.def Info: img/flowchart.png  used on input line 194.
@@ -1506,36 +1506,36 @@ Package pdftex.def Info: img/flowchart.png  used on input line 194.
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [4]
-Underfull \hbox (badness 10000) in paragraph at lines 209--210
+Underfull \hbox (badness 10000) in paragraph at lines 207--208
 
  []
 
 [5 <./img/flowchart.png>]
-<img/subimage_keypoint_detection_129.png, id=178, 805.0075pt x 511.9125pt>
+<img/subimage_keypoint_detection_129.png, id=188, 805.0075pt x 511.9125pt>
 File: img/subimage_keypoint_detection_129.png Graphic file (type png)
 <use img/subimage_keypoint_detection_129.png>
 Package pdftex.def Info: img/subimage_keypoint_detection_129.png  used on input
- line 220.
+ line 218.
 (pdftex.def)             Requested size: 202.15909pt x 128.55583pt.
-<img/whole_image_keypoints_detection_129.png, id=179, 803.0pt x 511.9125pt>
+<img/whole_image_keypoints_detection_129.png, id=189, 803.0pt x 511.9125pt>
 File: img/whole_image_keypoints_detection_129.png Graphic file (type png)
 <use img/whole_image_keypoints_detection_129.png>
 Package pdftex.def Info: img/whole_image_keypoints_detection_129.png  used on i
-nput line 227.
+nput line 225.
 (pdftex.def)             Requested size: 202.56828pt x 129.13385pt.
 
-Overfull \hbox (5.49573pt too wide) in paragraph at lines 220--228
+Overfull \hbox (5.49573pt too wide) in paragraph at lines 218--226
  [][][][] 
  []
 
 [6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_det
 ection_129.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 245--246
+Underfull \hbox (badness 10000) in paragraph at lines 241--242
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 250--251
+Underfull \hbox (badness 10000) in paragraph at lines 246--247
 
  []
 
@@ -1588,17 +1588,30 @@ Missing character: There is no â in font cmr5!
 Missing character: There is no € in font cmr5!
 Missing character: There is no ‰ in font cmr5!
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 257.
+put line 253.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 306--307
+Underfull \hbox (badness 10000) in paragraph at lines 302--303
 
  []
 
-[7] [8]
-Underfull \hbox (badness 10000) in paragraph at lines 308--309
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 304--305
+
+ []
+
+
+Underfull \vbox (badness 4954) has occurred while \output is active []
+
+ [8]
+Underfull \hbox (badness 10000) in paragraph at lines 307--308
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 309--310
 
  []
 
@@ -1607,75 +1620,56 @@ Underfull \hbox (badness 10000) in paragraph at lines 311--312
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 313--314
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 315--316
-
- []
-
 [9]
-
-Package caption Warning: \label without proper reference on input line 368.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig:max_empty_cell' on page 10 undefined on input lin
-e 365.
-
-<img/max_num_empty_cell1.png, id=248, 462.09pt x 346.02pt>
+<img/max_num_empty_cell1.png, id=259, 462.09pt x 346.02pt>
 File: img/max_num_empty_cell1.png Graphic file (type png)
 <use img/max_num_empty_cell1.png>
-Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 370.
+Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 366.
 (pdftex.def)             Requested size: 288.7942pt x 216.26196pt.
-[10]
-Underfull \vbox (badness 3826) has occurred while \output is active []
-
- [11 <./img/max_num_empty_cell1.png>]
-<img/optical_flow_global.png, id=266, 518.6878pt x 324.46219pt>
+ [10] [11 <./img/max_num_empty_cell1.png>]
+<img/optical_flow_global.png, id=278, 518.6878pt x 324.46219pt>
 File: img/optical_flow_global.png Graphic file (type png)
 <use img/optical_flow_global.png>
-Package pdftex.def Info: img/optical_flow_global.png  used on input line 450.
+Package pdftex.def Info: img/optical_flow_global.png  used on input line 448.
 (pdftex.def)             Requested size: 193.90594pt x 121.29668pt.
-<img/key_point_global.png, id=267, 465.23813pt x 298.86656pt>
+<img/key_point_global.png, id=279, 465.23813pt x 298.86656pt>
 File: img/key_point_global.png Graphic file (type png)
 <use img/key_point_global.png>
-Package pdftex.def Info: img/key_point_global.png  used on input line 458.
+Package pdftex.def Info: img/key_point_global.png  used on input line 456.
 (pdftex.def)             Requested size: 188.81795pt x 121.29668pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 450--459
+Overfull \hbox (11.75319pt too wide) in paragraph at lines 448--457
  [][][][] 
  []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<img/optical_flow_desk.png, id=275, 347.04657pt x 281.55188pt>
+<img/optical_flow_desk.png, id=287, 347.04657pt x 281.55188pt>
 File: img/optical_flow_desk.png Graphic file (type png)
 <use img/optical_flow_desk.png>
-Package pdftex.def Info: img/optical_flow_desk.png  used on input line 481.
+Package pdftex.def Info: img/optical_flow_desk.png  used on input line 479.
 (pdftex.def)             Requested size: 174.42838pt x 141.51074pt.
-<img/key_point_desk.png, id=276, 350.81062pt x 278.54062pt>
+<img/key_point_desk.png, id=288, 350.81062pt x 278.54062pt>
 File: img/key_point_desk.png Graphic file (type png)
 <use img/key_point_desk.png>
-Package pdftex.def Info: img/key_point_desk.png  used on input line 488.
+Package pdftex.def Info: img/key_point_desk.png  used on input line 486.
 (pdftex.def)             Requested size: 178.23122pt x 141.51074pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 481--489
+Overfull \hbox (11.75319pt too wide) in paragraph at lines 479--487
  [][][][] 
  []
 
-[12]
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 <img/desk.png, id=289, 536.0025pt x 341.77687pt>
 File: img/desk.png Graphic file (type png)
 <use img/desk.png>
-Package pdftex.def Info: img/desk.png  used on input line 494.
+Package pdftex.def Info: img/desk.png  used on input line 492.
 (pdftex.def)             Requested size: 206.28247pt x 131.52974pt.
- [13 <./img/optical_flow_global.png> <./img/key_point_global.png> <./img/optica
-l_flow_desk.png> <./img/key_point_desk.png>]
+[12] [13 <./img/optical_flow_global.png> <./img/key_point_global.png> <./img/op
+tical_flow_desk.png> <./img/key_point_desk.png>]
 Missing character: There is no â in font cmr9!
 Missing character: There is no € in font cmr9!
 Missing character: There is no œ in font cmr9!
@@ -1702,38 +1696,29 @@ AED: lastpage setting LastPage
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.550 \end{document}
+l.552 \end{document}
                      <./img/desk.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 550.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 550.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 552.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 552.
  (./Indirect_VO_Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 550.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 550.
-
-
-Package rerunfilecheck Warning: File `Indirect_VO_Report.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `Indirect_VO_Report.out':
-(rerunfilecheck)             Before: 6C04A600E595AA9CA5B13E6AA848B393;1380
-(rerunfilecheck)             After:  E2CF54069FF973CE34869202F05B8772;1471.
-
-LaTeX Warning: There were undefined references.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 552.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 552.
+Package rerunfilecheck Info: File `Indirect_VO_Report.out' has not changed.
+(rerunfilecheck)             Checksum: 0E9E672B93A8055825E0D3396EBCE8AC;1523.
 
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 550.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 552.
  ) 
 Here is how much of TeX's memory you used:
- 36232 strings out of 494805
- 723574 string characters out of 6178000
- 773205 words of memory out of 5000000
- 38942 multiletter control sequences out of 15000+600000
+ 36237 strings out of 494805
+ 723629 string characters out of 6178000
+ 772205 words of memory out of 5000000
+ 38945 multiletter control sequences out of 15000+600000
  541413 words of font info for 68 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 48i,14n,87p,10388b,754s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 48i,14n,87p,10388b,729s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texli
@@ -1749,10 +1734,10 @@ usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/t
 exmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on Indirect_VO_Report.pdf (14 pages, 1317859 bytes).
+Output written on Indirect_VO_Report.pdf (14 pages, 1319482 bytes).
 PDF statistics:
- 386 PDF objects out of 1000 (max. 8388607)
- 334 compressed objects within 4 object streams
- 109 named destinations out of 1000 (max. 500000)
- 234 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 397 PDF objects out of 1000 (max. 8388607)
+ 345 compressed objects within 4 object streams
+ 111 named destinations out of 1000 (max. 500000)
+ 250 words of extra memory for PDF output out of 10000 (max. 10000000)
 
