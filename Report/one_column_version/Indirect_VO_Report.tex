@@ -141,10 +141,10 @@ The following sections are structured as below: Section II presents some basic c
 
 
 \section{Basic Concepts}
-To understand the methods compared better, basic concepts of visual odometry, optical flow, key point detection and point matching are summarized in this section.
+To understand the methods compared better, basic concepts of optical flow, key point detection and point matching are summarized in this section.
 
-\subsection{Visual Odometry}
-Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus helps to build a map in real time around the robot to support the navigation \cite{vo}.
+%\subsection{Visual Odometry}
+%Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus helps to build a map in real time around the robot to support the navigation \cite{vo}.
 
 \subsection{Optical Flow} The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel between two consecutive frames. Two main types of optical flow calculation are the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method) \cite{lukas} \cite{horn}. These two methods have different assumptions but both calculates the optical flow through an optimization process.
 
@@ -303,16 +303,16 @@ The grid size is designed to be so such that it's divisible by the image height 
 
 The table \ref{tab:precision} shows how precision measured as RMSE changes when the maximum number of empty cells percentage changes. This variable is designed to control the maximum area of the image where there is no key point. When the empty area is too big, it means a lot of information from these areas is lost and the construction of the map could be not precise enough. When this happens, the next frame will be set as a key frame, and key point detection will be executed. 
 
-From the table \ref{tab:precision} it is clear that when the maximum number of empty cells percentage is too small or too large, the precision of the built map will decrease. This means, if detection of new key points is done too frequently, the constructed map has too many key points, which means too many noises, as the key point detection itself is also not 100\% precise. However, if key points are detected too sparsely, we would have too less key points to construct the map, which indicates that even some small noises could cause a big error in map construction and thus cause an increased RMSE value. In the best case, the RMSE will reach a similar value as the method without using optical flow. Figure \ref{fig:max_empty_cell} shows more experiment data in a visualized way.
+From the table \ref{tab:precision} it is clear that when the maximum number of empty cells percentage is too small or too large, the precision of the built map will decrease. This means, if detection of new key points is done too frequently, the constructed map has too many key points, which means too many noises, as the key point detection itself is also not 100\% precise. However, if key points are detected too sparsely, we would have too less key points to construct the map, which indicates that even some small noises could cause a big error in map construction and thus cause an increased RMSE value. In the best case, the RMSE will reach a similar value as the method without using optical flow. %Figure \ref{fig:max_empty_cell} shows more experiment data in a visualized way.
 
-\begin{figure}
+%\begin{figure}
 	
-	\centering
-	\includegraphics[width=0.7\textwidth]{img/max_num_empty_cell1.png}
-	\caption{Visualized version of RMSE change with different parameter of max. number of empty cells percentage}
-	\label{fig:max_empty_cell}
+%	\centering
+%	\includegraphics[width=0.7\textwidth]{img/max_num_empty_cell1.png}
+%	\caption{Visualized version of RMSE change with different parameter of max. number of empty cells percentage}
+%	\label{fig:max_empty_cell}
 	
-\end{figure}
+%\end{figure}
 
 
 \subsection{Execution Time}
@@ -410,9 +410,6 @@ Comparing the Figure \ref{fig:optical_flow_global} and Figure \ref{fig:key_point
 In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there are two gray lines representing the calibration board in the vertical direction. The two gray lines in Figure \ref{fig:optical_flow_desk} are closer than Figure \ref{fig:key_point_desk}, which means a better reconstructed map in this area. A real world picture of this area is offered in Figure \ref{fig:desk}.
 
 
-
-
-
 \begin{figure}[h!]
 \centering
 \subfloat[Optical flow]{
@@ -432,12 +429,6 @@ In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there
 \caption{Map constructed using optical flow or descriptor matching. Gray points represent detected key points.}
 \end{figure}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=0.5\textwidth]{img/desk.png}
-	\caption{The desk image in real world.}
-	\label{fig:desk}
-\end{figure}
 
 \section{Conclusion}
 Visual odometry is a very promising research direction, the applications of this technique is very useful in corresponding environment.
@@ -450,7 +441,7 @@ This paper reviews some basic concepts in visual odometry and exploits optical f
 
 \begin{thebibliography}{00}
 	
-	\bibitem{vo} H. Alismail, "Visual Odometry for Mobile Robots: Motion Estimation from Imagery," LAP LAMBERT Academic Publishing, 2010 
+	%\bibitem{vo} H. Alismail, "Visual Odometry for Mobile Robots: Motion Estimation from Imagery," LAP LAMBERT Academic Publishing, 2010 
  	
 	\bibitem{brief}M. Calonder, V. Lepetit, M. Ozuysal, T. Trzcinski, C. Strecha and P. Fua, "BRIEF: Computing a Local Binary Descriptor Very Fast," in IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 34, no. 7, pp. 1281-1298, July 2012.
 	
@@ -490,6 +481,13 @@ This paper reviews some basic concepts in visual odometry and exploits optical f
 
 \begin{appendices}
 	Our implementation lies all in repository under \emph{s0011}. Our implementation of optical flow visual odometry is in the branch \emph{project\_eval}. Visual odometry with descriptor matching (without optical flow) is in the branch \emph{exercise-05\_eval}. The report of this project is in the branch \emph{report} in folder ./Report/one\_column\_version. The presentation slide is in the branch \emph{project\_eval} root directory. The optical flow implemented by ourselves is in the branch project\_eval\_manual.
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.5\textwidth]{img/desk.png}
+		\caption{The desk image in real world.}
+		\label{fig:desk}
+	\end{figure}
 	
 	%\chapter{Some Appendix}
 	\begin{algorithm}[h]

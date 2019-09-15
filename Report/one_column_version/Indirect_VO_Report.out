@@ -1,23 +1,22 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
 \BOOKMARK [1][-]{section.2}{Basic Concepts}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{Visual Odometry}{section.2}% 3
-\BOOKMARK [2][-]{subsection.2.2}{Optical Flow}{section.2}% 4
-\BOOKMARK [2][-]{subsection.2.3}{Key Point Detection}{section.2}% 5
-\BOOKMARK [2][-]{subsection.2.4}{Point Matching}{section.2}% 6
-\BOOKMARK [1][-]{section.3}{Structure Design}{}% 7
-\BOOKMARK [2][-]{subsection.3.1}{First Key Frame}{section.3}% 8
-\BOOKMARK [2][-]{subsection.3.2}{Second or Later Key Frames}{section.3}% 9
-\BOOKMARK [2][-]{subsection.3.3}{Non-keyframes}{section.3}% 10
-\BOOKMARK [1][-]{section.4}{Strategies}{}% 11
-\BOOKMARK [2][-]{subsection.4.1}{Key Framing Strategies}{section.4}% 12
-\BOOKMARK [2][-]{subsection.4.2}{Key Points Detection Strategies}{section.4}% 13
-\BOOKMARK [1][-]{section.5}{Implementation}{}% 14
-\BOOKMARK [2][-]{subsection.5.1}{Lucas and Kanade Optical Flow with OpenCV}{section.5}% 15
-\BOOKMARK [2][-]{subsection.5.2}{Light Intensity Invariant Optical Flow with Manual Implementation}{section.5}% 16
-\BOOKMARK [2][-]{subsection.5.3}{Key Points Detection}{section.5}% 17
-\BOOKMARK [1][-]{section.6}{Evaluation}{}% 18
-\BOOKMARK [2][-]{subsection.6.1}{Precision}{section.6}% 19
-\BOOKMARK [2][-]{subsection.6.2}{Execution Time}{section.6}% 20
-\BOOKMARK [2][-]{subsection.6.3}{Visualization}{section.6}% 21
-\BOOKMARK [1][-]{section.7}{Conclusion}{}% 22
-\BOOKMARK [1][-]{section*.14}{Appendices}{}% 23
+\BOOKMARK [2][-]{subsection.2.1}{Optical Flow}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Key Point Detection}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Point Matching}{section.2}% 5
+\BOOKMARK [1][-]{section.3}{Structure Design}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{First Key Frame}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{Second or Later Key Frames}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.3}{Non-keyframes}{section.3}% 9
+\BOOKMARK [1][-]{section.4}{Strategies}{}% 10
+\BOOKMARK [2][-]{subsection.4.1}{Key Framing Strategies}{section.4}% 11
+\BOOKMARK [2][-]{subsection.4.2}{Key Points Detection Strategies}{section.4}% 12
+\BOOKMARK [1][-]{section.5}{Implementation}{}% 13
+\BOOKMARK [2][-]{subsection.5.1}{Lucas and Kanade Optical Flow with OpenCV}{section.5}% 14
+\BOOKMARK [2][-]{subsection.5.2}{Light Intensity Invariant Optical Flow with Manual Implementation}{section.5}% 15
+\BOOKMARK [2][-]{subsection.5.3}{Key Points Detection}{section.5}% 16
+\BOOKMARK [1][-]{section.6}{Evaluation}{}% 17
+\BOOKMARK [2][-]{subsection.6.1}{Precision}{section.6}% 18
+\BOOKMARK [2][-]{subsection.6.2}{Execution Time}{section.6}% 19
+\BOOKMARK [2][-]{subsection.6.3}{Visualization}{section.6}% 20
+\BOOKMARK [1][-]{section.7}{Conclusion}{}% 21
+\BOOKMARK [1][-]{section*.12}{Appendices}{}% 22
