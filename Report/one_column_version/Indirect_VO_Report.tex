@@ -256,7 +256,7 @@ We implement two version of key points detection function. They use different st
 \emph{add\_new\_keypoints\_from\_empty\_cells\_v2} detects key points in whole image and then deletes the key points in non-empty cells. The maximum number of key points is also given into the function.
 
 \section{Evaluation}
-This section evaluates the performance difference between the matching method using optical flow and the matching method fully relying on key point detection, as well as the performance of the optical flow method under different set of hyper parameters. The evaluation focuses on three main aspects: precision, execution time, and visualization.
+This section evaluates the performance difference of tracking method between using optical flow and descriptor matching, as well as the performance of the optical flow method under different set of hyper parameters. The evaluation focuses on three major aspects: precision, execution time, and visualization.
 
 As described in the previous section, a grid is used to segment the image frame and decide whether the next frame is a key frame. A basic set of parameters for the grid of our experiments is as the following table \ref{tab:basicset}:
 
