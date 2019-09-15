@@ -523,17 +523,16 @@ void OpticalFlowBetweenFrame_opencv_version(
   int stop = clock();
 
   start = clock();
-  // // opencv implementation of optical flow
-  //  cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
-  //                           errors, winSize, 5);  //, winSize, 5);
-  //  cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
-  //                           status_back, errors_back, winSize,
-  //                           5);  //, winSize, 5);
+  // opencv implementation of optical flow
+  cv::calcOpticalFlowPyrLK(imglt0_cv, imglt1_cv, points0, points1, status,
+                           errors);  //, winSize, 5);
+  cv::calcOpticalFlowPyrLK(imglt1_cv, imglt0_cv, points1, points0_back,
+                           status_back, errors_back);  //, winSize, 5);
 
-  // self implemented optical flow
-  OpticalFLowLK(imglt0_cv, imglt1_cv, points0, points1, status, errors, 5);
-  OpticalFLowLK(imglt1_cv, imglt0_cv, points1, points0_back, status_back,
-                errors_back, 5);
+  //  // self implemented optical flow
+  //  OpticalFLowLK(imglt0_cv, imglt1_cv, points0, points1, status, errors, 5);
+  //  OpticalFLowLK(imglt1_cv, imglt0_cv, points1, points0_back, status_back,
+  //                errors_back, 5);
   stop = clock();
   double duration = double(stop - start) / double(CLOCKS_PER_SEC);
   std::cout << "optical flow keypoints num: " << points0.size() << std::endl;
@@ -611,19 +610,15 @@ void OpticalFlowToRightFrame_opencv_version(
     pointsl.push_back(p_2d);
   }
 
-  // // opencv implemented optical flow
-  //  cv::calcOpticalFlowPyrLK(
-  //      imgl_cv, imgr_cv, pointsl, pointsr, status,
-  //      errors);  //                           winSize, 4);  // winSize, 4
-  //  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back,
-  //  status_back,
-  //                           errors_back);  //, winSize, 4);  // backward
-  //                           check
+  // opencv implemented optical flow
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                           errors_back);
 
-  // self implemented optical flows
-  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
-  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                errors_back);
+  //  // self implemented optical flows
+  //  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  //  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+  //                errors_back);
 
   kdr.corners.clear();
   md_feat2track_right.matches.clear();
@@ -701,16 +696,15 @@ void OpticalFlowFirstStereoPair_opencv_version(
     pointsl.push_back(p_2d);
   }
 
-  // // opencv implemented optical flow
-  //  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status,
-  //  errors);
-  //  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back,
-  //  status_back, errors_back);
+  // opencv implemented optical flow
+  cv::calcOpticalFlowPyrLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  cv::calcOpticalFlowPyrLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+                           errors_back);
 
-  // self implemented optical flow
-  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
-  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
-                errors_back);
+  //  // self implemented optical flow
+  //  OpticalFLowLK(imgl_cv, imgr_cv, pointsl, pointsr, status, errors);
+  //  OpticalFLowLK(imgr_cv, imgl_cv, pointsr, pointsl_back, status_back,
+  //                errors_back);
   kdr.corners.clear();
   int j = 0;
 
@@ -731,11 +725,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
       }
     }
   }
-  cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
-  cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
-  cv::imshow("left", imgl_cv);
-  cv::imshow("right", imgr_cv);
-  cv::waitKey();
+
 }  // namespace visnav
 
 // TODO PROJECT: make grid in the image and store the top left corner and bottom
