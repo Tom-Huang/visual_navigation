@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  15 SEP 2019 19:42
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  15 SEP 2019 20:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -48,8 +48,8 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2014/09/29 v1.4h Standard LaTeX document class
-(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
-File: size10.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+(/usr/share/texlive/texmf-dist/tex/latex/base/size11.clo
+File: size11.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count82
 \c@section=\count83
@@ -1346,6 +1346,9 @@ File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
 \c@@todonotes@numberoftodonotes=\count386
 )
+(/usr/share/texlive/texmf-dist/tex/latex/setspace/setspace.sty
+Package: setspace 2011/12/19 v6.7a set line spacing
+)
 (./Indirect_VO_Report.aux
 
 LaTeX Warning: Label `brief' multiply defined.
@@ -1353,20 +1356,20 @@ LaTeX Warning: Label `brief' multiply defined.
 )
 \openout1 = `Indirect_VO_Report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 96.
+LaTeX Font Info:    ... okay on input line 96.
  (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count387
@@ -1398,7 +1401,7 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \AtBeginShipoutBox=\box103
-Package hyperref Info: Link coloring ON on input line 93.
+Package hyperref Info: Link coloring ON on input line 96.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -1408,9 +1411,9 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count393
 )
-LaTeX Info: Redefining \ref on input line 93.
-LaTeX Info: Redefining \pageref on input line 93.
-LaTeX Info: Redefining \nameref on input line 93.
+LaTeX Info: Redefining \ref on input line 96.
+LaTeX Info: Redefining \pageref on input line 96.
+LaTeX Info: Redefining \nameref on input line 96.
 
 (./Indirect_VO_Report.out) (./Indirect_VO_Report.out)
 \@outlinefile=\write5
@@ -1433,18 +1436,18 @@ LaTeX Info: Redefining \nameref on input line 93.
 * \paperwidth=614.295pt
 * \paperheight=794.96999pt
 * \textwidth=412.56496pt
-* \textheight=583.34172pt
+* \textheight=572.74171pt
 * \oddsidemargin=28.59503pt
 * \evensidemargin=28.59503pt
 * \topmargin=6.54414pt
-* \headheight=12.0pt
-* \headsep=16.0pt
-* \topskip=10.0pt
-* \footskip=26.0pt
+* \headheight=13.6pt
+* \headsep=23.0pt
+* \topskip=11.0pt
+* \footskip=28.0pt
 * \marginparwidth=96.0pt
-* \marginparsep=11.0pt
+* \marginparsep=10.0pt
 * \columnsep=10.0pt
-* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
 * \hoffset=0.0pt
 * \voffset=0.0pt
 * \mag=1000
@@ -1456,7 +1459,7 @@ LaTeX Info: Redefining \nameref on input line 93.
 
 Package lastpage Info: Please have a look at the pageslts package at
 (lastpage)             https://www.ctan.org/pkg/pageslts
-(lastpage)             ! on input line 93.
+(lastpage)             ! on input line 96.
 ABD: EveryShipout initializing macros
 (/usr/share/texlive/texmf-dist/tex/latex/translator/translator-basic-dictionary
 -English.dict
@@ -1473,223 +1476,235 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: subfig package v1.3 is loaded.
 Package caption Info: End \AtBeginDocument code.
 \c__siunitx_mathsf_int=\count395
-LaTeX Font Info:    Try loading font information for U+lasy on input line 93.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 96.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-LaTeX Font Info:    Try loading font information for U+msa on input line 93.
+LaTeX Font Info:    Try loading font information for U+msa on input line 96.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 93.
+LaTeX Font Info:    Try loading font information for U+msb on input line 96.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 \c__siunitx_mathtt_int=\count396
 
-(./Indirect_VO_Report.toc)
+(./Indirect_VO_Report.toc [1
+Non-PDF special ignored!
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}])
 \tf@toc=\write6
 \openout6 = `Indirect_VO_Report.toc'.
 
- [1
-Non-PDF special ignored!
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-[2] [3]
-<img/flowchart.png, id=178, 596.2275pt x 715.67375pt>
+[2] [3] [4]
+<img/flowchart.png, id=177, 596.2275pt x 715.67375pt>
 File: img/flowchart.png Graphic file (type png)
 <use img/flowchart.png>
-Package pdftex.def Info: img/flowchart.png  used on input line 192.
+Package pdftex.def Info: img/flowchart.png  used on input line 195.
 (pdftex.def)             Requested size: 288.7942pt x 346.65361pt.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[4] [5 <./img/flowchart.png>]
-<img/subimage_keypoint_detection_129.png, id=190, 805.0075pt x 511.9125pt>
+ [5 <./img/flowchart.png>]
+<img/subimage_keypoint_detection_129.png, id=184, 805.0075pt x 511.9125pt>
 File: img/subimage_keypoint_detection_129.png Graphic file (type png)
 <use img/subimage_keypoint_detection_129.png>
 Package pdftex.def Info: img/subimage_keypoint_detection_129.png  used on input
- line 216.
+ line 217.
 (pdftex.def)             Requested size: 202.15909pt x 128.55583pt.
-<img/whole_image_keypoints_detection_129.png, id=191, 803.0pt x 511.9125pt>
+<img/whole_image_keypoints_detection_129.png, id=185, 803.0pt x 511.9125pt>
 File: img/whole_image_keypoints_detection_129.png Graphic file (type png)
 <use img/whole_image_keypoints_detection_129.png>
 Package pdftex.def Info: img/whole_image_keypoints_detection_129.png  used on i
-nput line 223.
+nput line 224.
 (pdftex.def)             Requested size: 202.56828pt x 129.13385pt.
 
-Overfull \hbox (5.49573pt too wide) in paragraph at lines 216--224
+Overfull \hbox (6.76239pt too wide) in paragraph at lines 217--225
  [][][][] 
  []
 
-[6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_det
-ection_129.png>]
+
+Underfull \vbox (badness 7116) has occurred while \output is active []
+
+ [6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_de
+tection_129.png>]
+Overfull \hbox (13.06882pt too wide) in paragraph at lines 240--241
+\OT1/cmr/m/it/10.95 Op-ti-calFlow-Be-tween-Frame[]opencv[]version\OT1/cmr/m/n/1
+0.95 , \OT1/cmr/m/it/10.95 Op-ti-calFlow-ToRight-Frame[]opencv[]version \OT1/cm
+r/m/n/10.95 and
+ []
+
+
+Underfull \vbox (badness 7558) has occurred while \output is active []
+
+ [7]
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
-Missing character: There is no ‚ in font cmr7!
-Missing character: There is no Ä in font cmr7!
-Missing character: There is no â in font cmr7!
-Missing character: There is no ‚ in font cmr5!
-Missing character: There is no Ä in font cmr5!
-Missing character: There is no â in font cmr5!
+Missing character: There is no ‚ in font cmr8!
+Missing character: There is no Ä in font cmr8!
+Missing character: There is no â in font cmr8!
+Missing character: There is no ‚ in font cmr6!
+Missing character: There is no Ä in font cmr6!
+Missing character: There is no â in font cmr6!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
-Missing character: There is no ‚ in font cmr7!
-Missing character: There is no Ä in font cmr7!
-Missing character: There is no â in font cmr7!
-Missing character: There is no ‚ in font cmr5!
-Missing character: There is no Ä in font cmr5!
-Missing character: There is no â in font cmr5!
+Missing character: There is no ‚ in font cmr8!
+Missing character: There is no Ä in font cmr8!
+Missing character: There is no â in font cmr8!
+Missing character: There is no ‚ in font cmr6!
+Missing character: There is no Ä in font cmr6!
+Missing character: There is no â in font cmr6!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
-Missing character: There is no ‚ in font cmr7!
-Missing character: There is no Ä in font cmr7!
-Missing character: There is no â in font cmr7!
-Missing character: There is no ‚ in font cmr5!
-Missing character: There is no Ä in font cmr5!
-Missing character: There is no â in font cmr5!
+Missing character: There is no ‚ in font cmr8!
+Missing character: There is no Ä in font cmr8!
+Missing character: There is no â in font cmr8!
+Missing character: There is no ‚ in font cmr6!
+Missing character: There is no Ä in font cmr6!
+Missing character: There is no â in font cmr6!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no â in font cmr10!
-Missing character: There is no ‚ in font cmr7!
-Missing character: There is no Ä in font cmr7!
-Missing character: There is no â in font cmr7!
-Missing character: There is no ‚ in font cmr5!
-Missing character: There is no Ä in font cmr5!
-Missing character: There is no â in font cmr5!
- [7] [8]
-<img/max_num_empty_cell1.png, id=220, 462.09pt x 346.02pt>
+Missing character: There is no ‚ in font cmr8!
+Missing character: There is no Ä in font cmr8!
+Missing character: There is no â in font cmr8!
+Missing character: There is no ‚ in font cmr6!
+Missing character: There is no Ä in font cmr6!
+Missing character: There is no â in font cmr6!
+
+[8]
+<img/max_num_empty_cell1.png, id=212, 462.09pt x 346.02pt>
 File: img/max_num_empty_cell1.png Graphic file (type png)
 <use img/max_num_empty_cell1.png>
-Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 317.
+Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 311.
 (pdftex.def)             Requested size: 288.7942pt x 216.26196pt.
-
-Underfull \vbox (badness 3343) has occurred while \output is active []
-
- [9 <./img/max_num_empty_cell1.png>] [10]
-<img/optical_flow_global.png, id=239, 518.6878pt x 324.46219pt>
+ [9] [10 <./img/max_num_empty_cell1.png>] [11]
+<img/optical_flow_global.png, id=236, 518.6878pt x 324.46219pt>
 File: img/optical_flow_global.png Graphic file (type png)
 <use img/optical_flow_global.png>
-Package pdftex.def Info: img/optical_flow_global.png  used on input line 399.
+Package pdftex.def Info: img/optical_flow_global.png  used on input line 393.
 (pdftex.def)             Requested size: 193.90594pt x 121.29668pt.
-<img/key_point_global.png, id=240, 465.23813pt x 298.86656pt>
+<img/key_point_global.png, id=237, 465.23813pt x 298.86656pt>
 File: img/key_point_global.png Graphic file (type png)
 <use img/key_point_global.png>
-Package pdftex.def Info: img/key_point_global.png  used on input line 407.
+Package pdftex.def Info: img/key_point_global.png  used on input line 401.
 (pdftex.def)             Requested size: 188.81795pt x 121.29668pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 399--408
+Overfull \hbox (13.65318pt too wide) in paragraph at lines 393--402
  [][][][] 
  []
 
-[11 <./img/optical_flow_global.png> <./img/key_point_global.png>]
-<img/optical_flow_desk.png, id=259, 347.04657pt x 281.55188pt>
+[12 <./img/optical_flow_global.png> <./img/key_point_global.png>]
+<img/optical_flow_desk.png, id=256, 347.04657pt x 281.55188pt>
 File: img/optical_flow_desk.png Graphic file (type png)
 <use img/optical_flow_desk.png>
-Package pdftex.def Info: img/optical_flow_desk.png  used on input line 430.
+Package pdftex.def Info: img/optical_flow_desk.png  used on input line 424.
 (pdftex.def)             Requested size: 174.42838pt x 141.51074pt.
-<img/key_point_desk.png, id=260, 350.81062pt x 278.54062pt>
+<img/key_point_desk.png, id=257, 350.81062pt x 278.54062pt>
 File: img/key_point_desk.png Graphic file (type png)
 <use img/key_point_desk.png>
-Package pdftex.def Info: img/key_point_desk.png  used on input line 437.
+Package pdftex.def Info: img/key_point_desk.png  used on input line 431.
 (pdftex.def)             Requested size: 178.23122pt x 141.51074pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 430--438
+Overfull \hbox (13.65318pt too wide) in paragraph at lines 424--432
  [][][][] 
  []
 
-<img/desk.png, id=261, 536.0025pt x 341.77687pt>
+<img/desk.png, id=258, 536.0025pt x 341.77687pt>
 File: img/desk.png Graphic file (type png)
 <use img/desk.png>
-Package pdftex.def Info: img/desk.png  used on input line 443.
+Package pdftex.def Info: img/desk.png  used on input line 437.
 (pdftex.def)             Requested size: 206.28247pt x 131.52974pt.
-[12 <./img/optical_flow_desk.png> <./img/key_point_desk.png> <./img/desk.png>]
-Missing character: There is no ‚ in font cmr9!
-Missing character: There is no Ä in font cmr9!
-Missing character: There is no ù in font cmr9!
-Missing character: There is no ‚ in font cmr9!
-Missing character: There is no Ä in font cmr9!
-Missing character: There is no ì in font cmr9!
-Missing character: There is no ‚ in font cmr9!
-Missing character: There is no Ä in font cmr9!
-Missing character: There is no ú in font cmr9!
-Missing character: There is no ‚ in font cmr9!
-Missing character: There is no Ä in font cmr9!
-Missing character: There is no ù in font cmr9!
-Missing character: There is no ‚ in font cmr9!
-Missing character: There is no Ä in font cmr9!
-Missing character: There is no ì in font cmr9!
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 502.
 
-[13pdfTeX warning (ext4): destination with the same identifier (name{cite.brief
-}) has been already used, duplicate ignored
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [13 <./img/optical_flow_desk.png> <./img/key_point_desk.png> <./img/desk.png>]
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ù in font cmr10!
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ì in font cmr10!
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ú in font cmr10!
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ù in font cmr10!
+Missing character: There is no ‚ in font cmr10!
+Missing character: There is no Ä in font cmr10!
+Missing character: There is no ì in font cmr10!
+ [14pdfTeX warning (ext4): destination with the same identifier (name{cite.brie
+f}) has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.547 	\end{algorithm}
-                      ] 
+l.482 
+      ]
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 496.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
 AED: lastpage setting LastPage
-[14]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 558.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 558.
+[15] [16]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 552.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 552.
  (./Indirect_VO_Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 558.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 558.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 552.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 552.
 Package rerunfilecheck Info: File `Indirect_VO_Report.out' has not changed.
-(rerunfilecheck)             Checksum: 4E0F83B47744872E5956D153C3F29976;1519.
+(rerunfilecheck)             Checksum: B702D00B5FA72AB5A533C9D6DDEAD8DD;1456.
 
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 558.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 552.
  ) 
 Here is how much of TeX's memory you used:
- 36335 strings out of 494805
- 725052 string characters out of 6178000
- 773589 words of memory out of 5000000
- 39039 multiletter control sequences out of 15000+600000
- 542019 words of font info for 70 fonts, out of 8000000 for 9000
+ 36369 strings out of 494805
+ 725711 string characters out of 6178000
+ 767222 words of memory out of 5000000
+ 39071 multiletter control sequences out of 15000+600000
+ 544139 words of font info for 79 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 48i,14n,87p,10388b,943s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 48i,14n,87p,10388b,895s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></
-usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sh
-are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on Indirect_VO_Report.pdf (14 pages, 1318640 bytes).
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy
+10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/
+share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on Indirect_VO_Report.pdf (16 pages, 1286580 bytes).
 PDF statistics:
- 401 PDF objects out of 1000 (max. 8388607)
- 349 compressed objects within 4 object streams
- 112 named destinations out of 1000 (max. 500000)
- 250 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 396 PDF objects out of 1000 (max. 8388607)
+ 344 compressed objects within 4 object streams
+ 113 named destinations out of 1000 (max. 500000)
+ 242 words of extra memory for PDF output out of 10000 (max. 10000000)
 
