@@ -731,11 +731,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
       }
     }
   }
-  cv::namedWindow("left", cv::WINDOW_AUTOSIZE);
-  cv::namedWindow("right", cv::WINDOW_AUTOSIZE);
-  cv::imshow("left", imgl_cv);
-  cv::imshow("right", imgr_cv);
-  cv::waitKey();
+
 }  // namespace visnav
 
 // TODO PROJECT: make grid in the image and store the top left corner and bottom
