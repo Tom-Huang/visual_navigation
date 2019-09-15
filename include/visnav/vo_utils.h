@@ -731,8 +731,7 @@ void OpticalFlowFirstStereoPair_opencv_version(
       }
     }
   }
-
-}  // namespace visnav
+}
 
 // TODO PROJECT: make grid in the image and store the top left corner and bottom
 // right corner of each cell in a Cell object. The rnum and cnum should be
