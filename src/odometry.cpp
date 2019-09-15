@@ -1197,7 +1197,7 @@ bool next_step() {
 
       start = clock();
       OpticalFlowFirstStereoPair_opencv_version(current_frame, imgl, imgr, kdl,
-                                                kdr, landmarks, md_stereo);
+                                                kdr, md_stereo);
       stop = clock();
       duration = double(stop - start) / double(CLOCKS_PER_SEC);
       stereo_match_time += duration;
