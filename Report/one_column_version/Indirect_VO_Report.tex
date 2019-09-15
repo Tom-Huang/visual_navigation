@@ -10,6 +10,8 @@
 %\documentclass[a4paper]{easychair}
 %\documentclass[letterpaper]{easychair}
 
+\usepackage[toc,page]{appendix}
+
 \usepackage{doc}
 \usepackage{indentfirst}
 % Sample optional packages to use
@@ -69,10 +71,8 @@ Chenguang Huang
 
 % Institutes for affiliations are also joined by \and,
 \institute{
-	Technische Universit\"at M\"unchen, Fakult\"at f\"ur Informatik,
-	Lehrstuhl f\"ur Robotik und Echtzeitsysteme,\\
-	Boltzmannstra{\ss}e 3, 85748, 
-	Garching, Germany.
+	Technische Universit\"at M\"unchen, 
+	Chair of Computer Vision and Artificial Intelligence
 	\email{chenguang.huang@tum.de}
     \email{andong.tan@tum.de}
  }
@@ -95,8 +95,7 @@ Chenguang Huang
 \maketitle
 
 	\begin{abstract}
-		   With the increasing need of robotics application in many different domains like autonomous driving and factory cooperative robots, the navigation becomes an important topic. The camera, at the same time, is nowadays a type of cheap sensor, which is powerful in extracting useful information from visual input. Therefore, vision based navigation turns out to be an effective solution. In vision based navigation, visual odometry is an important module. This paper presents the implementation details of visual odometry using the method of optical flow. The novel point of this implementation is that we segment the image using grids and use the number of empty cells to decide key frames. Besides, we evaluate the influence of this parameter and compare this implementation with another implementation which fully depends on descriptor based key point matching in visual odometry.
-		    
+		   With the increasing need of robotic application in many different domains like autonomous driving and factory cooperative robots, the navigation becomes an important topic. The camera, at the same time, is nowadays a type of cheap sensor, which is powerful in extracting useful information from visual input. Therefore, vision based navigation turns out to be an effective solution. In vision based navigation, visual odometry is an important module. This paper introduces the implementation details of visual odometry using the method of optical flow and compares it with the method without optical flow. A manual implementation of optical flow is also presented. One novel point of the method with optical flow is that we segment the image using grids and use the number of empty cells to decide key frames. The influences of related parameters are evaluated in the end.
 	\end{abstract}
 
 % The table of contents below is added for your convenience. Please do not use
@@ -129,20 +128,20 @@ Chenguang Huang
 
 
 \section{Introduction}
-Computer vision related tasks in robotics are attracting more and more attention. One typical task is the visual odometry. It is used widely in applications which require the depth information of objects without directly relying on distance measurement sensors like Lidar. Besides, many applications use visual odometry to help with the motion planning of some specific agent. Therefore, this function could cause critical problems if it is not reliable. To ensure the safety of the agent, a common choice is to use mathematically provable methods to realize the function rather than using currently unexplainable techniques like deep learning. Thus it worths looking into the implementation details of visual odometry using traditional explainable methods.
+Computer vision related tasks in robotics are attracting more and more attention. One typical task is the visual odometry. It is used widely in applications which require the depth information of objects without directly relying on distance measurement sensors like Lidar. Besides, many applications use visual odometry to help with the motion planning of some specific agent. Therefore, visual odometry could cause critical problems if it is not reliable. To ensure the safety of the agent, a common choice is to use mathematically provable methods to realize the function rather than using currently unexplainable techniques like deep learning. Thus it worths looking into the implementation details of visual odometry using traditional explainable methods.
 
-To estimate the depth of some specific object, at least two images are needed if there is no prior assumption in how the world is constructed. However, before estimating the depth through triangulation, corresponding points in two images which describes the same 3D point should be found. The first way to achieve this is doing key point detection in both images, and finding the matching point pairs through key point descriptor similarity comparison. The second way to achieve this is the optical flow, which computes an estimated position of a pixel in the second image according its position in the first image. The above two ways are also suitable to find the point matching pairs between consecutive frames. 
+To estimate the depth of some specific object, at least two images are needed if there is no prior assumption in how the world is constructed. However, before estimating the depth through triangulation, corresponding points in at least two images which describe the same 3D point should be found. The first way to achieve this is doing key point detection in both images, and finding the matching point pairs through key point descriptor similarity comparison. The second way to achieve this is the optical flow, which computes an estimated position of a pixel in the second image according to two raw image inputs and its position in the first image. The above two ways are suitable to find the point matching pairs between consecutive frames. 
 
 This paper compares the above two methods based on a two-camera system (left and right camera).
 
-The following sections are structured as below: Section II presents some basic concepts used in the two methods. Section III describes the pipeline of the two methods. Different strategies used in the implementation are summarized in section IV. Section V shows the implementation details. The results are evaluated in Section VI, and Section VII concludes the work.
+The following sections are structured as below: Section II presents some basic concepts used in the two methods. Section III describes the pipeline of the two methods. Different strategies used in the implementation are summarized in section IV. Section V shows the implementation details of the method using optical flow as well as the manual implementation of optical flow. The results are evaluated in Section VI, and Section VII concludes the work.
 
 
 \section{Basic Concepts}
 To understand the methods compared better, basic concepts of visual odometry, optical flow, key point detection and point matching are summarized in this section.
 
 \subsection{Visual Odometry}
-Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus helps to build a map in real time around the robot to support the navigation.
+Odometry means the estimation of the change in position over time. And visual odometry refers to the estimation of the motion of a camera in real time through sequential images. In the context of vision based navigation, where cameras are often integrated in the robot, visual odometry can be used to estimate the ego motion of the mobile robot, and thus helps to build a map in real time around the robot to support the navigation \cite{vo}.
 
 \subsection{Optical Flow} The optical flow is apparent 2D motion which is observable between consecutive images. It can also be understood as pixel-wise motion estimation, because the optical flow calculates the motion of a specific pixel between two consecutive frames. Two main types of optical flow calculation are the Lukas \& Kanade method (indirect method) and Horn \& Schunck method (variational method) \cite{lukas} \cite{horn}. These two methods have different assumptions but both calculates the optical flow through an optimization process.
 
@@ -160,10 +159,10 @@ In contrast, the Horn \& Schunck method assumes (i) the brightness of a specific
 E(u,v) = \int\int[(I_xu + I_yv + I_t)^2+\alpha^2(||\Delta u ||^2 + ||\Delta v ||^2)]dxdy
 \end{equation} 
 \noindent
-where $I_x$ and $T_y$ are the derivatives of brightness with respect to x and y axis, respectively. $u$ and $v$ are velocity in vertical and parallel directions. In the end, optical flow is obtained through solving for $u$ and $v$ variable \cite{horn}.		
+where $I_x$ and $T_y$ are the derivatives of brightness with respect to x and y axis, respectively. $u$ and $v$ are velocity in vertical and parallel directions. In the end, optical flow is obtained through solving for $u$ and $v$ variables \cite{horn}.		
 
 \subsection{Key Point Detection}
-The real environment is continuous and complex. To successfully navigate in such en environment, some key information is more important than the others. In the image, one kind of typical key information is the corner point. This can be detected through the anaysis of the gradient of the image \cite{gradient}. Typical methods include Foerstner and Harris detector \cite{detector}. More recently, detectors like BRIEF and Shi-Tomasi are quite popular \cite{brief} \cite{shitomasi}, and have many extended versions. In our experiment, key point detection is used to extract important information from the image frames to build the map. The key points construct the landmarks and their corresponding observations.
+The real environment is continuous and complex. To successfully navigate in such en environment with a reasonable computation load, key information should be focused on. In the image, one kind of typical key information is the corner point. This can be detected through the anaysis of the gradient of the image \cite{gradient}. Typical methods include Foerstner and Harris detector \cite{detector}. More recently, detectors like BRIEF and Shi-Tomasi are quite popular \cite{brief} \cite{shitomasi}, and have many extended versions. In our experiments, key points construct the landmarks and their corresponding observations.
 
 \subsection{Point Matching}
 To construct a 3D map, the matching relationship of points between frames are important, otherwise it will cause big error in the triangulation and possibly make the optimization process in determining the 3D position of a landmark unable to converge.
@@ -176,18 +175,17 @@ One method to compute the descriptor is called the ORB descriptor \cite{orb}. OR
 %(finished)我感觉这里不能默认读者已经知道了exercise 5 在干什么，直接说our pipelie is different in 3cases. 不然paper看起来很奇怪，还是得大概介绍一下区别 
 
 
-Our pipeline assumes that the stereo cameras have already been calibrated, which means intrinsic matrix and relative transformation between two camera are already known. To make the pipeline easy to understand, we will demonstrate our pipeline in three different conditions: first key frame, second or later key frames and non-keyframes. The criteria of deciding whether a certain frame is key frame will also be discussed later.
+Our pipeline assumes that the stereo cameras have already been calibrated, which means that intrinsic matrix and relative transformation between two camera are already known. To make the pipeline easy to understand, the pipeline is demonstrated in three different conditions: first key frame, second or later key frames and non-keyframes. The criteria of deciding whether a certain frame is a key frame will also be discussed later. A general pipeline is shown in the Figure \ref{fig:pipeline structure}.
 
-\subsection{First key frame}
-In the first key frame (often also the first frame), we firstly use Shi-Tomasi method to detect key points in the image of left camera and use optical flow to acquire the corresponding key points in the image from right camera. To increase the correctness of the result of optical flow, we perform optical flow backward and see whether the result key points are adequately close to input key points in the left image. Moreover, to filter out more outliers, we use the relative transformation acquired from calibration to calculate the essential matrix and perform epipolar constraint check. In the next step, we localize the camera by initializing the first pose of left camera with identity matrix. Finally, we use triangulation rule to calculate the position of landmarks, the 3 dimensional coordinates of key points in world coordinate frame. 
 
-\subsection{Second or later key frames}
-To simplify the description of this part, we denote the image from left camera as "left image" and image from right camera as "right image". If a frame is a key frame but the second or later key frame, we firstly use optical flow to acquire corresponding key points from last left image to current left image. Also a backward check is performed. Later we make a grid on the current left image and detect empty cells in the grid which do not contain key points. In the next step, we use Shi-Tomasi method to detect new key points inside these empty cells. In this period, we have two kinds of key points in the left image. One type includes key points acquired with optical flow from last frame, which we will call old key points. The other type includes newly detected key points with Shi-Tomasi method in empty cells, which we will call new key points. Given these key points in the left image, we perform optical flow from left image to right image and backward check (perform optical flow back from right image to left image) to filter out noisy points. And then we use epipolar constraint to find inliers. Later on we use RANSAC to localize camera with only inliers of old key points in the left image. Finally we use triangulation to calculate new landmarks with newly detected key points and add key points calculated through optical flow to old landmarks.
+\subsection{First Key Frame}
+In the first key frame (often also the first frame), we firstly use Shi-Tomasi method to detect key points in the image of left camera and use optical flow to acquire the corresponding key points in the image from right camera. To increase the correctness of the result of optical flow, optical flow is performed backward. If the resulting key points are adequately close to original input key points in the left image, this pair of points is considered as valid. Moreover, to filter out more outliers, the relative transformation acquired from calibration is used to calculate the essential matrix and the epipolar constraint check is performed. In the next step, the camera is localized by initializing the first pose of left camera with identity matrix. Finally, the triangulation rule is used to calculate the 3D position of landmarks in world coordinate frame. 
+
+\subsection{Second or Later Key Frames}
+To simplify the description of this part, we denote the image from left camera as "left image" and image from right camera as "right image". For second or later key frames, firstly optical flow is used to acquire corresponding key points from last left image to current left image. Also a backward check is performed as in the first key frame. Later a grid on the current left image is made and empty cells in the grid which do not contain key points are detected. In the next step, the Shi-Tomasi method is used to detect new key points inside these empty cells. In this period, we have two kinds of key points in the left image. One type includes key points acquired with optical flow from last frame, which we will call old key points. The other type includes newly detected key points with Shi-Tomasi method in empty cells, which we will call new key points. Given these key points in the left image, we perform optical flow from left image to right image and backward check (perform optical flow back from right image to left image) to filter out noisy points. And then we use epipolar constraint to find inliers. Later on we use Random Sample Consensus (RANSAC) algorithm to localize camera with only inliers of old key points (calculated from last frame) in the left image. Finally we use triangulation to calculate new landmarks with newly detected key points and add key points calculated through optical flow to observations of old landmarks.
 
 \subsection{Non-keyframes}
-For non-key frames, we firstly perform frame to frame optical flow and make grid as in the second case above. But instead of detecting key points in empty cells, here we only count the number of empty cells which we will use as one of the criteria to determint key frame. Later we localize camera with RANSAC.\\
-
-The general pipeline is shown in the Figure \ref{fig:pipeline structure}.
+For non-key frames, frame to frame optical flow is performed first and the grid is made as in the second case above. But instead of detecting key points in empty cells, here only the number of empty cells is counted, which will be used as one of the criteria to determine key frames. Later camera is located with the RANSAC algorithm.\\
 
 \begin{figure}[h!]
 	\centering
@@ -204,9 +202,9 @@ This section describes the detailed strategy used in the implementation of indir
 %(finished)另外最好有一个关于optical flow 怎么实现的段落？比如我们调了opencv 的包，用了0.01的参数，之类的？毕竟标题是visual odometry with optical flow, 一直没有提optical flow 怎么实现的，implementaion里应该提一下
 
 \subsection{Key Framing Strategies}
-The criteria of key framing is of significant importance. It will affect the accuracy and efficiency of our algorithm1. On one hand, if one frame can be easily regarded as a key frame, the interval between key frames will become very small. So the optimization will be limited in a small range, focusing too much on local features instead of a global view. In the meantime, more key frames means more optimization time, which makes the algorithm inefficient. On the other hand, if the key framing criterion is too strict so that only very few frames can be selected as key frames, the pipeline is more likely to collapse during the run. This is because we only detect new key points in key frames and if the interval between key frames is too big, the base line will be too large for optical flow to find correspondences through all the frames. Once there are not enough correspondences, the camera localization will become very unstable and the algorithm will fail.\\
+The criteria of key framing is of significant importance. It will affect the accuracy and efficiency of our algorithm. On one hand, if one frame can be easily regarded as a key frame, the interval between key frames will become very small. So the optimization will be limited in a small range, focusing too much on local features instead of a global view. In the meantime, more key frames means more optimization time, which makes the algorithm inefficient. On the other hand, if the key framing criterion is too strict so that only very few frames can be selected as key frames, the pipeline is more likely to collapse during the run. This is because we only detect new key points in key frames and if the interval between key frames is too big, the base line will be too large for optical flow to find correspondences through all the frames. Once there are not enough correspondences, the camera localization will become very unstable and the algorithm will fail.\\
 
-In our pipeline we use two criteria to decide whether the next frame is a key frame. The first criterion is the number of inliers. One necessary step in each time frame is the camera localization. By using RANSAC method, a certain number of inliers are selected for determining the pose of camera. To guarantee there are enough key points for localization, we set a threshold for the number of inliers. If the number of inliers is lower than the threshold, we will set the next frame as a key frame to detect more points. The second criterion is the number of empty cells. As stated in above section, for every non-keyframe a grid is made on the image recorded by the left camera and the number of empty cells will be recorded. A large empty cells number means the feature points calculated by optical flow gather in a small area of the image, indicating that the existing landmarks are leaving observation view. Once the empty cells number exceeds a threshold, we must set the next frame as key frame to detect new key points. In this way, the key points in the image will be adjusted from time to time to distribute relatively uniformly, making localization more stable.
+In our pipeline two criteria are used to decide whether the next frame is a key frame. The first criterion is the number of inliers. One necessary step in each time frame is the camera localization. By using RANSAC method, a certain number of inliers are selected for determining the pose of camera. To guarantee there are enough key points for localization, a threshold is set for the number of inliers. If the number of inliers is lower than the threshold, the next frame is set as a key frame to detect more points. The second criterion is the number of empty cells. As stated in above section, for every non-keyframe a grid is made on the image recorded by the left camera and the number of empty cells will be counted. A large empty cells number means the feature points calculated by optical flow gather in a small area of the image, indicating that the existing landmarks are leaving the current observation view. Once the empty cells number exceeds a threshold, the next frame is set as a key frame to enable detection of new key points. In this way, the key points in the image will be adjusted from time to time to distribute relatively uniformly, making localization more stable.
 
 \begin{figure}[h!]
 \centering
@@ -230,80 +228,33 @@ In our pipeline we use two criteria to decide whether the next frame is a key fr
 
 
 \subsection{Key Points Detection Strategies}
-In every key frame, we have to detect key points in empty cells. We try two different implementations of key points detection in our pipeline. In the first method, we extract empty cells as a series of subimages and detect the best one key point (if at least one key point is detected) in each sub-image separately. In the second method, we detect key points in the whole image, choose the best key points (max. 1500) and then only keep key points in empty cells.  %The maximum limit key points detection in the first method is set to 1500 per image. In the second method, it is set to 1 per subimage. 
-The difference between these two key point detection methods is shown in Figure \ref{fig:whole_image}. We can easily see that the number of detected key points in the first method is larger than the second method. More importantly, the distribution of key points in the first method is more uniform. To quantify the influence of key point detection methods, we run the whole pipeline on euroc dataset and compare the root mean square error of camera trajectories. Finally, we find that the first method performs slightly better than the second method.
+In every key frame, key points are detected in empty cells. We try two different implementations of key points detection in our pipeline. In the first implementation, empty cells are extracted as a series of subimages and the best one key point is detected (if at least one key point can be detected) in each sub-image separately. In the second method, key points are detected in the whole image, the best key points (max. 1500) are chosen and only key points in empty cells are kept.  %The maximum limit key points detection in the first method is set to 1500 per image. In the second method, it is set to 1 per subimage. 
+The difference between these two key point detection methods is shown in Figure \ref{fig:whole_image}. It is easy to see that the number of detected key points in the first implementation is larger than the second implementation. More importantly, the distribution of key points in the first implementation is more uniform. To quantify the influence of key point detection methods, the whole pipeline is run on euroc dataset and the root mean square error (RMSE) of camera trajectories are compared. Finally, it is found that the first implementation performs slightly better than the second implementation.
 
 
 
 
 \section{Implementation}
-\subsection{Lucas and Kanade optical flow with OpenCV}
-To track the key points between different frames, we implement three functions: \emph{OpticalFlowBetweenFrame\_opencv\_version}, \emph{OpticalFlowToRightFrame\_opencv\_version} and \emph{OpticalFlowFirstStereoPair\_opencv\_version}. All of these three functions need to input one source image, one target image, source key points data and target key points data. For the algorithm of optical flow, we use the Lucas and Kanade method implemented in OpenCV and use patch window size (21 x 21) and pyramid level 4. A backward checking using  optical flow is also performed to improve the robustness of tracking. Only when the distance between the backward result point and its corresponding input point is smaller than 1 pixel can the tracking result be regarded as valid. \\
+\subsection{Lucas and Kanade Optical Flow with OpenCV}
+To track the key points between different frames, three functions are implemented: \emph{OpticalFlowBetweenFrame\_opencv\_version}, \emph{OpticalFlowToRightFrame\_opencv\_version} and \emph{OpticalFlowFirstStereoPair\_opencv\_version}. All of these three functions need to input one source image, one target image, source key points data and target key points data. For the algorithm of optical flow, we use the Lucas and Kanade method implemented in OpenCV and use patch window size (21 x 21) and pyramid level 4. A backward checking using  optical flow is also performed to improve the robustness of tracking. Only when the distance between the backward result point and its corresponding input point is smaller than 1 pixel can the tracking result be regarded as valid. \\
 
 Among these three functions, the difference lies in the correspondence map they establish. In \emph{OpticalFlowBetweenFrame\_opencv\_version}, we establish match data that match feature ID and track ID. In this way, the key points in current frame can have correspondence with key points of existing landmarks. In \emph{OpticalFlowToRightFrame\_opencv\_version}, we establish match between key points in the left and right images. Furthermore, we have to distinguish whether the optical flow result key points in the right image are from old key points or from newly detected key points. So we use two match data, one for matching between old key points in the left image and their resulting key points in the right image, one for newly detected key points in the left image and their correspondence in the right image. In \emph{OpticalFlowFirstStereoPair\_opencv\_version}, we only create stereo matching data. Because this function is for stereo track in the first time step, we do not need to distinguish whether the key points are new or old.
 
-\subsection{Light intensity invariant optical flow with manual implementation}
+\subsection{Light Intensity Invariant Optical Flow with Manual Implementation}
 The variation of light intensity of object overtime might fail Lucas and Kanade optical flow. Therefore, a more robust method of optical flow should be used to increase the stability of the pipeline. We manually implement an optical flow algorithm. In this implementation, we scale the patch intensity with the mean value, using only the local relative intensity of patch to track so that the influence of intensity variation is mitigated. The idea of the algorithm is to minimize such a residual function with Gauss-Newton method\cite{basalt}:\\
 
 \[{{r_i \left(  \xi  \left) \text{ }=\text{ }\frac{{\mathop{{I}}\nolimits_{{t+1}} \left( Tx\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t+1}}}}}\right. \right. }-\frac{{\mathop{{I}}\nolimits_{{t}} \left( x\mathop{{}}\nolimits_{{i}} \right) }}{{ \overline {I\mathop{{}}\nolimits_{{t}}}}}\text{ }\text{ } \forall x\mathop{{}}\nolimits_{{i}} \in  \Omega }\]
 
-The basic algorithm of illumination invariant optical flow is as \ref{alg:optf}. The implementation of this function is in \emph{project\_eval} branch. The function name is \emph{OpticalFlowLK}.
-
-\begin{algorithm}[h]
-  \caption{Intensity invariant optical flow}  
-  \label{alg:optf}
-  \begin{algorithmic}[1]
-  	\State initialize pyramid\_src[0] with source image;
-  	\State initialize pyramid\_tar[0] with target image;
-    \For{each $i\in [1,maximum\ level-1]$}  
-      \State tmp\_src\ =\ downsample pyramid\_src[i-1];
-      \State tmp\_tar\ =\ downsample pyramid\_tar[i-1];
-      \State pyramid\_src.append(tmp\_src);
-      \State pyramid\_tar.append(tmp\_tar);
-    \EndFor
-    \ForAll {$point$ in $source\ points$}
-      \State initialize motion = [0,0].transpose();
-      \State initialize dmotion = [0,0].transpose();
-	  \For{$l=max\ level-1$; $i>=0$; $i--$ }
-	  	\State point\_scaled = point / pow(2, l);
-      	\State img\_src = pyramid\_src[l];
-      	\State img\_tar = pyramid\_tar[l];
-      	\State intensity0 = intensity of source patch scaled by patch mean at img\_src;
-      	\State gradient0 = [gradient\_x, gradient\_y].transpose() of source patch at img\_src;
-      	\State hessian\_inverse = sum of hessian.inverse() of source patch at img\_src;
-		\For{$i=0$; $i<max\_iteration$; $i++$ }
-		  \State transformed source patch with motion;
-      	  \State intensity1 = intensity of transformed patch scaled by patch mean at img\_tar;
-      	  
-      	  \For {$j=0$; $j<patch\_size$; $j++$}
-      	  	\State residual = intensity1(j) - intensity0(j);
-      	  	\State tmp = gradient0.col(j)*residual;
-      	  	\State dmotion -= hessian\_inverse * tmp;
-      	  \EndFor
-      	  \State motion = motion + dmotion;
-      	  \State point\_scaled\_transformed = point\_scaled + motion;
-      	  \If {point\_scaled\_transformed\ out\ of\ range}
-      	  	\State terminate track for this point;
-      	  \EndIf
-      	  \If {dmotion.norm() < threshold}
-      	  	\State break iteration;
-      	  \EndIf
-      	\EndFor
-		\State motion *= 2;      
-      \EndFor 
-      \State output\_points.append(point + motion);
-    \EndFor 
-  \end{algorithmic}  
-  
-\end{algorithm}  
+The basic algorithm of illumination invariant optical flow is offered in appendix \ref{alg:optf}. The implementation of this function is in \emph{project\_eval} branch. The function name is \emph{OpticalFlowLK}.
 
 
-\subsection{Cell and grid}
+
+\subsection{Cell and Grid}
 In order to make cells more conveniently, we implement a class to represent a single cell and a function to make grid on image. \emph{Cell} is a class which contain the coordinates of four corners of a cell and also the key points number inside this cell. By using function \emph{makeCells}, we can create a vector of \emph{Cell}s and initialize the key points number in each cell with 0. \emph{makeCell} needs the input of the width and height of an image, how many rows and columns of cells, and a vector used to store cells. To modify the rows number and columns number easily, we set global variables \emph{rnum} and \emph{cnum} at the beginning of \emph{odometry.cpp} for tuning.\\
 
 In order to determine whether next frame is a key frame, one option is to judge whether the empty cells number exceeds a certain threshold. We also implement a function, \emph{check\_num\_points\_in\_cells}, which can update the number of key points in a vector of cells when key points and the cells vector are provided.  \emph{sparsity} function returns the empty cells number and their indices when a vector of cells is given. \\
 
-\subsection{Key points detection}
+\subsection{Key Points Detection}
 We implement two version of key points detection function. They use different strategies as stated in strategy section above. \\
 
 \emph{add\_new\_keypoints\_from\_empty\_cells} detects key points in each subimage. By inputing the cells vector, empty cells indices and image on which key points will be detected, the function extracts subimage specified by each empty cell and performs Shi-Tomasi key points detection algorithm on that subimage. There is some details we need to pay attention to. First, the detected key points coordinates are relative to the subimage, so we need to add the coordinate of top left corner of the subimage to the result to acquire the position of key points in the whole image. Second, considering that optical flow algorithm uses patch around key points for tracking, we ignore the key points detected in the boundary subimage to ensure the patches can entirely lie in the whole image. Third, the maximum key points number in each subimage is set to 1.\\
@@ -313,7 +264,7 @@ We implement two version of key points detection function. They use different st
 \section{Evaluation}
 This section evaluates the performance difference between the matching method using optical flow and the matching method fully relying on key point detection, as well as the performance of the optical flow method under different set of hyper parameters. The evaluation focuses on three main aspects: precision, execution time, and visualization.
 
-As described in the previous section, we use a grid to segment the image frame and decide whether the next frame is a key frame. A basic set of parameters for the grid of our experiments is as follows:
+As described in the previous section, a grid is used to segment the image frame and decide whether the next frame is a key frame. A basic set of parameters for the grid of our experiments is as the following table \ref{tab:basicset}:
 
 
 \begin{table}[h!]
@@ -330,7 +281,7 @@ As described in the previous section, we use a grid to segment the image frame a
 	\end{center}
 \end{table}
 
-The grid size is designed to be so such that it's divisible by the image height and width. Besides, we find through experiments that square grids brings higher precision in the following experiments than rectangular grids. Similarly, the minimum number of key points 100 is found through experiments. To simplify the following discussion, we set the grid size and the minimum number of key points to be a constant, and discuss the influence of other hyper parameters in the rest of the section.
+The grid size is designed to be so such that it's divisible by the image height and width. Besides, it is found through experiments that square grids brings higher precision in the following experiments than rectangular grids. Similarly, the minimum number of key points 100 is found through experiments. To simplify the following discussion, the grid size and the minimum number of key points are set to be a constant, and the influence of other hyper parameters are discussed in the rest of the section.
 %%
 %\itemize
 %\item  Strategy
@@ -356,9 +307,9 @@ The grid size is designed to be so such that it's divisible by the image height 
 	\end{tabular}
 \end{table}
 
-The table \ref{tab:precision} shows how precision measured as Root Mean Square Error (RMSE) changes when the maximum number of empty cells percentage changes. This variable is designed to control the maximum area of the image where there is no key point. When the empty area is too big, it means we losses a lot of information from these areas and our construction of the map could be not precise enough. When this happens, the next frame will be set as a key frame, and key point detection will be executed. 
+The table \ref{tab:precision} shows how precision measured as RMSE changes when the maximum number of empty cells percentage changes. This variable is designed to control the maximum area of the image where there is no key point. When the empty area is too big, it means a lot of information from these areas is lost and the construction of the map could be not precise enough. When this happens, the next frame will be set as a key frame, and key point detection will be executed. 
 
-From the table it is clear that when the maximum number of empty cells percentage is too small or too large, the precision of the built map will decrease. This means, if we do new key points detection too frequently, we would construct the map using too many key points, which means too many noises, as the key point detection itself is also not 100\% precise. However, if we do key point detection too sparsely, we would have too less key points to construct the map, which indicates that even some small noises could cause a big error in map construction and thus cause an increased RMSE value. In the best case, the RMSE will reach a similar value as the method without using optical flow. Figure \ref{fig:max_empty_cell} shows more experiment data in a visualized way.
+From the table \ref{tab:precision} it is clear that when the maximum number of empty cells percentage is too small or too large, the precision of the built map will decrease. This means, if detection of new key points is done too frequently, the constructed map has too many key points, which means too many noises, as the key point detection itself is also not 100\% precise. However, if key points are detected too sparsely, we would have too less key points to construct the map, which indicates that even some small noises could cause a big error in map construction and thus cause an increased RMSE value. In the best case, the RMSE will reach a similar value as the method without using optical flow. Figure \ref{fig:max_empty_cell} shows more experiment data in a visualized way.
 
 \begin{figure}
 	
@@ -371,7 +322,7 @@ From the table it is clear that when the maximum number of empty cells percentag
 
 
 \subsection{Execution Time}
-The evaluation on execution time includes three parts: detection time, optimization time, and key point matching time. Choosing these three aspects is because: all these three steps are common in two methods, and the difference between these two methods has a big impact on the execution time of these three steps.
+The evaluation on execution time includes three parts: detection time, optimization time, and key point matching time. Choosing these three aspects is because: all these three steps are common in both optical flow based method and the method without optical flow, and the difference between these two methods has a big impact on the execution time of these three steps.
 
 %Because the two methods mainly differ in key point detection process, %which influences the optimization time a lot, and the optical flow %method has additionally the optical flow calculation time. Besides, the %optimization step also takes most of the time in the whole %Simultaneously Localization And Mapping (SLAM) process. 
 
@@ -406,21 +357,21 @@ The table \ref{tab:detection} shows how detection time changes with change of ma
 	\end{tabular}
 \end{table}
 
-\subsubsection{Optimization time}
+\subsubsection{Optimization Time}
 Optimization takes the most time of the whole pipeline. Here we choose the best parameter for maximum percentage of the number of empty cells, which is 0.42 for the method with optical flo and compare it with the method without optical flow. The results are shown in table \ref{tab:optimization}.
 
 The optimization time of the optical flow method is much higher than the method fully depending on key point detection. Although the number of landmarks are in similar level, the number of key frames and observation in optical flow method is much higher than the other one, which causes the huge difference in optimization time. As the optimization process only happens in key frames, an increased number of key frames naturally increases the total optimization time. Here comes automatically the question: Why do we have more key frames and observations in optical flow based method?
 
 Firstly, selection of key frames based on counting empty cells (optical flow method) rather than key point number (non optical flow method) in the image leads to a denser choice of key frames. Therefore the number of key frames is much higher.
 
-Secondly, a possible reason for the large number of observations is that our pipeline forces a key point detection operation in every small grid of key frames. Although this has the advantage that the detected key points are more widely distributed in the whole image to help with a preciser optimization process, it has the disadvantage that many noises are also introduced and many noisy points are considered as an observation of some specific landmark.  
+Secondly, a possible reason for the large number of observations is that the pipeline forces a key point detection operation in every small grid of key frames. Although this has the advantage that the detected key points are more widely distributed in the whole image to help with a preciser optimization process, it has the disadvantage that many noises are also introduced and many noisy points are considered as an observation of some specific landmark.  
 
-The above reasons together leads to the difference in optimization time between two methods.
+The above reasons together lead to the difference in optimization time between two methods.
 
 
 
 \subsubsection{Key Point Matching Time}
-As a replacement of point descriptor comparison between frames, optical flow is used to track the key point between frames. Therefore, we compare the execution time of optical flow and key point matching through descriptors in the following table \ref{tab:matching}:
+As a replacement of point descriptor comparison between frames, optical flow is used to track the key point between frames. Therefore, we compare the execution time of optical flow and key point matching through descriptors in the table \ref{tab:matching}.
 
 \begin{table}
 	\centering
@@ -460,9 +411,9 @@ The optical flow calculation time is much higher than the key point matching usi
 \subsection{Visualization}
 A visual comparison can give more intuition for the performance of different methods. 
 
-Comparing the Figure \ref{fig:optical_flow_global} and Figure \ref{fig:key_point_global}, we could find that the detected points using method of optical flow are more uniformly distributed, this is because in the implementation, we force each grid cell of the segmented image to find feature points, which helps to increase the precision of the estimated camera position.
+Comparing the Figure \ref{fig:optical_flow_global} and Figure \ref{fig:key_point_global}, it is obvious that the detected points using method of optical flow are more uniformly distributed. This is because in the implementation, each grid cell of the segmented image is forced to find feature points, which helps to increase the precision of the estimated camera position.
 
-In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there are two gray lines representing the calibration board in the vertical direction. We could find that the two gray lines in Figure \ref{fig:optical_flow_desk} are closer than Figure \ref{fig:key_point_desk}, which means a better reconstructed map in this area. A real world picture of this area is offered in Figure \ref{fig:desk}.
+In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there are two gray lines representing the calibration board in the vertical direction. The two gray lines in Figure \ref{fig:optical_flow_desk} are closer than Figure \ref{fig:key_point_desk}, which means a better reconstructed map in this area. A real world picture of this area is offered in Figure \ref{fig:desk}.
 
 
 
@@ -494,59 +445,108 @@ In Figure \ref{fig:optical_flow_desk} and Figure \ref{fig:key_point_desk}, there
 	\label{fig:desk}
 \end{figure}
 
-
-\section{Project location}
-Our implementation lies all in repository under \emph{s0011}. Our implementation of optical flow visual odometry is in branch \emph{project\_eval}. Visual odometry with descriptor matching is in branch \emph{exercise-05\_eval}. The report of this project is in branch \emph{report} in folder ./Report/one\_column\_version. The presentation slide is in branch \emph{project\_eval} root directory.
-
-
 \section{Conclusion}
 Visual odometry is a very promising research direction, the applications of this technique is very useful in corresponding environment.
 
-This paper reviews some basic concepts in visual odometry, shows the implementation design and details for visual odometry. Specifically, it presents a novel criterion, which is segmenting image into sub-images and counting number of empty cells to choose key frames. The maximum number of empty cells is a parameter that highly influences the performance of the map construction. A too high or too low number will cause decrease in performance, which indicates that the number of key frames should be kept in a suitable number for a good performance. The strategy of key point detection according to sub-images offers more uniformly distributed key points than key point detection according to the whole image. The execution time of different parts are influenced by the difference between pipeline and the choice of parameter (e.g. max. number of empty cells) in optical flow based implementation.
-<<<<<<< HEAD
+This paper reviews some basic concepts in visual odometry, shows the implementation design and details for visual odometry. Specifically, it presents a novel criterion, which is segmenting image into sub-images and counting number of empty cells to choose key frames. The maximum number of empty cells is a parameter that highly influences the performance of the map construction. A too high or too low number will cause decrease in performance, which indicates that the number of key frames should be kept in a suitable number for a good performance. The strategy of key point detection according to sub-images offers more uniformly distributed key points than key point detection according to the whole image. The execution time of different parts is different in different in methods with and without optical flow. For the method with optical flow, the choice of parameter (e.g. max. number of empty cells) also influences the execution time.
 
-=======
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 
 
 
 
 \begin{thebibliography}{00}
 	
+	\bibitem{vo} H. Alismail, "Visual Odometry for Mobile Robots: Motion Estimation from Imagery," LAP LAMBERT Academic Publishing, 2010 
+ 	
 	\bibitem{brief}M. Calonder, V. Lepetit, M. Ozuysal, T. Trzcinski, C. Strecha and P. Fua, "BRIEF: Computing a Local Binary Descriptor Very Fast," in IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 34, no. 7, pp. 1281-1298, July 2012.
 	
-	\bibitem{lukas} B. D. Lucas and T. Kanade. An iterative image registration technique
-	with an application to stereo vision, In Proceedings of the 7th International
+	\bibitem{lukas} B. D. Lucas and T. Kanade, "An iterative image registration technique
+	with an application to stereo vision," In Proceedings of the 7th International
 	Joint Conference on Artificial Intelligence - Volume 2, IJCAI81,
 	pages 674679, San Francisco, CA, USA, 1981. Morgan Kaufmann
 	Publishers Inc.
 	
-	\bibitem{horn} B.K.P Horn, B.G. Schunk. Determining optical flow, Artificial Intelligence,
+	\bibitem{horn} B.K.P Horn, B.G. Schunk, "Determining optical flow, Artificial Intelligence,"
 	vol. 17, pp. 185-203, 1981.
 	
 	
-	\bibitem{gradient} H. Wang and M. Brady, “Real-time corner detection algorithm for
-	motion estimation,” Image and vision computing, vol. 13, no. 9, pp. 695–
+	\bibitem{gradient} H. Wang and M. Brady, "Real-time corner detection algorithm for
+	motion estimation,” Image and vision computing," vol. 13, no. 9, pp. 695–
 	703, 1995.
 	
-	\bibitem{detector} Rodehorst, V.; Koschan, A. Comparison and evaluation of feature point detectors. In Proceedings
+	\bibitem{detector} Rodehorst, Volker and Andreas F. Koschan, “Comparison and Evaluation of Feature Point Detectors,” in Proceedings
 	of 5th International Symposium Turkish-German Joint Geodetic Days, Technical University of
-	Berlin, Germany, March, 2006; ISBN 3-9809030-4-4.
-	
-	\bibitem{orb} E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, “ORB: an efficientalternative  to  SIFT  or  SURF,”  inIEEE  International  Conference  onComputer Vision (ICCV), Barcelona, Spain, November 2011, pp. 2564–2571
+	Berlin, Germany, March, 2006; 
+		
+	\bibitem{orb} E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, "ORB: an efficientalternative  to  SIFT  or  SURF,"  in IEEE  International  Conference  on Computer Vision, Barcelona, Spain, November 2011, pp. 2564–2571
 	
 	\bibitem{brief} E. Rublee, V. Rabaud, K. Konolige and G. Bradski, "ORB: An efficient alternative to SIFT or SURF," 2011 International Conference on Computer Vision, Barcelona, 2011, pp. 2564-2571.
 	
 	\bibitem{shitomasi} Jianbo Shi and Tomasi, "Good features to track," 1994 Proceedings of IEEE Conference on Computer Vision and Pattern Recognition, Seattle, WA, USA, 1994, pp. 593-600.
-<<<<<<< HEAD
-	\bibitem{basalt} V. Usenko, N. Demmel, D. Schubert, J. Stueckler and D. Cremers, Visual-Inertial Mapping with Non-Linear Factor Recovery, arXiv:1904.06504, 2019.
-=======
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+
+	\bibitem{basalt} V. Usenko, N. Demmel, D. Schubert, J. Stueckler and D. Cremers, "Visual-Inertial Mapping with Non-Linear Factor Recovery," arXiv:1904.06504, 2019.
+
 	
 	
 	
 \end{thebibliography}
 
+
+
+
+\begin{appendices}
+	Our implementation lies all in repository under \emph{s0011}. Our implementation of optical flow visual odometry is in the branch \emph{project\_eval}. Visual odometry with descriptor matching (without optical flow) is in the branch \emph{exercise-05\_eval}. The report of this project is in the branch \emph{report} in folder ./Report/one\_column\_version. The presentation slide is in the branch \emph{project\_eval} root directory. The optical flow implemented by ourselves is in the branch project\_eval\_manual.
+	
+	%\chapter{Some Appendix}
+	\begin{algorithm}[h]
+		\caption{Intensity invariant optical flow}  
+		\label{alg:optf}
+		\begin{algorithmic}[1]
+			\State initialize pyramid\_src[0] with source image;
+			\State initialize pyramid\_tar[0] with target image;
+			\ForAll{ $i\in [1,maximum\ level-1]$}  
+			\State tmp\_src\ =\ downsample pyramid\_src[i-1];
+			\State tmp\_tar\ =\ downsample pyramid\_tar[i-1];
+			\State pyramid\_src.append(tmp\_src);
+			\State pyramid\_tar.append(tmp\_tar);
+			\EndFor
+			\ForAll {$point$ in $source\ points$}
+			\State initialize motion = [0,0].transpose();
+			\State initialize dmotion = [0,0].transpose();
+			\For{$l=max\ level-1$; $i>=0$; $i--$ }
+			\State point\_scaled = point / pow(2, l);
+			\State img\_src = pyramid\_src[l];
+			\State img\_tar = pyramid\_tar[l];
+			\State intensity0 = intensity of source patch scaled by patch mean at img\_src;
+			\State gradient0 = [gradient\_x, gradient\_y].transpose() of source patch at img\_src;
+			\State hessian\_inverse = sum of hessian.inverse() of source patch at img\_src;
+			\For{$i=0$; $i<max\_iteration$; $i++$ }
+			\State transformed source patch with motion;
+			\State intensity1 = intensity of transformed patch scaled by patch mean at img\_tar;
+			
+			\For {$j=0$; $j<patch\_size$; $j++$}
+			\State residual = intensity1[j] - intensity0[j];
+			\State tmp = gradient0.col[j] * residual;
+			\State dmotion -= hessian\_inverse * tmp;
+			\EndFor
+			\State motion = motion + dmotion;
+			\State point\_scaled\_transformed = point\_scaled + motion;
+			\If {point\_scaled\_transformed\ out\ of\ range}
+			\State terminate track for this point;
+			\EndIf
+			\If {dmotion.norm() $<$ threshold}
+			\State break iteration;
+			\EndIf
+			\EndFor
+			\State motion *= 2;      
+			\EndFor 
+			\State output\_points.append(point + motion);
+			\EndFor 
+		\end{algorithmic}  
+		
+	\end{algorithm}  
+	
+\end{appendices}
 
 
 %\bibliographystyle{plain}

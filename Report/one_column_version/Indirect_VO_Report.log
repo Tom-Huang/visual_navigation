@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.9.12)  14 SEP 2019 12:18
-=======
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.5.23)  15 SEP 2019 09:08
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.5.23)  15 SEP 2019 12:10
 entering extended mode
 **./Indirect_VO_Report.tex
 (Indirect_VO_Report.tex
@@ -403,26 +399,32 @@ s
 \f@nch@O@olf=\skip66
 \f@nch@O@orf=\skip67
 ))
+(D:\应用程序\TexStudio\MikTex\tex\latex\appendix\appendix.sty
+Package: appendix 2009/09/02 v1.2b extra appendix facilities
+\c@@pps=\count132
+\c@@ppsavesec=\count133
+\c@@ppsaveapp=\count134
+)
 (D:\应用程序\TexStudio\MikTex\tex\latex\base\doc.sty
 Package: doc 2016/02/15 v2.1g Standard LaTeX documentation package (FMi)
-\c@StandardModuleDepth=\count132
-\guard@level=\count133
+\c@StandardModuleDepth=\count135
+\guard@level=\count136
 \MacrocodeTopsep=\skip68
 \MacroIndent=\dimen150
-\macro@cnt=\count134
+\macro@cnt=\count137
 \MacroTopsep=\skip69
 \index@excludelist=\toks29
 
 (D:\应用程序\TexStudio\MikTex\tex\latex\tools\multicol.sty
 Package: multicol 2017/04/11 v1.8q multicolumn formatting (FMi)
-\c@tracingmulticols=\count135
+\c@tracingmulticols=\count138
 \mult@box=\box32
 \multicol@leftmargin=\dimen151
-\c@unbalance=\count136
-\c@collectmore=\count137
-\doublecol@number=\count138
-\multicoltolerance=\count139
-\multicolpretolerance=\count140
+\c@unbalance=\count139
+\c@collectmore=\count140
+\doublecol@number=\count141
+\multicoltolerance=\count142
+\multicolpretolerance=\count143
 \full@width=\dimen152
 \page@free=\dimen153
 \premulticols=\dimen154
@@ -453,35 +455,28 @@ Package: multicol 2017/04/11 v1.8q multicolumn formatting (FMi)
 \@tempa=\box53
 \@tempa=\box54
 \@tempa=\box55
-\c@columnbadness=\count141
-\c@finalcolumnbadness=\count142
+\c@columnbadness=\count144
+\c@finalcolumnbadness=\count145
 \last@try=\dimen157
 \multicolovershoot=\dimen158
 \multicolundershoot=\dimen159
 \mult@nat@firstbox=\box56
 \colbreak@box=\box57
-\mc@col@check@num=\count143
+\mc@col@check@num=\count146
 )
 \IndexMin=\dimen160
-\c@IndexColumns=\count144
+\c@IndexColumns=\count147
 \GlossaryMin=\dimen161
-\c@GlossaryColumns=\count145
-\check@sum=\count146
-\bslash@cnt=\count147
+\c@GlossaryColumns=\count148
+\check@sum=\count149
+\bslash@cnt=\count150
 \wrong@table=\toks30
-\c@CodelineNo=\count148
+\c@CodelineNo=\count151
 )
-<<<<<<< HEAD
-(/usr/share/texlive/texmf-dist/tex/latex/tools/indentfirst.sty
-Package: indentfirst 1995/11/23 v1.03 Indent first paragraph (DPC)
-)
-(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amscd.sty
-=======
 (D:\应用程序\TexStudio\MikTex\tex\latex\tools\indentfirst.sty
 Package: indentfirst 1995/11/23 v1.03 Indent first paragraph (DPC)
 )
 (D:\应用程序\TexStudio\MikTex\tex\latex\amsmath\amscd.sty
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 Package: amscd 2017/04/14 v2.1 AMS Commutative Diagrams
 \athelp@=\toks31
 \minaw@=\dimen162
@@ -553,14 +548,14 @@ e.tex
 \pgf@yc=\dimen182
 \w@pgf@writea=\write3
 \r@pgf@reada=\read2
-\c@pgf@counta=\count149
-\c@pgf@countb=\count150
-\c@pgf@countc=\count151
-\c@pgf@countd=\count152
+\c@pgf@counta=\count152
+\c@pgf@countb=\count153
+\c@pgf@countc=\count154
+\c@pgf@countd=\count155
 \t@pgf@toka=\toks36
 \t@pgf@tokb=\toks37
 \t@pgf@tokc=\toks38
-\pgf@sys@id@count=\count153
+\pgf@sys@id@count=\count156
  (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\systemlayer\pgf.cfg
 File: pgf.cfg 2019/01/05 v3.1 (3.1)
 )
@@ -576,8 +571,8 @@ File: pgfsys-common-pdf.def 2019/01/05 v3.1 (3.1)
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\systemlayer\pgfsyssoftpath.co
 de.tex
 File: pgfsyssoftpath.code.tex 2019/01/05 v3.1 (3.1)
-\pgfsyssoftpath@smallbuffer@items=\count154
-\pgfsyssoftpath@bigbuffer@items=\count155
+\pgfsyssoftpath@smallbuffer@items=\count157
+\pgfsyssoftpath@bigbuffer@items=\count158
 )
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\systemlayer\pgfsysprotocol.co
 de.tex
@@ -591,7 +586,7 @@ Package: pgfcore 2019/01/05 v3.1 (3.1)
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\math\pgfmathutil.code.tex)
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\math\pgfmathparser.code.tex
 \pgfmath@dimen=\dimen183
-\pgfmath@count=\count156
+\pgfmath@count=\count159
 \pgfmath@box=\box59
 \pgfmath@toks=\toks39
 \pgfmath@stack@operand=\toks40
@@ -616,7 +611,7 @@ de.tex)
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\math\pgfmathfunctions.integer
 arithmetics.code.tex)))
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\math\pgfmathfloat.code.tex
-\c@pgfmathroundto@lastzeros=\count157
+\c@pgfmathroundto@lastzeros=\count160
 ))
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\basiclayer\pgfcorepoints.code
 .tex
@@ -654,7 +649,7 @@ File: pgfcorescopes.code.tex 2019/01/05 v3.1 (3.1)
 \pgfpic=\box60
 \pgf@hbox=\box61
 \pgf@layerbox@main=\box62
-\pgf@picture@serial@count=\count158
+\pgf@picture@serial@count=\count161
 )
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\basiclayer\pgfcoregraphicstat
 e.code.tex
@@ -689,7 +684,7 @@ File: pgfcorearrows.code.tex 2019/01/05 v3.1 (3.1)
 tex
 File: pgfcoreshade.code.tex 2019/01/05 v3.1 (3.1)
 \pgf@max=\dimen263
-\pgf@sys@shading@range@num=\count159
+\pgf@sys@shading@range@num=\count162
 )
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\basiclayer\pgfcoreimage.code.
 tex
@@ -739,7 +734,7 @@ Package: flushend 2017/03/27 v3.3 Balancing columns in twocolumn mode
 \flushend@@lastskip@a=\skip72
 \flushend@@lastskip@b=\skip73
 \flushend@@lastskip@c=\skip74
-\flushend@@penalty@a=\count160
+\flushend@@penalty@a=\count163
 \flushend@@lastkern@a=\dimen266
 \var@@temp@spread=\dimen267
 \var@@temp@a=\dimen268
@@ -755,12 +750,12 @@ Package: flushend 2017/03/27 v3.3 Balancing columns in twocolumn mode
 
 (D:\应用程序\TexStudio\MikTex\tex\latex\etoolbox\etoolbox.sty
 Package: etoolbox 2018/02/11 v2.5e e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count161
+\etb@tempcnta=\count164
 ))
 (D:\应用程序\TexStudio\MikTex\tex\latex\psfrag\psfrag.sty
 Package: psfrag 1998/04/11 v3.04 PSfrag (MCG)
-\pfg@pcount=\count162
-\pfg@scount=\count163
+\pfg@pcount=\count165
+\pfg@scount=\count166
 \pfg@temp=\write4
 )
 (D:\应用程序\TexStudio\MikTex\tex\latex\algorithms\algorithm.sty
@@ -769,7 +764,7 @@ nment
 
 (D:\应用程序\TexStudio\MikTex\tex\latex\float\float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count164
+\c@float@type=\count167
 \float@exts=\toks44
 \float@box=\box71
 \@float@everytoks=\toks45
@@ -779,7 +774,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
 )
 \@float@every@algorithm=\toks46
-\c@algorithm=\count165
+\c@algorithm=\count168
 )
 (D:\应用程序\TexStudio\MikTex\tex\latex\algorithmicx\algpseudocode.sty
 Package: algpseudocode 
@@ -788,15 +783,15 @@ Package: algpseudocode
 Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
 
 Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
-\c@ALG@line=\count166
-\c@ALG@rem=\count167
-\c@ALG@nested=\count168
+\c@ALG@line=\count169
+\c@ALG@rem=\count170
+\c@ALG@nested=\count171
 \ALG@tlm=\skip75
 \ALG@thistlm=\skip76
-\c@ALG@Lnr=\count169
-\c@ALG@blocknr=\count170
-\c@ALG@storecount=\count171
-\c@ALG@tmpcounter=\count172
+\c@ALG@Lnr=\count172
+\c@ALG@blocknr=\count173
+\c@ALG@storecount=\count174
+\c@ALG@tmpcounter=\count175
 \ALG@tmplength=\skip77
 )
 Document Style - pseudocode environments for use with the `algorithmicx' style
@@ -806,17 +801,17 @@ Package: expl3 2019-02-15 L3 programming layer (loader)
 
 (D:\应用程序\TexStudio\MikTex\tex\latex\l3kernel\expl3-code.tex
 Package: expl3 2019-02-15 L3 programming layer (code)
-\c_max_int=\count173
-\l_tmpa_int=\count174
-\l_tmpb_int=\count175
-\g_tmpa_int=\count176
-\g_tmpb_int=\count177
-\g__kernel_prg_map_int=\count178
-\c_log_iow=\count179
-\l_iow_line_count_int=\count180
-\l__iow_line_target_int=\count181
-\l__iow_one_indent_int=\count182
-\l__iow_indent_int=\count183
+\c_max_int=\count176
+\l_tmpa_int=\count177
+\l_tmpb_int=\count178
+\g_tmpa_int=\count179
+\g_tmpb_int=\count180
+\g__kernel_prg_map_int=\count181
+\c_log_iow=\count182
+\l_iow_line_count_int=\count183
+\l__iow_line_target_int=\count184
+\l__iow_one_indent_int=\count185
+\l__iow_indent_int=\count186
 \c_zero_dim=\dimen270
 \c_max_dim=\dimen271
 \l_tmpa_dim=\dimen272
@@ -835,78 +830,78 @@ Package: expl3 2019-02-15 L3 programming layer (code)
 \l_tmpb_muskip=\muskip15
 \g_tmpa_muskip=\muskip16
 \g_tmpb_muskip=\muskip17
-\l_keys_choice_int=\count184
-\l__intarray_loop_int=\count185
+\l_keys_choice_int=\count187
+\l__intarray_loop_int=\count188
 \c__intarray_sp_dim=\dimen276
-\g__intarray_font_int=\count186
-\c__fp_leading_shift_int=\count187
-\c__fp_middle_shift_int=\count188
-\c__fp_trailing_shift_int=\count189
-\c__fp_big_leading_shift_int=\count190
-\c__fp_big_middle_shift_int=\count191
-\c__fp_big_trailing_shift_int=\count192
-\c__fp_Bigg_leading_shift_int=\count193
-\c__fp_Bigg_middle_shift_int=\count194
-\c__fp_Bigg_trailing_shift_int=\count195
-\c__kernel_randint_max_int=\count196
-\g__fp_array_int=\count197
-\l__fp_array_loop_int=\count198
-\l__sort_length_int=\count199
-\l__sort_min_int=\count266
-\l__sort_top_int=\count267
-\l__sort_max_int=\count268
-\l__sort_true_max_int=\count269
-\l__sort_block_int=\count270
-\l__sort_begin_int=\count271
-\l__sort_end_int=\count272
-\l__sort_A_int=\count273
-\l__sort_B_int=\count274
-\l__sort_C_int=\count275
-\l__tl_analysis_normal_int=\count276
-\l__tl_analysis_index_int=\count277
-\l__tl_analysis_nesting_int=\count278
-\l__tl_analysis_type_int=\count279
-\l__regex_internal_a_int=\count280
-\l__regex_internal_b_int=\count281
-\l__regex_internal_c_int=\count282
-\l__regex_balance_int=\count283
-\l__regex_group_level_int=\count284
-\l__regex_mode_int=\count285
-\c__regex_cs_in_class_mode_int=\count286
-\c__regex_cs_mode_int=\count287
-\l__regex_catcodes_int=\count288
-\l__regex_default_catcodes_int=\count289
-\c__regex_catcode_D_int=\count290
-\c__regex_catcode_S_int=\count291
-\c__regex_catcode_L_int=\count292
-\c__regex_catcode_O_int=\count293
-\c__regex_catcode_A_int=\count294
-\c__regex_all_catcodes_int=\count295
-\l__regex_show_lines_int=\count296
-\l__regex_min_state_int=\count297
-\l__regex_max_state_int=\count298
-\l__regex_left_state_int=\count299
-\l__regex_right_state_int=\count300
-\l__regex_capturing_group_int=\count301
-\l__regex_min_pos_int=\count302
-\l__regex_max_pos_int=\count303
-\l__regex_curr_pos_int=\count304
-\l__regex_start_pos_int=\count305
-\l__regex_success_pos_int=\count306
-\l__regex_curr_char_int=\count307
-\l__regex_curr_catcode_int=\count308
-\l__regex_last_char_int=\count309
-\l__regex_case_changed_char_int=\count310
-\l__regex_curr_state_int=\count311
-\l__regex_step_int=\count312
-\l__regex_min_active_int=\count313
-\l__regex_max_active_int=\count314
-\l__regex_replacement_csnames_int=\count315
-\l__regex_match_count_int=\count316
-\l__regex_min_submatch_int=\count317
-\l__regex_submatch_int=\count318
-\l__regex_zeroth_submatch_int=\count319
-\g__regex_trace_regex_int=\count320
+\g__intarray_font_int=\count189
+\c__fp_leading_shift_int=\count190
+\c__fp_middle_shift_int=\count191
+\c__fp_trailing_shift_int=\count192
+\c__fp_big_leading_shift_int=\count193
+\c__fp_big_middle_shift_int=\count194
+\c__fp_big_trailing_shift_int=\count195
+\c__fp_Bigg_leading_shift_int=\count196
+\c__fp_Bigg_middle_shift_int=\count197
+\c__fp_Bigg_trailing_shift_int=\count198
+\c__kernel_randint_max_int=\count199
+\g__fp_array_int=\count266
+\l__fp_array_loop_int=\count267
+\l__sort_length_int=\count268
+\l__sort_min_int=\count269
+\l__sort_top_int=\count270
+\l__sort_max_int=\count271
+\l__sort_true_max_int=\count272
+\l__sort_block_int=\count273
+\l__sort_begin_int=\count274
+\l__sort_end_int=\count275
+\l__sort_A_int=\count276
+\l__sort_B_int=\count277
+\l__sort_C_int=\count278
+\l__tl_analysis_normal_int=\count279
+\l__tl_analysis_index_int=\count280
+\l__tl_analysis_nesting_int=\count281
+\l__tl_analysis_type_int=\count282
+\l__regex_internal_a_int=\count283
+\l__regex_internal_b_int=\count284
+\l__regex_internal_c_int=\count285
+\l__regex_balance_int=\count286
+\l__regex_group_level_int=\count287
+\l__regex_mode_int=\count288
+\c__regex_cs_in_class_mode_int=\count289
+\c__regex_cs_mode_int=\count290
+\l__regex_catcodes_int=\count291
+\l__regex_default_catcodes_int=\count292
+\c__regex_catcode_D_int=\count293
+\c__regex_catcode_S_int=\count294
+\c__regex_catcode_L_int=\count295
+\c__regex_catcode_O_int=\count296
+\c__regex_catcode_A_int=\count297
+\c__regex_all_catcodes_int=\count298
+\l__regex_show_lines_int=\count299
+\l__regex_min_state_int=\count300
+\l__regex_max_state_int=\count301
+\l__regex_left_state_int=\count302
+\l__regex_right_state_int=\count303
+\l__regex_capturing_group_int=\count304
+\l__regex_min_pos_int=\count305
+\l__regex_max_pos_int=\count306
+\l__regex_curr_pos_int=\count307
+\l__regex_start_pos_int=\count308
+\l__regex_success_pos_int=\count309
+\l__regex_curr_char_int=\count310
+\l__regex_curr_catcode_int=\count311
+\l__regex_last_char_int=\count312
+\l__regex_case_changed_char_int=\count313
+\l__regex_curr_state_int=\count314
+\l__regex_step_int=\count315
+\l__regex_min_active_int=\count316
+\l__regex_max_active_int=\count317
+\l__regex_replacement_csnames_int=\count318
+\l__regex_match_count_int=\count319
+\l__regex_min_submatch_int=\count320
+\l__regex_submatch_int=\count321
+\l__regex_zeroth_submatch_int=\count322
+\g__regex_trace_regex_int=\count323
 \c_empty_box=\box73
 \l_tmpa_box=\box74
 \l_tmpb_box=\box75
@@ -951,20 +946,20 @@ Package: expl3 2019-02-15 L3 programming layer (code)
 \l__coffin_top_corner_dim=\dimen299
 \l__coffin_scaled_total_height_dim=\dimen300
 \l__coffin_scaled_width_dim=\dimen301
-\l__seq_internal_a_int=\count321
-\l__seq_internal_b_int=\count322
+\l__seq_internal_a_int=\count324
+\l__seq_internal_b_int=\count325
 )
 (D:\应用程序\TexStudio\MikTex\tex\latex\l3kernel\l3pdfmode.def
 File: l3pdfmode.def 2019-02-15 v L3 Experimental driver: PDF mode
-\l__driver_color_stack_int=\count323
+\l__driver_color_stack_int=\count326
 ))
 (D:\应用程序\TexStudio\MikTex\tex\latex\l3packages\xparse\xparse.sty
 Package: xparse 2018-10-17 L3 Experimental document command parser
-\l__xparse_current_arg_int=\count324
-\g__xparse_grabber_int=\count325
-\l__xparse_m_args_int=\count326
-\l__xparse_mandatory_args_int=\count327
-\l__xparse_v_nesting_int=\count328
+\l__xparse_current_arg_int=\count327
+\g__xparse_grabber_int=\count328
+\l__xparse_m_args_int=\count329
+\l__xparse_mandatory_args_int=\count330
+\l__xparse_v_nesting_int=\count331
 )
 Package: siunitx 2018/05/17 v2.7s A comprehensive (SI) units package
 
@@ -981,27 +976,27 @@ Package: l3keys2e 2018-10-17 LaTeX2e option processing using LaTeX3 keys
 )
 \l__siunitx_tmp_box=\box91
 \l__siunitx_tmp_dim=\dimen304
-\l__siunitx_tmp_int=\count329
-\l__siunitx_number_mantissa_length_int=\count330
-\l__siunitx_number_uncert_length_int=\count331
-\l__siunitx_round_int=\count332
-\l__siunitx_process_decimal_int=\count333
-\l__siunitx_process_uncertainty_int=\count334
-\l__siunitx_process_fixed_int=\count335
-\l__siunitx_process_integer_min_int=\count336
-\l__siunitx_process_precision_int=\count337
-\l__siunitx_group_min_int=\count338
+\l__siunitx_tmp_int=\count332
+\l__siunitx_number_mantissa_length_int=\count333
+\l__siunitx_number_uncert_length_int=\count334
+\l__siunitx_round_int=\count335
+\l__siunitx_process_decimal_int=\count336
+\l__siunitx_process_uncertainty_int=\count337
+\l__siunitx_process_fixed_int=\count338
+\l__siunitx_process_integer_min_int=\count339
+\l__siunitx_process_precision_int=\count340
+\l__siunitx_group_min_int=\count341
 \l__siunitx_angle_marker_box=\box92
 \l__siunitx_angle_unit_box=\box93
 \l__siunitx_angle_marker_dim=\dimen305
 \l__siunitx_angle_unit_dim=\dimen306
-\l__siunitx_unit_int=\count339
-\l__siunitx_unit_denominator_int=\count340
-\l__siunitx_unit_numerator_int=\count341
-\l__siunitx_unit_prefix_int=\count342
-\l__siunitx_unit_prefix_base_int=\count343
-\l__siunitx_unit_prefix_gram_int=\count344
-\l__siunitx_number_product_int=\count345
+\l__siunitx_unit_int=\count342
+\l__siunitx_unit_denominator_int=\count343
+\l__siunitx_unit_numerator_int=\count344
+\l__siunitx_unit_prefix_int=\count345
+\l__siunitx_unit_prefix_base_int=\count346
+\l__siunitx_unit_prefix_gram_int=\count347
+\l__siunitx_number_product_int=\count348
 \c__siunitx_one_fill_skip=\skip86
 \l__siunitx_table_unit_align_skip=\skip87
 \l__siunitx_table_exponent_dim=\dimen307
@@ -1040,22 +1035,22 @@ Package caption3 Info: TeX engine: e-TeX on input line 67.
 \caption@parindent=\dimen321
 \caption@hangindent=\dimen322
 )
-\c@ContinuedFloat=\count346
+\c@ContinuedFloat=\count349
 Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: listings package is loaded.
 )
-\c@KVtest=\count347
+\c@KVtest=\count350
 \sf@farskip=\skip90
 \sf@captopadj=\dimen323
 \sf@capskip=\skip91
 \sf@nearskip=\skip92
-\c@subfigure=\count348
-\c@subfigure@save=\count349
-\c@lofdepth=\count350
-\c@subtable=\count351
-\c@subtable@save=\count352
-\c@lotdepth=\count353
+\c@subfigure=\count351
+\c@subfigure@save=\count352
+\c@lofdepth=\count353
+\c@subtable=\count354
+\c@subtable@save=\count355
+\c@lotdepth=\count356
 \sf@top=\skip93
 \sf@bottom=\skip94
 )
@@ -1110,12 +1105,12 @@ Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \cmidrulesep=\dimen331
 \cmidrulekern=\dimen332
 \defaultaddspace=\dimen333
-\@cmidla=\count354
-\@cmidlb=\count355
+\@cmidla=\count357
+\@cmidlb=\count358
 \@aboverulesep=\dimen334
 \@belowrulesep=\dimen335
-\@thisruleclass=\count356
-\@lastruleclass=\count357
+\@thisruleclass=\count359
+\@lastruleclass=\count360
 \@thisrulewidth=\dimen336
 )
 (D:\应用程序\TexStudio\MikTex\tex\latex\pgfgantt\pgfgantt.sty
@@ -1143,7 +1138,7 @@ Package: tikz 2019/01/05 v3.1 (3.1)
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\libraries\pgflibraryplothandl
 ers.code.tex
 File: pgflibraryplothandlers.code.tex 2019/01/05 v3.1 (3.1)
-\pgf@plot@mark@count=\count358
+\pgf@plot@mark@count=\count361
 \pgfplotmarksize=\dimen339
 )
 \tikz@lastx=\dimen340
@@ -1156,19 +1151,19 @@ File: pgflibraryplothandlers.code.tex 2019/01/05 v3.1 (3.1)
 \tikz@figbox@bg=\box99
 \tikz@tempbox=\box100
 \tikz@tempbox@bg=\box101
-\tikztreelevel=\count359
-\tikznumberofchildren=\count360
-\tikznumberofcurrentchild=\count361
-\tikz@fig@count=\count362
+\tikztreelevel=\count362
+\tikznumberofchildren=\count363
+\tikznumberofcurrentchild=\count364
+\tikz@fig@count=\count365
 
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\modules\pgfmodulematrix.code.
 tex
 File: pgfmodulematrix.code.tex 2019/01/05 v3.1 (3.1)
-\pgfmatrixcurrentrow=\count363
-\pgfmatrixcurrentcolumn=\count364
-\pgf@matrix@numberofcolumns=\count365
+\pgfmatrixcurrentrow=\count366
+\pgfmatrixcurrentcolumn=\count367
+\pgf@matrix@numberofcolumns=\count368
 )
-\tikz@expandcount=\count366
+\tikz@expandcount=\count369
 
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\frontendlayer\tikz\libraries\
 tikzlibrarytopaths.code.tex
@@ -1217,24 +1212,24 @@ File: pgflibraryshapes.geometric.code.tex 2019/01/05 v3.1 (3.1)
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\utilities\pgfcalendar.code.te
 x
 File: pgfcalendar.code.tex 2019/01/05 v3.1 (3.1)
-\pgfcalendarcurrentjulian=\count367
+\pgfcalendarcurrentjulian=\count370
 ))
-\gtt@currentline=\count368
-\gtt@lasttitleline=\count369
-\gtt@currgrid=\count370
-\gtt@chartwidth=\count371
-\gtt@lasttitleslot=\count372
-\gtt@elementid=\count373
-\gtt@today@slot=\count374
-\gtt@startjulian=\count375
-\gtt@endjulian=\count376
-\gtt@chartid=\count377
-\gtt@vrule@slot=\count378
-\gtt@calendar@slots=\count379
-\gtt@calendar@weeknumber=\count380
-\gtt@calendar@startofweek=\count381
-\gtt@left@slot=\count382
-\gtt@right@slot=\count383
+\gtt@currentline=\count371
+\gtt@lasttitleline=\count372
+\gtt@currgrid=\count373
+\gtt@chartwidth=\count374
+\gtt@lasttitleslot=\count375
+\gtt@elementid=\count376
+\gtt@today@slot=\count377
+\gtt@startjulian=\count378
+\gtt@endjulian=\count379
+\gtt@chartid=\count380
+\gtt@vrule@slot=\count381
+\gtt@calendar@slots=\count382
+\gtt@calendar@weeknumber=\count383
+\gtt@calendar@startofweek=\count384
+\gtt@left@slot=\count385
+\gtt@right@slot=\count386
 ) (D:\应用程序\TexStudio\MikTex\tex\latex\import\import.sty
 Package: import 2009/03/23  v 5.1
 )
@@ -1250,7 +1245,7 @@ Package: xkeyval 2014/12/03 v2.7a package option processing (HA)
 \XKV@toks=\toks50
 \XKV@tempa@toks=\toks51
 )
-\XKV@depth=\count384
+\XKV@depth=\count387
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
 (D:\应用程序\TexStudio\MikTex\tex\generic\pgf\frontendlayer\tikz\libraries\
@@ -1265,20 +1260,12 @@ File: tikzlibraryfadings.code.tex 2019/01/05 v3.1 (3.1)
 ode.tex
 File: pgflibraryfadings.code.tex 2019/01/05 v3.1 (3.1)
 )))
-\c@@todonotes@numberoftodonotes=\count385
+\c@@todonotes@numberoftodonotes=\count388
 ) (Indirect_VO_Report.aux
 
 LaTeX Warning: Label `brief' multiply defined.
 
 )
-<<<<<<< HEAD
-(./Indirect_VO_Report.aux
-
-LaTeX Warning: Label `brief' multiply defined.
-
-)
-=======
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 \openout1 = `Indirect_VO_Report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
@@ -1295,22 +1282,18 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
 LaTeX Font Info:    ... okay on input line 93.
 LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
 LaTeX Font Info:    ... okay on input line 93.
-<<<<<<< HEAD
- (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
-=======
  (D:\应用程序\TexStudio\MikTex\tex\context\base\supp-pdf.mkii
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count386
+\scratchcounter=\count389
 \scratchdimen=\dimen347
 \scratchbox=\box104
-\nofMPsegments=\count387
-\nofMParguments=\count388
+\nofMPsegments=\count390
+\nofMParguments=\count391
 \everyMPshowfont=\toks52
-\MPscratchCnt=\count389
+\MPscratchCnt=\count392
 \MPscratchDim=\dimen348
-\MPnumerator=\count390
-\makeMPintoPDFobject=\count391
+\MPnumerator=\count393
+\makeMPintoPDFobject=\count394
 \everyMPtoPDFconversion=\toks53
 ) (D:\应用程序\TexStudio\MikTex\tex\latex\oberdiek\epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
@@ -1334,7 +1317,7 @@ Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 (D:\应用程序\TexStudio\MikTex\tex\generic\oberdiek\gettitlestring.sty
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count392
+\c@section@level=\count395
 )
 LaTeX Info: Redefining \ref on input line 93.
 LaTeX Info: Redefining \pageref on input line 93.
@@ -1344,7 +1327,7 @@ LaTeX Info: Redefining \nameref on input line 93.
 \@outlinefile=\write5
 \openout5 = `Indirect_VO_Report.out'.
 
-\c@lstlisting=\count393
+\c@lstlisting=\count396
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1423,93 +1406,51 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 Non-PDF special ignored!
 <special> header=psfrag.pro
 
-<<<<<<< HEAD
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-[2] [3]
-=======
 {C:/Users/anton/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
 [3]
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 Underfull \hbox (badness 10000) in paragraph at lines 188--189
 
  []
 
-<<<<<<< HEAD
-<img/flowchart.png, id=176, 596.2275pt x 759.83875pt>
+<img/flowchart.png, id=200, 596.2275pt x 759.83875pt>
 File: img/flowchart.png Graphic file (type png)
 <use img/flowchart.png>
-Package pdftex.def Info: img/flowchart.png  used on input line 194.
+Package pdftex.def Info: img/flowchart.png  used on input line 192.
 (pdftex.def)             Requested size: 288.7942pt x 368.04599pt.
-=======
-<img/flowchart.png, id=193, 596.2275pt x 760.8425pt>
-File: img/flowchart.png Graphic file (type png)
-<use img/flowchart.png>
-Package pdftex.def Info: img/flowchart.png  used on input line 194.
-(pdftex.def)             Requested size: 288.7942pt x 368.53218pt.
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [4]
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 207--208
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 209--210
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+Underfull \hbox (badness 10000) in paragraph at lines 205--206
 
  []
 
 [5 <./img/flowchart.png>]
-<<<<<<< HEAD
-<img/subimage_keypoint_detection_129.png, id=188, 805.0075pt x 511.9125pt>
+<img/subimage_keypoint_detection_129.png, id=212, 805.0075pt x 511.9125pt>
 File: img/subimage_keypoint_detection_129.png Graphic file (type png)
 <use img/subimage_keypoint_detection_129.png>
 Package pdftex.def Info: img/subimage_keypoint_detection_129.png  used on input
- line 218.
+ line 216.
 (pdftex.def)             Requested size: 202.15909pt x 128.55583pt.
-<img/whole_image_keypoints_detection_129.png, id=189, 803.0pt x 511.9125pt>
+<img/whole_image_keypoints_detection_129.png, id=213, 803.0pt x 511.9125pt>
 File: img/whole_image_keypoints_detection_129.png Graphic file (type png)
 <use img/whole_image_keypoints_detection_129.png>
 Package pdftex.def Info: img/whole_image_keypoints_detection_129.png  used on i
-nput line 225.
+nput line 223.
 (pdftex.def)             Requested size: 202.56828pt x 129.13385pt.
 
-Overfull \hbox (5.49573pt too wide) in paragraph at lines 218--226
-=======
-<img/subimage_keypoint_detection_129.png, id=205, 805.0075pt x 511.9125pt>
-File: img/subimage_keypoint_detection_129.png Graphic file (type png)
-<use img/subimage_keypoint_detection_129.png>
-Package pdftex.def Info: img/subimage_keypoint_detection_129.png  used on input
- line 220.
-(pdftex.def)             Requested size: 202.15909pt x 128.55583pt.
-<img/whole_image_keypoints_detection_129.png, id=206, 803.0pt x 511.9125pt>
-File: img/whole_image_keypoints_detection_129.png Graphic file (type png)
-<use img/whole_image_keypoints_detection_129.png>
-Package pdftex.def Info: img/whole_image_keypoints_detection_129.png  used on i
-nput line 227.
-(pdftex.def)             Requested size: 202.56828pt x 129.13385pt.
-
-Overfull \hbox (5.49573pt too wide) in paragraph at lines 220--228
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+Overfull \hbox (5.49573pt too wide) in paragraph at lines 216--224
  [][][][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 239--240
+
  []
 
 [6 <./img/subimage_keypoint_detection_129.png> <./img/whole_image_keypoints_det
 ection_129.png>]
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 241--242
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 243--244
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
-
- []
-
-
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 246--247
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 248--249
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+Underfull \hbox (badness 10000) in paragraph at lines 244--245
 
  []
 
@@ -1561,155 +1502,86 @@ Missing character: There is no � in font cmr7!
 Missing character: There is no � in font cmr5!
 Missing character: There is no � in font cmr5!
 Missing character: There is no � in font cmr5!
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-<<<<<<< HEAD
-put line 253.
-=======
-put line 255.
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 302--303
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 304--305
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+Underfull \hbox (badness 10000) in paragraph at lines 253--254
 
  []
 
 [7]
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 304--305
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 306--307
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+Underfull \hbox (badness 10000) in paragraph at lines 255--256
 
  []
 
 
-Underfull \vbox (badness 1466) has occurred while \output is active []
-
- [8]
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 307--308
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 309--310
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+Underfull \hbox (badness 10000) in paragraph at lines 258--259
 
  []
 
 
-<<<<<<< HEAD
-Underfull \hbox (badness 10000) in paragraph at lines 309--310
-
- []
-
-=======
-Underfull \hbox (badness 10000) in paragraph at lines 311--312
+Underfull \hbox (badness 10000) in paragraph at lines 260--261
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 313--314
+Underfull \hbox (badness 10000) in paragraph at lines 262--263
 
  []
 
-[9]
-
-Package caption Warning: \label without proper reference on input line 366.
-See the caption package documentation for explanation.
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
-
-Underfull \hbox (badness 10000) in paragraph at lines 311--312
-
-<<<<<<< HEAD
- []
-
-[9]
-<img/max_num_empty_cell1.png, id=259, 462.09pt x 346.02pt>
+[8]
+<img/max_num_empty_cell1.png, id=242, 462.09pt x 346.02pt>
 File: img/max_num_empty_cell1.png Graphic file (type png)
 <use img/max_num_empty_cell1.png>
-Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 366.
+Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 317.
 (pdftex.def)             Requested size: 288.7942pt x 216.26196pt.
- [10] [11 <./img/max_num_empty_cell1.png>]
-<img/optical_flow_global.png, id=278, 518.6878pt x 324.46219pt>
-=======
-LaTeX Warning: Reference `fig:max_empty_cell' on page 10 undefined on input lin
-e 363.
+ [9]
+Underfull \vbox (badness 3826) has occurred while \output is active []
 
-<img/max_num_empty_cell1.png, id=274, 462.09pt x 346.02pt>
-File: img/max_num_empty_cell1.png Graphic file (type png)
-<use img/max_num_empty_cell1.png>
-Package pdftex.def Info: img/max_num_empty_cell1.png  used on input line 368.
-(pdftex.def)             Requested size: 288.7942pt x 216.26196pt.
-[10] [11 <./img/max_num_empty_cell1.png>]
-<img/optical_flow_global.png, id=293, 518.6878pt x 324.46219pt>
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+ [10 <./img/max_num_empty_cell1.png>]
+<img/optical_flow_global.png, id=260, 518.6878pt x 324.46219pt>
 File: img/optical_flow_global.png Graphic file (type png)
 <use img/optical_flow_global.png>
-Package pdftex.def Info: img/optical_flow_global.png  used on input line 448.
+Package pdftex.def Info: img/optical_flow_global.png  used on input line 399.
 (pdftex.def)             Requested size: 193.90594pt x 121.29668pt.
-<<<<<<< HEAD
-<img/key_point_global.png, id=279, 465.23813pt x 298.86656pt>
-=======
-<img/key_point_global.png, id=294, 465.23813pt x 298.86656pt>
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+<img/key_point_global.png, id=261, 465.23813pt x 298.86656pt>
 File: img/key_point_global.png Graphic file (type png)
 <use img/key_point_global.png>
-Package pdftex.def Info: img/key_point_global.png  used on input line 456.
+Package pdftex.def Info: img/key_point_global.png  used on input line 407.
 (pdftex.def)             Requested size: 188.81795pt x 121.29668pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 448--457
+Overfull \hbox (11.75319pt too wide) in paragraph at lines 399--408
  [][][][] 
  []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<<<<<<< HEAD
-<img/optical_flow_desk.png, id=287, 347.04657pt x 281.55188pt>
-=======
-<img/optical_flow_desk.png, id=302, 347.04657pt x 281.55188pt>
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+<img/optical_flow_desk.png, id=269, 347.04657pt x 281.55188pt>
 File: img/optical_flow_desk.png Graphic file (type png)
 <use img/optical_flow_desk.png>
-Package pdftex.def Info: img/optical_flow_desk.png  used on input line 479.
+Package pdftex.def Info: img/optical_flow_desk.png  used on input line 430.
 (pdftex.def)             Requested size: 174.42838pt x 141.51074pt.
-<<<<<<< HEAD
-<img/key_point_desk.png, id=288, 350.81062pt x 278.54062pt>
-=======
-<img/key_point_desk.png, id=303, 350.81062pt x 278.54062pt>
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+<img/key_point_desk.png, id=270, 350.81062pt x 278.54062pt>
 File: img/key_point_desk.png Graphic file (type png)
 <use img/key_point_desk.png>
-Package pdftex.def Info: img/key_point_desk.png  used on input line 486.
+Package pdftex.def Info: img/key_point_desk.png  used on input line 437.
 (pdftex.def)             Requested size: 178.23122pt x 141.51074pt.
 
-Overfull \hbox (11.75319pt too wide) in paragraph at lines 479--487
+Overfull \hbox (11.75319pt too wide) in paragraph at lines 430--438
  [][][][] 
  []
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-<<<<<<< HEAD
-<img/desk.png, id=289, 536.0025pt x 341.77687pt>
-=======
-<img/desk.png, id=304, 536.0025pt x 341.77687pt>
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+<img/desk.png, id=271, 536.0025pt x 341.77687pt>
 File: img/desk.png Graphic file (type png)
 <use img/desk.png>
-Package pdftex.def Info: img/desk.png  used on input line 492.
+Package pdftex.def Info: img/desk.png  used on input line 443.
 (pdftex.def)             Requested size: 206.28247pt x 131.52974pt.
-[12] [13 <./img/optical_flow_global.png> <./img/key_point_global.png> <./img/op
+[11] [12 <./img/optical_flow_global.png> <./img/key_point_global.png> <./img/op
 tical_flow_desk.png> <./img/key_point_desk.png>]
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
-Missing character: There is no � in font cmr9!
-Missing character: There is no � in font cmr9!
-Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
@@ -1724,84 +1596,45 @@ Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 Missing character: There is no � in font cmr9!
 
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-AED: lastpage setting LastPage
-[14pdfTeX warning (ext4): destination with the same identifier (name{cite.brief
-}) has been already used, duplicate ignored
+ [13pdfTeX warning (ext4): destination with the same identifier (name{cite.brie
+f}) has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-<<<<<<< HEAD
-l.552 \end{document}
-                     <./img/desk.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 552.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 552.
- (./Indirect_VO_Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 552.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 552.
-Package rerunfilecheck Info: File `Indirect_VO_Report.out' has not changed.
-(rerunfilecheck)             Checksum: 0E9E672B93A8055825E0D3396EBCE8AC;1523.
-=======
-l.548 \end{document}
-                     <./img/desk.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 548.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 548.
+l.499 	
+        <./img/desk.png>]
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 502.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+AED: lastpage setting LastPage
+[14] [15]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 558.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 558.
  (Indirect_VO_Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 548.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 548.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 558.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 558.
 Package rerunfilecheck Info: File `Indirect_VO_Report.out' has not changed.
-(rerunfilecheck)             Checksum: A72535B0FCE95E8CE9A6D371904F8124;1494.
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+(rerunfilecheck)             Checksum: 0907537E80A8DD8EFF0673C03510555A;1543.
 
 
 LaTeX Warning: There were multiply-defined labels.
 
-<<<<<<< HEAD
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 552.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 558.
  ) 
 Here is how much of TeX's memory you used:
- 36237 strings out of 494805
- 723629 string characters out of 6178000
- 772205 words of memory out of 5000000
- 38945 multiletter control sequences out of 15000+600000
- 541413 words of font info for 68 fonts, out of 8000000 for 9000
- 81 hyphenation exceptions out of 8191
- 48i,14n,87p,10388b,729s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texli
-ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></
-usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sh
-are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on Indirect_VO_Report.pdf (14 pages, 1319482 bytes).
-PDF statistics:
- 397 PDF objects out of 1000 (max. 8388607)
- 345 compressed objects within 4 object streams
- 111 named destinations out of 1000 (max. 500000)
- 250 words of extra memory for PDF output out of 10000 (max. 10000000)
-=======
-
-LaTeX Warning: There were multiply-defined labels.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 548.
- ) 
-Here is how much of TeX's memory you used:
- 37822 strings out of 493305
- 748650 string characters out of 3136742
- 795855 words of memory out of 3000000
- 40734 multiletter control sequences out of 15000+200000
- 543479 words of font info for 70 fonts, out of 3000000 for 9000
+ 37925 strings out of 493305
+ 750128 string characters out of 3136742
+ 792245 words of memory out of 3000000
+ 40830 multiletter control sequences out of 15000+200000
+ 544085 words of font info for 72 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 48i,14n,87p,1390b,905s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 48i,14n,87p,1480b,781s stack positions out of 5000i,500n,10000p,200000b,50000s
 <D:/应用程序/TexStudio/MikTex/fonts/type1/public/amsfonts/cm/cmbx10.pfb><
 D:/应用程序/TexStudio/MikTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><D:/
 应用程序/TexStudio/MikTex/fonts/type1/public/amsfonts/cm/cmbx9.pfb><D:/应�
@@ -1818,10 +1651,9 @@ type1/public/amsfonts/cm/cmr9.pfb><D:/应用程序/TexStudio/MikTex/fonts/type1
 blic/amsfonts/cm/cmsy7.pfb><D:/应用程序/TexStudio/MikTex/fonts/type1/public
 /amsfonts/cm/cmti10.pfb><D:/应用程序/TexStudio/MikTex/fonts/type1/public/am
 sfonts/cm/cmtt9.pfb>
-Output written on Indirect_VO_Report.pdf (14 pages, 1360404 bytes).
+Output written on Indirect_VO_Report.pdf (15 pages, 1365333 bytes).
 PDF statistics:
- 409 PDF objects out of 1000 (max. 8388607)
- 109 named destinations out of 1000 (max. 500000)
- 338 words of extra memory for PDF output out of 10000 (max. 10000000)
->>>>>>> cceb02a79e33ec2510e165869372a0b3bd1cd537
+ 424 PDF objects out of 1000 (max. 8388607)
+ 113 named destinations out of 1000 (max. 500000)
+ 346 words of extra memory for PDF output out of 10000 (max. 10000000)
 
