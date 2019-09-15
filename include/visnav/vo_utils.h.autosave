@@ -562,22 +562,19 @@ void OpticalFlowBetweenFrame_opencv_version(
   stop = clock();
   duration = double(stop - start) / double(CLOCKS_PER_SEC);
   std::cout << "optical flow push back time: " << duration << std::endl;
-  //  for (int i = 0; i < points0.size(); i++) {  // ever input point in left
-  //  cam
-  //    for (int j = 0; j < points1.size();
-  //         j++) {  // every output point in right cam
-  //      if (status[i]) {
-  //        kdlt1.corners.emplace_back(points1[j].x, points1[j].y);
-  //        TrackId trackid = kdlt0.trackids[i];  // trackid according to left
-  //        kdlt1.trackids.push_back(trackid);
-  //        md_feat2track.matches.push_back(std::make_pair(j, trackid));
-  //      }
-  //    }
-  //  }
 }
 
 // TODO PROJECT: optical flow to right framge, difference is md_stereo is
 // stored.
+/*
+ * Input:
+ *  current_frame     : current frame id
+ *  imgl              : left image of current frame
+ *  imgr              : right image of current frame
+ *  kdl               : key points data of left image
+ *  kdr               : key points data of right image
+ *  md_feat2track     : match data that match feature id to track id
+ * */
 void OpticalFlowToRightFrame_opencv_version(
     FrameId current_frame, const pangolin::ManagedImage<uint8_t>& imgl,
     const pangolin::ManagedImage<uint8_t>& imgr, const KeypointsData& kdl,

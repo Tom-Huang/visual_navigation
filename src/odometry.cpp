@@ -1289,7 +1289,7 @@ bool next_step() {
       start = clock();
       OpticalFlowBetweenFrame_opencv_version(
           current_frame, last_key_frame, imgl_last, imgl, kdl_last, kdl,
-          landmarks,
+
           md_feat2track_left);  // kdl is filled in this function.
                                 // md_feat2track_left.matches stores the
                                 // current frame's feat2track match,
@@ -1603,7 +1603,7 @@ bool next_step() {
     start = clock();
     OpticalFlowBetweenFrame_opencv_version(current_frame, last_key_frame,
                                            imgl_last, imgl, kdl_last, kdl,
-                                           landmarks, md_feat2track_left);
+                                           md_feat2track_left);
     stop = clock();
     duration = double(stop - start) / double(CLOCKS_PER_SEC);
     frame2frame_match_time += duration;
