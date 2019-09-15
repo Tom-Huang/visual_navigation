@@ -153,6 +153,15 @@ void find_matches_landmarks(
   }
 }
 
+// TODO PROJECT: Manual implementation of bilinear interpolation of image
+/*
+ * Input:
+ *  img    : image to interpolate on
+ *  x      : column position(float)
+ *  y      : row position(float)
+ * Output:
+ *  result : interpolation result
+ * */
 float bilinear_interpolate(cv::Mat img, float x, float y) {
   if (x < 0 || x >= img.size().width || y < 0 || y >= img.size().height) {
     // std::cout << "x, y out of range!" << std::endl;
@@ -173,25 +182,56 @@ float bilinear_interpolate(cv::Mat img, float x, float y) {
   return result;
 }
 
+// TODO PROJECT: Find gradient of image in x direction
+/*
+ * ---->x
+ * /
+ * /
+ * y
+ * Input:
+ *  img        : input image
+ *  gradient_x : output Mat storing gradient
+ * */
 void cv_gradient_x(const cv::Mat& img, cv::Mat& gradient_x) {
   float k1[3] = {-0.5, 0, 0.5};
   cv::Mat ker = cv::Mat(1, 3, CV_32FC1, k1);
   cv::filter2D(img, gradient_x, img.depth(), ker);
 }
 
+// TODO PROJECT: Find gradient of image in y direction
+/*
+ * ---->x
+ * /
+ * /
+ * y
+ * Input:
+ *  img        : input image
+ *  gradient_y : output Mat storing gradient
+ * */
 void cv_gradient_y(const cv::Mat& img, cv::Mat& gradient_y) {
   float k1[3][1] = {-0.5, 0, 0.5};
   cv::Mat ker = cv::Mat(3, 1, CV_32FC1, k1);
   cv::filter2D(img, gradient_y, img.depth(), ker);
 }
 
-// TODO PROJECT: Manual implementation of optical flow method
+// TODO PROJECT: Manual implementation of intensity invariant optical flow
+// method
+/*
+ * Input:
+ *  img0_uchar        : source image with format CV_8U.
+ *  img1_uchar        : target image with format CV_8U.
+ *  points0           : vector of source feature points.
+ *  points1           : vector of output target feature points.
+ *  status            : vector of status storing 1 or 0. 1 represents output
+ *                      feature point is inside the image boundary.
+ *  errors            : vector of errors of every output feature point.
+ *  maxLevel          : maximum pyramid level in optical flow.
+ * */
 void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
                    std::vector<cv::Point2f>& points0,
                    std::vector<cv::Point2f>& points1,
                    std::vector<unsigned char>& status,
-                   std::vector<float>& errors,
-                   cv::Size winSize = cv::Size(11, 11), int maxLevel = 5) {
+                   std::vector<float>& errors, int maxLevel = 5) {
   const int pattern[][2] = {
       {-3, 7},  {-1, 7},  {1, 7},   {3, 7},
 
@@ -219,12 +259,7 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
   img0_uchar.convertTo(img00, CV_32FC1, 1.0 / 255);
   img1_uchar.convertTo(img10, CV_32FC1, 1.0 / 255);
 
-  cv::Mat gradient_x, gradient_y, gradient_t;
-  cv_gradient_x(img00, gradient_x);
-  cv_gradient_y(img00, gradient_y);
-  //  cv::imshow("gradient_x", gradient_x);
-  //  cv::imshow("gradient_y", gradient_y);
-  //  cv::waitKey();
+  cv::Mat gradient_x, gradient_y;
 
   // create different layers
   std::vector<cv::Mat> layers0;
@@ -238,9 +273,6 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
     cv::pyrDown(layers1[l], tmp1);
     layers0.push_back(tmp0);
     layers1.push_back(tmp1);
-    //    cv::imshow("left", tmp0);
-    //    cv::imshow("right", tmp1);
-    //    cv::waitKey();
   }
 
   // iterate over points
@@ -255,22 +287,8 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
     int patch_out_flag = 0;
 
     for (int l = maxLevel; l > 0; l--) {
-      //      int w = int(winSize.width / pow(2, l - 1)),
-      //          h = int(winSize.height / pow(2, l - 1));
-      int w = int(winSize.width);
-      int h = int(winSize.height);
       float scale = pow(2, l - 1);
 
-      // judge whether height and width of winSize at this layer
-      // are odd number. If not, add 1 to them
-      if (w % 2 == 0) {
-        w++;
-      }
-      if (h % 2 == 0) {
-        h++;
-      }
-
-      // const int WINDOW_SIZE = w * h;
       const int WINDOW_SIZE = sizeof(pattern) / (sizeof(int) * 2);
 
       Eigen::Matrix<float, 2, 2> hessian = Eigen::Matrix2f::Zero();
@@ -298,14 +316,6 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
       img1 = layers1[l - 1];
       cv_gradient_x(img0, gradient_x);
       cv_gradient_y(img0, gradient_y);
-      //      cv::Sobel(img0, gradient_x, CV_32FC1, 1, 0, 3);
-      //      cv::Sobel(img0, gradient_y, CV_32FC1, 0, 1, 3);
-
-      //      cv::imshow("gradient_x", gradient_x);
-      //      cv::imshow("gradient_y", gradient_y);
-      //      cv::waitKey();
-
-      //      std::cout << "image size: " << img0.size() << std::endl;
 
       i = 0;
       sum0 = 0;
@@ -316,29 +326,18 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
 
       grad_sum0.setZero();
 
-      // calculate hessian, mean0 and mean1 in the neighborhood of point
-      //      for (float r = point.y / pow(2, l - 1) - int(h / 2);
-      //           r <= point.y / pow(2, l - 1) + int(h / 2); r++) {
-      //        for (float c = point.x / pow(2, l - 1) - int(w / 2);
-      //             c <= point.x / pow(2, l - 1) + int(w / 2); c++) {
       for (int i = 0; i < WINDOW_SIZE; i++) {
         float r = point.y / scale + pattern[i][1];
         float c = point.x / scale + pattern[i][0];
-        //        std::cout << "r, c: " << r << ", " << c << std::endl;
         if (r >= BOUNDARY && r < img0.size().height - BOUNDARY &&
             c >= BOUNDARY && c < img0.size().width - BOUNDARY) {
-          //          std::cout << "in" << std::endl;
           float gx = bilinear_interpolate(gradient_x, c, r);
           float gy = bilinear_interpolate(gradient_y, c, r);
           gradient0.row(i) = Eigen::Vector2f(gx, gy);
           grad_sum0 += gradient0.row(i);
 
-          //            hessian(0, 0) += gx * gx;
-          //            hessian(0, 1) += gx * gy;
-          //            hessian(1, 0) = hessian(0, 1);
-          //            hessian(1, 1) += gy * gy;
           intensity0(i) = bilinear_interpolate(img0, c, r);
-          sum0 += intensity0(i);  // img0.at<float>(r, c);
+          sum0 += intensity0(i);
           valid_num0++;
         } else {
           intensity0(i) = -1;
@@ -348,8 +347,6 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
       }
 
       mean0 = sum0 / valid_num0;
-
-      // hessian = hessian / (mean0 * mean0);
 
       for (int i = 0; i < WINDOW_SIZE; i++) {
         if (intensity0(i) >= 0) {
@@ -373,7 +370,6 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
 
       // start iteration
       for (int iter_num = 0; iter_num < 30; iter_num++) {
-        //      std::cout << "point: " << point << std::endl;
         sum1 = 0;
         mean1 = 0;
         valid_num1 = 0;
@@ -401,9 +397,6 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
         for (int i = 0; i < WINDOW_SIZE; i++) {
           if (intensity0(i) >= 0 && intensity1(i) >= 0) {
             intensity1(i) /= mean1;
-            //            std::cout << "intensity1: " << intensity1(i) << ", "
-            //                      << "intensity0: " << intensity0(i) <<
-            //                      std::endl;
             res(i) = intensity1(i) - intensity0(i);
             residual_num++;
           } else {
@@ -411,15 +404,13 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
           }
         }
 
+        // break when 50% of patch is out of range!
         if (residual_num < (WINDOW_SIZE / 2)) {
-          //          std::cout << "50% of patch is out of range!" << std::endl;
           patch_out_flag = 1;
           break;
         }
 
         dmotion = -hessian_inv_gradient_trans * res;
-
-        //      std::cout << "dmotion calculation success!" << std::endl;
 
         // multiply motion by 2 for lower layer
         motion_old = motion;
@@ -456,13 +447,12 @@ void OpticalFLowLK(const cv::Mat& img0_uchar, const cv::Mat& img1_uchar,
           break;
         }
 
-        // break iteration if motion out of range of lower layer
-        if (motion(0) + point.x / pow(2, l - 1) < 0 ||
-            motion(0) + point.x / pow(2, l - 1) >= img0.size().width ||
-            motion(1) + point.y / pow(2, l - 1) < 0 ||
-            motion(1) + point.y / pow(2, l - 1) >= img0.size().height) {
+        // break iteration if key point is out of range of lower layer
+        if (motion(0) + point.x / scale < 0 ||
+            motion(0) + point.x / scale >= img0.size().width ||
+            motion(1) + point.y / scale < 0 ||
+            motion(1) + point.y / scale >= img0.size().height) {
           out_flag = 1;
-          //          std::cout << "out of range!" << std::endl;
           break;
         }
       }  // end of iteration loop
