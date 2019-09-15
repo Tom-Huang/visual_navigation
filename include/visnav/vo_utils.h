@@ -971,7 +971,7 @@ void triangulate_new_part(const TimeCamId tcidl, const TimeCamId tcidr,
 }
 
 // TODO PROJECT: add new landmark for first stereo pair, add trackid in
-// kpl, kpr
+// kdl, kdr
 void initializeLandmarks(const TimeCamId tcidl, const TimeCamId tcidr,
                          KeypointsData& kdl, KeypointsData& kdr,
                          const Sophus::SE3d& T_w_c0,
@@ -1424,27 +1424,5 @@ Sophus::Sim3d align_points_sim3(const Mat3X& data, const Mat3X& model,
   std::cout << "ate calculation succeeds." << std::endl;
   return Sophus::Sim3d(Sophus::RxSO3d(1, R), t);
 }
-
-// Sophus::Sim3d align_cameras_sim3(const Poses& reference_poses,
-//                                 const Cameras& cameras,
-//                                 const Calibration& calib_cam,
-//                                 ErrorMetricValue* ate) {
-//  const Eigen::Index num_cameras = cameras.size();
-
-//  Mat3X reference_centers(3, num_cameras);
-//  Mat3X camera_centers(3, num_cameras);
-
-//  int i = 0;
-//  for (const auto kv : cameras) {
-//    const auto& [tcid, cam] = kv;
-//    const auto& T_w_i = reference_poses.at(tcid.first);
-//    reference_centers.col(i) =
-//        (T_w_i * calib_cam.T_i_c.at(tcid.second)).translation();
-//    camera_centers.col(i) = cam.T_w_c.translation();
-//    i++;
-//  }
-
-//  return align_points_sim3(reference_centers, camera_centers, ate);
-//}
 
 }  // namespace visnav
