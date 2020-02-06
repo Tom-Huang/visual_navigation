@@ -1,0 +1,1 @@
+/usr/bin/c++   -ftemplate-backtrace-limit=0 -Wall -Wsign-compare -march=native  -O3 -g -DEIGEN_INITIALIZE_MATRICES_BY_NAN   CMakeFiles/test_ex2.dir/src/test_ex2.cpp.o  -o test_ex2 ../lib/libgtest.a ../lib/libgtest_main.a ../lib/libgtest.a -pthread 

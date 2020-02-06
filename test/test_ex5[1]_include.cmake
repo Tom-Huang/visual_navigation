@@ -1,0 +1,5 @@
+if(EXISTS "/home/hcg/hcg/visual_navigation/visnav_new/test/test_ex5[1]_tests.cmake")
+  include("/home/hcg/hcg/visual_navigation/visnav_new/test/test_ex5[1]_tests.cmake")
+else()
+  add_test(test_ex5_NOT_BUILT test_ex5_NOT_BUILT)
+endif()
